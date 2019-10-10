@@ -27,10 +27,10 @@ import 'package:quiver/core.dart';
 import 'package:kt_dart/collection.dart';
 
 @DataClass()
-mixin User$ on _UserBase {
+mixin User on _UserBase {
   String get name;
   Optional<int> get age;
-  KtList<User$> get friends;
+  KtList<User> get friends;
 
   int numerOfFriends() {
     return this.friends.size;
@@ -38,27 +38,25 @@ mixin User$ on _UserBase {
 }
 ```
 
-The `@DataClass()` annotation trigger code generation for the mixin following the annotation.
-The mixin should define getters for each property of the data type. The code generation
-then generates code for `==`, `hashCode` and `toString`. Additionally, it generates
+The `@DataClass()` annotation triggers generation of the data class from the mixin
+following the annotation.
+The mixin should define getters for each property of the data class. The code generation
+then generates code for `==` (structural equality), `hashCode` and `toString`.
+Additionally, it generates
 a `copyWith` method through which you can non-destructively modify some fields of an existing
 object of the class (i.e. `copyWith` returns a copy of the object).
 
-The name of the mixin must end with `$`. In the case above, for the mixin `User$`, an
-abstract class `_UserBase` (declaring `copyWith`) and a concrete class `User` (defining
-all the implementation methods) is generated.
-
 ## Use the generated class
 
-You can then use the `User` class for instantiating objects. For example:
+You create instances of the data class by using the also generated `makeUser` function:
 
 ```dart
 void main() {
-  final userBob = User(
+  final userBob = makeUser(
     name: "Bob",
     friends: KtList.empty(),
   );
-  final userSarah = User(
+  final userSarah = makeUser(
     name: "Sarah",
     friends: KtList.empty(userBob),
     age: 31,
@@ -73,17 +71,3 @@ the [quiver.core](https://api.flutter.dev/flutter/quiver.core/Optional-class.htm
 It is recommended to use immutable collections, for example from the
 [kt.dart](https://github.com/passsy/kt.dart) package. You can also use the builtin collections
 such as `List``, but their equality is based on pointer-equality and not on structural equality.
-
-## Attention with recursive types
-
-If your blueprint mixin refers the the class being generated, you cannot directly
-use the name of the class being generated. Instead, you have to use the name of the mixin.
-That's why we wrote `KtList<User$>` for the type of the `friends` field in the example above.
-If you do not follow this rule, you will get strange type errors involving the `dynamic` type
-in the generated code. For example, if we wrote `KtList<User>` in the code above, we would
-get the following rather strange looking error:
-
-```
-Error: The return type of the method 'User.friends' is 'KtList<dynamic>', which does not match
-the return type, 'KtList<User>', of the overridden method, 'User$.friends'.
-```

@@ -213,10 +213,6 @@ class ClassModel {
 
   factory ClassModel(ClassElement clazz) {
     try {
-      if (!clazz.name.endsWith("_")) {
-        throw DataClassCodegenException("the name of the mixin must end with a _");
-      }
-
       // build a map of the qualified imports, mapping module identifiers to import prefixes
       var lib = clazz.library;
       final imports = ImportModel();
@@ -225,7 +221,8 @@ class ClassModel {
       });
 
       final mixinName = clazz.name;
-      final className = mixinName.substring(0, mixinName.length - 1);
+      final className = "_" + mixinName;
+      final baseName = className + "Base";
       final fields = <FieldModel>[];
 
       for (var field in clazz.fields) {
@@ -242,7 +239,6 @@ class ClassModel {
         }
       }
 
-      final baseName = "_" + className + "Base";
       return ClassModel._(
         mixinName: mixinName,
         baseClassName: baseName,
@@ -316,20 +312,19 @@ class DataClassGenerator extends GeneratorForAnnotation<DataClass> {
 
     var code = '''
       /// This data class has been generated from ${clazz.mixinName}
+      ${clazz.mixinName} make${clazz.mixinName}({
+        ${clazz.factoryParams}
+      }) {
+        return ${clazz.className}.make(
+          ${clazz.constructorArgs}
+        );
+      }
       abstract class ${clazz.baseClassName} {
         ${clazz.copyWithSignature};
       }
       @immutable
       class ${clazz.className} extends ${clazz.baseClassName} with ${clazz.mixinName} {
         ${clazz.fieldDeclarations}
-
-        factory ${clazz.className}({
-          ${clazz.factoryParams}
-        }) {
-          return ${clazz.className}.make(
-            ${clazz.constructorArgs}
-          );
-        }
 
         ${clazz.className}.make({
           ${clazz.constructorParams}
@@ -362,7 +357,7 @@ class DataClassGenerator extends GeneratorForAnnotation<DataClass> {
         }
 
         String toString() {
-          return "${clazz.className}(${clazz.toStringFields})";
+          return "${clazz.mixinName}(${clazz.toStringFields})";
         }
       }''';
     // print(code);

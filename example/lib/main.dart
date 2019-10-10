@@ -7,21 +7,21 @@ import "package:test/test.dart";
 part 'main.g.dart';
 
 void main() {
-  final userBob = User(
+  final userBob = makeUser(
     name: "Bob",
     friends: KtList.empty(),
     address: new ty.Address(),
     age: 31,
     friendsAddresses: KtList.empty(),
   );
-  final userPaul = User(
+  final userPaul = makeUser(
     name: "Paul",
     friends: KtList.of(userBob),
     address: new ty.Address(),
     friendsAddresses: KtList.empty(),
   );
   final userSarah = userPaul.copyWith(name: "Sarah");
-  final userSarah2 = User(
+  final userSarah2 = makeUser(
     name: "Sarah",
     friends: KtList.of(userBob),
     address: new ty.Address(),
@@ -55,10 +55,10 @@ void main() {
 }
 
 @DataClass()
-mixin User_ on _UserBase {
+mixin User on _UserBase {
   String get name;
   Optional<int> get age;
-  KtList<User_> get friends;
+  KtList<User> get friends;
   ty.Address get address;
   Optional<ty.Address> get workAddress;
   KtList<ty.Address> get friendsAddresses;
@@ -79,34 +79,34 @@ abstract class _UserBase {
  });
 }
 
-class User extends _UserBase with User$ {
+User makeUser({
+  @required String name,
+  int age,
+  @required KtList<User> friends,
+  @required ty.Address address,
+  ty.Address workAddress,
+  @required KtList<ty.Address> friendsAddresses,
+})  {
+  return _User.make(
+    name: name,
+    age: age == null ? Optional.absent() : Optional.of(age),
+    friends: friends,
+    address: address,
+    workAddress: workAddress == null ? Optional.absent() : Optional.of(workAddress),
+    friendsAddresses: friendsAddresses
+  );
+}
+
+class _User extends _UserBase with User {
   final String name;
   final Optional<int> age;
-  final List<User> friends;
+  final KtList<User> friends;
   final ty.Address address;
   final Optional<ty.Address> workAddress;
-  final List<ty.Address> friendsAddresses;
-
-  factory User({
-    @required String name,
-    int age,
-    @required List<User> friends,
-    @required ty.Address address,
-    ty.Address workAddress,
-    @required List<ty.Address> friendsAddresses,
-  })  {
-    return User.make(
-      name: name,
-      age: age == null ? Optional.absent() : Optional.of(age),
-      friends: friends,
-      address: address,
-      workAddress: workAddress == null ? Optional.absent() : Optional.of(workAddress),
-      friendsAddresses: friendsAddresses
-    );
-  }
+  final KtList<ty.Address> friendsAddresses;
 
   // We cannot have a const constructor because of https://github.com/dart-lang/sdk/issues/37810
-  User.make({
+  _User.make({
     @required this.name,
     @required this.age,
     @required this.friends,
@@ -130,7 +130,7 @@ class User extends _UserBase with User$ {
     ty.Address workAddress,
     List<ty.Address> friendsAddresses,
   }) {
-    return User.make(
+    return _User.make(
       name: name == null ? this.name : name,
       age: age == null ? this.age : age,
       friends: friends == null ? this.friends : friends,

@@ -1,4 +1,4 @@
-export 'package:meta/meta.dart' show required;
+export 'package:meta/meta.dart' show immutable, required;
 
 import 'package:meta/meta.dart';
 

@@ -55,11 +55,8 @@ String qualifyType(DartType ty, ImportModel imports) {
 String computeTypeRepr(DartType ty, ImportModel imports) {
   if (ty is FunctionType) {
     throw DataClassCodegenException("function types are not supported");
-  } else if (ty.isDynamic && ty.isUndefined) {
-    throw DataClassCodegenException(
-      "detected unresolvable type, you probably used the class being generated as type. "
-      "Use the name of the mixin instead."
-    );
+  } else if (ty.isDynamic) {
+    return "dynamic";
   } else if (ty is ParameterizedType && ty.typeArguments.length > 0) {
     final base = qualifyType(ty, imports);
     final args = ty.typeArguments.map((tyArg) => computeTypeRepr(tyArg, imports));
@@ -233,10 +230,8 @@ class ClassModel {
 
       for (var field in clazz.fields) {
         var msgPrefix = "Invalid getter '${field.name}' for data class '${mixinName}'";
-        if (field.getter == null) {
+        if (field.getter == null && !field.isFinal) {
           throw "${msgPrefix}: field must have a getter";
-        } else if (!field.isFinal) {
-          throw "${msgPrefix}: field must be final";
         } else if (field.setter != null) {
           throw "${msgPrefix}: field must not have a setter";
         } else {

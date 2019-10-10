@@ -1,4 +1,5 @@
 import 'package:analyzer/dart/element/element.dart';
+import 'package:analyzer/dart/element/type.dart';
 import 'package:build/build.dart';
 import 'package:build/src/builder/build_step.dart';
 import 'package:source_gen/source_gen.dart';
@@ -7,24 +8,193 @@ import 'package:data_classes/data_classes.dart';
 Builder generateDataClass(BuilderOptions options) =>
     SharedPartBuilder([DataClassGenerator()], 'data_classes');
 
-class DataClassGenerator extends GeneratorForAnnotation<GenerateDataClassFor> {
-  @override
-  generateForAnnotatedElement(
-      Element element, ConstantReader annotation, BuildStep _) {
-    assert(element is ClassElement,
-        'Only annotate classes with `@GenerateDataClassFor()`.');
-    assert(
-        element.name.startsWith('Mutable'),
-        'The names of classes annotated with `@GenerateDataClassFor()` should '
-        'start with `Mutable`, for example `MutableUser`. The immutable class '
-        'will then get automatically generated for you by running '
-        '`pub run build_runner build` (or '
-        '`flutter pub run build_runner build` if you\'re using Flutter).');
+class OptionalType {
+  final String baseType;
+  final String optionalImportPrefix;
+  OptionalType({
+    @required this.baseType,
+    @required this.optionalImportPrefix
+  });
 
-    var e = element as ClassElement;
+  String get optional {
+    return optionalImportPrefix + "Optional";
+  }
+}
+
+void analyzeType(DartType ty, String indent) {
+    if (ty is FunctionType) {
+      throw "@DateClass cannot handle function type ${ty}";
+    } else if (ty is ParameterizedType && ty.typeArguments.length > 0) {
+      print("${indent}${ty.name}<");
+      for (var tyArg in ty.typeArguments) {
+        analyzeType(tyArg, indent + " ");
+      }
+      print("${indent}>");
+    } else {
+      print("${indent}${ty.name}");
+    }
+}
+
+bool isQuiverOptional(DartType ty) {
+  return ty.name == "Optional"; // FIXME: resolve module and check that it is quiver/core.dart
+}
+
+// Returns a potential qualified access string for the type, without type arguments
+String qualifyType(DartType ty, Map<String, String> qualifiedImports) {
+    final tyLib = ty.element.library;
+    final prefixOrNull = qualifiedImports[tyLib.identifier];
+    final prefix = (prefixOrNull != null) ? (prefixOrNull + ".") : "";
+    return "${prefix}${ty.name}";
+}
+
+String computeTypeRepr(String funErrMsg, DartType ty, Map<String, String> qualifiedImports) {
+  if (ty is FunctionType) {
+    throw funErrMsg;
+  } else if (ty is ParameterizedType && ty.typeArguments.length > 0) {
+    final base = qualifyType(ty, qualifiedImports);
+    final args = ty.typeArguments.map((tyArg) => qualifyType(tyArg, qualifiedImports));
+    return "${base}<${args.join(", ")}>";
+  } else {
+    return qualifyType(ty, qualifiedImports);
+  }
+}
+
+class TypeModel {
+  final String typeRepr;
+  final String typeReprForFactory;
+  final String optionalType;
+  bool get isOptional {
+    return optionalType != null;
+  }
+
+  TypeModel._({
+    @required this.typeRepr,
+    @required this.typeReprForFactory,
+    @required this.optionalType,
+  });
+
+  factory TypeModel({
+    @required String className,
+    @required String fieldName,
+    @required DartType ty,
+    @required Map<String, String> qualifiedImports
+  }) {
+    final errMsg = "@DataClass() cannot handle function type ${ty} on field "
+        "${fieldName} in class ${className}";
+    final typeRepr = computeTypeRepr(errMsg, ty, qualifiedImports);
+    var optionalType = null;
+    var typeReprForFactory = typeRepr;
+    if (ty is ParameterizedType && ty.typeArguments.length == 1 && isQuiverOptional(ty)) {
+      optionalType = qualifyType(ty, qualifiedImports);
+      typeReprForFactory = computeTypeRepr(errMsg, ty.typeArguments[0], qualifiedImports);
+    }
+    return TypeModel._(
+      typeRepr: typeRepr,
+      typeReprForFactory: typeReprForFactory,
+      optionalType: optionalType
+    );
+  }
+}
+
+class FieldModel {
+
+  final String name;
+  final TypeModel type;
+
+  factory FieldModel({
+    @required String className,
+    @required FieldElement field,
+    @required Map<String, String> qualifiedImports
+  }) {
+    final ty = TypeModel(
+      className: className,
+      fieldName: field.name,
+      qualifiedImports: qualifiedImports,
+      ty: field.type,
+    );
+    return FieldModel._(
+      name: field.name,
+      type: ty,
+    );
+  }
+
+  FieldModel._({
+    @required this.name,
+    @required this.type,
+  });
+
+  String get declaration {
+    return "final ${this.type.typeRepr} ${this.name};";
+  }
+
+  String get factoryParam {
+    String prefix = this.type.isOptional ? "" : "@required ";
+    return "${prefix}${this.type.typeReprForFactory} ${name}";
+  }
+
+  // Parameter of the constructor
+  String get constructorParam {
+    return "@required this.${name}";
+  }
+
+  // Argument for calling the constructor from the factory
+  String get constructorArgFromFactory {
+    final optionalType = this.type.optionalType;
+    if (optionalType != null) {
+      return
+        "${name}: (${name} == null) ? "
+        "${optionalType}.absent() : "
+        "${optionalType}.of(${name})";
+    } else {
+      return "${name}: ${name}";
+    }
+  }
+
+  String get constructorArgFromCopyWith {
+    return "${name}: (${name} == null) ? this.${name} : ${name}";
+  }
+
+  String get assertNotNull {
+    return "assert(${name} != null);";
+  }
+
+  String fieldEq(String otherVar) {
+    return "${name} == ${otherVar}.${name}";
+  }
+
+  String get toStringField {
+    return "${this.name}: " + r"${this.name}";
+  }
+
+  String get copyWithParam {
+    return "${this.type.typeRepr} ${this.name}";
+  }
+}
+
+class ClassModel {
+  final String name;
+  final String internalName;
+  final String baseName;
+  final List<FieldModel> fields;
+
+  ClassModel._({
+    @required this.name,
+    @required this.internalName,
+    @required this.baseName,
+    @required this.fields,
+  });
+
+  factory ClassModel(ClassElement clazz) {
+    //if (!clazz.isValidMixin) {
+      //throw 'Only annotate mixins with `@DataClass()`.';
+    //}
+    if (!clazz.name.startsWith('_')) {
+      throw 'The names of classes annotated with `@DataClass()` should '
+        'start with `_`';
+    }
 
     // build a map of the qualified imports, mapping module identifiers to import prefixes
-    var lib = e.library;
+    var lib = clazz.library;
     Map<String, String> qualifiedImports = new Map();
     lib.imports.forEach((imp) {
       if (imp.prefix != null) {
@@ -33,89 +203,147 @@ class DataClassGenerator extends GeneratorForAnnotation<GenerateDataClassFor> {
       }
     });
 
-    var name = e.name.substring('Mutable'.length);
-    var fields = <FieldElement>{};
-    var getters = <FieldElement>{};
+    var internalName = clazz.name;
+    var fields = <FieldModel>[];
 
-    for (var field in e.fields) {
-      if (field.isFinal) {
-        throw "`Mutable` classes shouldn't have final fields.";
-      } else if (field.setter == null) {
-        assert(field.getter != null);
-        getters.add(field);
-      } else if (field.getter == null) {
-        assert(field.setter != null);
-        throw "`Mutable` classes don't support setter-only fields";
+    for (var field in clazz.fields) {
+      var msgPrefix = "Invalid getter '${field.name}' for data class '${internalName}'";
+      if (field.getter == null) {
+        throw "${msgPrefix}: field must have a getter";
+      } else if (!field.isFinal) {
+        throw "${msgPrefix}: field must be final";
+      } else if (field.setter != null) {
+        throw "${msgPrefix}: field must not have a setter";
       } else {
-        fields.add(field);
+        fields.add(FieldModel(
+          className: internalName,
+          field: field,
+          qualifiedImports: qualifiedImports,
+        ));
       }
     }
 
-    return '''
-    /// This class is the immutable pendant of the [Mutable$name] class.
-    @immutable
-    class $name {
-      ${fields.map((field) => 'final ${_fieldToTypeAndName(field, qualifiedImports)};').join()}
-
-      /// Default constructor that creates a new [$name] with the given attributes.
-      const $name({${fields.map((field) => '${_isNullable(field) ? '' : '@required'} this.${field.name},').join()}}) : ${fields.where((field) => !_isNullable(field)).map((field) => 'assert(${field.name} != null)').join(',')};
-
-      /// Creates a [$name] from a [Mutable$name].
-      $name.fromMutable(Mutable$name mutable) :
-      ${fields.map((field) => '${field.name} = mutable.${field.name}').join(',')};
-
-      /// Turns this [$name] into a [Mutable$name].
-      Mutable$name toMutable() {
-        return Mutable$name()
-          ${fields.map((field) => '..${field.name} = ${field.name}').join()};
-      }
-
-      /// Checks if this [$name] is equal to the other one.
-      bool operator ==(Object other) {
-        return other is $name &&
-            ${fields.map((field) => '${field.name} == other.${field.name}').join('&&')};
-      }
-
-      int get hashCode => hashList([${fields.map((field) => '${field.name},').join()}]);
-
-      /// Copies this [$name] with some changed attributes.
-      $name copy(void Function(Mutable$name mutable) changeAttributes) {
-        assert(changeAttributes != null,
-          "You called $name.copy, but didn't provide a function for changing "
-          "the attributes.\\n"
-          "If you just want an unchanged copy: You don't need one, just use "
-          "the original.");
-        var mutable = this.toMutable();
-        changeAttributes(mutable);
-        return  $name.fromMutable(mutable);
-      }
-
-      /// Converts this [$name] into a [String].
-      String toString() {
-        return '$name(\\n'
-          ${fields.map((field) => "'  ${field.name}: \$${field.name}\\n'").join('\n')}
-          ')';
-      }
-    }
-    ''';
+    var name = internalName.substring(1);
+    var baseName = internalName + "Base";
+    return ClassModel._(
+      name: name,
+      baseName: baseName,
+      internalName: internalName,
+      fields: fields
+    );
   }
 
-  bool _isNullable(FieldElement field) =>
-      field.metadata.any((annotation) => annotation.element.name == 'nullable');
+  String get copyWithSignature {
+    final params = this.fields.map((field) => field.copyWithParam).join(",");
+    return "User copyWith({${params}})";
+  }
 
-  LibraryElement findLib(Element elem) {
-    var encl = elem.enclosingElement;
-    if (encl == null) {
-      return elem as LibraryElement;
+  String get fieldList {
+    return "[" + this.fields.map((field) => field.name + ",").join() + "]";
+  }
+
+  String get fieldDeclarations {
+    return this.fields.map((field) => field.declaration).join();
+  }
+
+  String get factoryParams {
+    return this.fields.map((field) => field.factoryParam + ",").join();
+  }
+
+  String get constructorParams {
+    return this.fields.map((field) => field.constructorParam + ",").join();
+  }
+
+  String get constructorArgs {
+    return this.fields.map((field) => field.constructorArgFromFactory + ",").join();
+  }
+
+  String get constructorBody {
+    return this.fields.map((field) => field.assertNotNull).join();
+  }
+
+  String get copyWithArgs {
+    return this.fields.map((field) => field.constructorArgFromCopyWith + ",").join();
+  }
+
+  String fieldsEq(String otherVar) {
+    if (this.fields.length == 0) {
+      return "true";
     } else {
-      return findLib(encl);
+      return this.fields.map((field) => field.fieldEq(otherVar)).join(" && ");
     }
   }
 
-  String _fieldToTypeAndName(FieldElement field,  Map<String, String> importMap) {
-    var tyLib = field.type.element.library;
-    var prefixOrNull = importMap[tyLib.identifier];
-    var prefix = (prefixOrNull != null) ? (prefixOrNull + ".") : "";
-    return '${prefix}${field.type} ${field.name}';
+  String get toStringFields {
+    return this.fields.map((field) => field.toStringField).join(", ");
+  }
+}
+
+class DataClassGenerator extends GeneratorForAnnotation<DataClass> {
+
+  @override
+  generateForAnnotatedElement(
+      Element element, ConstantReader annotation, BuildStep _) {
+    if (element == null) {
+      throw "@DataClass() applied to something that is null";
+    }
+    if (!(element is ClassElement)) {
+      throw 'Only annotate mixins with `@DataClass()`.';
+    }
+    var clazz = ClassModel(element as ClassElement);
+
+    var code = '''
+      /// This data class has been generated from ${clazz.internalName}
+      abstract class ${clazz.baseName} {
+        ${clazz.copyWithSignature};
+      }
+      @immutable
+      class ${clazz.name} extends ${clazz.baseName} with ${clazz.internalName} {
+        ${clazz.fieldDeclarations}
+
+        factory ${clazz.name}({
+          ${clazz.factoryParams}
+        }) {
+          return User.make(
+            ${clazz.constructorArgs}
+          );
+        }
+
+        ${clazz.name}.make({
+          ${clazz.constructorParams}
+        }) {
+          ${clazz.constructorBody}
+        }
+
+        ${clazz.copyWithSignature} {
+          return User.make(
+            ${clazz.copyWithArgs}
+          );
+        }
+
+        bool operator ==(Object other) {
+          if (other == null) {
+            return false;
+          }
+          if (identical(this, other)) {
+            return true;
+          }
+          return (
+            other is ${clazz.name} &&
+            runtimeType == other.runtimeType &&
+            ${clazz.fieldsEq("other")}
+          );
+        }
+
+        int get hashCode {
+          return hashList(${clazz.fieldList});
+        }
+
+        String toString() {
+          return "${clazz.name}(${clazz.toStringFields})";
+        }
+      }''';
+    //rint(code);
+    return code;
   }
 }

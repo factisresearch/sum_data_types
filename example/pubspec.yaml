@@ -5,6 +5,7 @@ author: Marcel Garus <marcel.garus@gmail.com>
 homepage: https://github.com/marcelgarus/flutter_data_classes
 
 dependencies:
+  quiver: '>=2.0.0 <3.0.0'
   data_classes:
     path: ../data_classes
 

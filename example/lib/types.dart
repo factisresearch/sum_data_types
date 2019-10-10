@@ -1,3 +1,3 @@
-class T {
+class Address {
 
 }

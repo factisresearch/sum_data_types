@@ -3,11 +3,8 @@ export 'package:meta/meta.dart' show immutable, required;
 import 'package:meta/meta.dart';
 
 @immutable
-class GenerateDataClassFor {
-  final bool generateCopy;
-
-  const GenerateDataClassFor({this.generateCopy = true})
-      : assert(generateCopy != null);
+class DataClass {
+  const DataClass();
 }
 
 const String nullable = 'nullable';

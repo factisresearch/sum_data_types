@@ -3,7 +3,7 @@ import 'package:analyzer/dart/element/type.dart';
 import 'package:build/build.dart';
 import 'package:build/src/builder/build_step.dart';
 import 'package:source_gen/source_gen.dart';
-import 'package:sum_data_types/sum_data_types.dart';
+import 'package:sum_data_types/main.dart';
 
 Builder generateDataClass(BuilderOptions options) =>
     SharedPartBuilder([DataClassGenerator()], 'sum_data_types');

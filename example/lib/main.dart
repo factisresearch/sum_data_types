@@ -1,4 +1,4 @@
-import 'package:sum_data_types/sum_data_types.dart';
+import 'package:sum_data_types/main.dart';
 import 'package:example/types.dart' as ty;
 import 'package:quiver/core.dart';
 import 'package:kt_dart/collection.dart';

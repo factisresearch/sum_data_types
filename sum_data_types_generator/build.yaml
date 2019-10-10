@@ -7,7 +7,7 @@ targets:
 builders:
   sum_data_types:
     target: ":sum_data_types_generator"
-    import: "package:sum_data_types_generator/sum_data_types_generator.dart"
+    import: "package:sum_data_types_generator/main.dart"
     builder_factories: ["generateDataClass"]
     build_extensions: {".dart": [".sum_data_types.g.part"]}
     auto_apply: dependents

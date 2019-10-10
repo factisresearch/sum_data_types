@@ -1,4 +1,4 @@
-name: sum_data_types
+name: example
 description: Automatically generates immutable data classes based on a "blueprint" mixin.
 version: 0.0.1
 author: Stefan Wehr (wehr@cp-med.com)

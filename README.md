@@ -1,4 +1,20 @@
-Welcome to the Git repo of the
-[`sum_data_types` pub package](pub.dev/packages/sum_data_types).
+Hey there!
+If you're reading this and want data classes to become a language-level feature
+of Dart, consider giving
+[this issue](https://github.com/dart-lang/language/issues/314) a thumbs up. 👍
 
-You're welcome to contribute, just file an issue or open a pull request!
+In the meantime, this library generates immutable data classes for you based on
+simple blueprint mixing. Here's how to get started:
+
+**1.** 📦 Add these packages to your dependencies:
+
+```yaml
+dependencies:
+  sum_data_types: [insert newest version here]
+
+dev_dependencies:
+  build_runner: ^1.0.0
+  sum_data_types_generator: [insert newest version here]
+```
+
+**2.** 🧬 Write a blueprint mixing. An example can be found in the `example` sub-project.

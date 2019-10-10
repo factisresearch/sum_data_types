@@ -213,8 +213,8 @@ class ClassModel {
 
   factory ClassModel(ClassElement clazz) {
     try {
-      if (!clazz.name.endsWith(r"$")) {
-        throw DataClassCodegenException(r"the name of the mixin must end with a $");
+      if (!clazz.name.endsWith("_")) {
+        throw DataClassCodegenException("the name of the mixin must end with a _");
       }
 
       // build a map of the qualified imports, mapping module identifiers to import prefixes

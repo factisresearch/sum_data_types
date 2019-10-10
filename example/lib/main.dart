@@ -55,10 +55,10 @@ void main() {
 }
 
 @DataClass()
-mixin User$ on _UserBase {
+mixin User_ on _UserBase {
   String get name;
   Optional<int> get age;
-  KtList<User$> get friends;
+  KtList<User_> get friends;
   ty.Address get address;
   Optional<ty.Address> get workAddress;
   KtList<ty.Address> get friendsAddresses;

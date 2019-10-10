@@ -1,4 +1,4 @@
-export 'package:meta/meta.dart' show immutable, required;
+export 'package:meta/meta.dart' show required;
 
 import 'package:meta/meta.dart';
 
@@ -6,8 +6,6 @@ import 'package:meta/meta.dart';
 class DataClass {
   const DataClass();
 }
-
-const String nullable = 'nullable';
 
 /// Combine the [Object.hashCode] values of an arbitrary number of objects from
 /// an [Iterable] into one value. This function will return the same value if

@@ -257,7 +257,7 @@ class ClassModel {
 
   String get copyWithSignature {
     final params = this.fields.map((field) => field.copyWithParam).join(",");
-    return "User copyWith({${params}})";
+    return "${this.className} copyWith({${params}})";
   }
 
   String get fieldList {

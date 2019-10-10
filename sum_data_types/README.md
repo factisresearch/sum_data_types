@@ -10,11 +10,11 @@ simple blueprint mixing. Here's how to get started:
 
 ```yaml
 dependencies:
-  data_classes: [insert newest version here]
+  sum_data_types: [insert newest version here]
 
 dev_dependencies:
   build_runner: ^1.0.0
-  data_classes_generator: [insert newest version here]
+  sum_data_types_generator: [insert newest version here]
 ```
 
 **2.** 🧬 Write a blueprint mixing. An example can be found in the `example` sub-project.

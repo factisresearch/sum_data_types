@@ -1,0 +1,15 @@
+targets:
+  $default:
+    builders:
+      sum_data_types_generator|sum_data_types:
+        enabled: true
+
+builders:
+  sum_data_types:
+    target: ":sum_data_types_generator"
+    import: "package:sum_data_types_generator/sum_data_types_generator.dart"
+    builder_factories: ["generateDataClass"]
+    build_extensions: {".dart": [".sum_data_types.g.part"]}
+    auto_apply: dependents
+    build_to: cache
+    applies_builders: ["source_gen|combining_builder"]

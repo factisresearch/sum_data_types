@@ -3,10 +3,10 @@ import 'package:analyzer/dart/element/type.dart';
 import 'package:build/build.dart';
 import 'package:build/src/builder/build_step.dart';
 import 'package:source_gen/source_gen.dart';
-import 'package:data_classes/data_classes.dart';
+import 'package:sum_data_types/sum_data_types.dart';
 
 Builder generateDataClass(BuilderOptions options) =>
-    SharedPartBuilder([DataClassGenerator()], 'data_classes');
+    SharedPartBuilder([DataClassGenerator()], 'sum_data_types');
 
 final quiverPackageUri = "package:quiver/core.dart";
 

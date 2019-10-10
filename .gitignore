@@ -1,6 +1,4 @@
 *.lock
 .packages
-data_classes/.dart_tool
-data_classes_generator/.dart_tool
-example/.dart_tool
+.dart_tool
 example/lib/main.g.dart

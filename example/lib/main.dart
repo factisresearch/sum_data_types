@@ -1,31 +1,70 @@
 import 'package:data_classes/data_classes.dart';
 import 'package:example/types.dart' as ty;
 import 'package:quiver/core.dart';
+import 'package:kt_dart/collection.dart';
+import "package:test/test.dart";
 
 part 'main.g.dart';
 
 void main() {
-  var userBob = User(
-    name: "Bob", friends: List(), address: new ty.Address(), age: 31, friendsAddresses: [],
+  final userBob = User(
+    name: "Bob",
+    friends: KtList.empty(),
+    address: new ty.Address(),
+    age: 31,
+    friendsAddresses: KtList.empty(),
   );
-  var userPaul = User(
-    name: "Paul", friends: [userBob], address: new ty.Address(), friendsAddresses: [],
+  final userPaul = User(
+    name: "Paul",
+    friends: KtList.of(userBob),
+    address: new ty.Address(),
+    friendsAddresses: KtList.empty(),
   );
-  var userSarah = userPaul.copyWith(name: "Sarah");
-  print(userSarah);
+  final userSarah = userPaul.copyWith(name: "Sarah");
+  final userSarah2 = User(
+    name: "Sarah",
+    friends: KtList.of(userBob),
+    address: new ty.Address(),
+    friendsAddresses: KtList.empty()
+  );
+
+  test("equals", () {
+    expect(userSarah == null, isFalse);
+    expect(userSarah == userPaul, isFalse);
+    expect(userSarah, equals(userSarah));
+    expect(userSarah == userSarah2, isTrue);
+  });
+
+  test("hashCode", () {
+    expect(userSarah.hashCode == userPaul.hashCode, isFalse);
+    expect(userSarah.hashCode, equals(userSarah2.hashCode));
+  });
+
+  test("toString", () {
+    expect(userSarah.toString(), equals(userSarah2.toString()));
+    expect(
+      userSarah.toString(),
+      equals(
+        'User(name: Sarah, age: Optional { absent }, friends: '
+        '[User(name: Bob, age: Optional { value: 31 }, friends: [], address: SomeAddress, '
+        'workAddress: Optional { absent }, friendsAddresses: [])], '
+        'address: SomeAddress, workAddress: Optional { absent }, friendsAddresses: [])'
+      )
+    );
+  });
 }
 
 @DataClass()
 mixin User$ on _UserBase {
   String get name;
   Optional<int> get age;
-  List<User$> get friends;
+  KtList<User$> get friends;
   ty.Address get address;
   Optional<ty.Address> get workAddress;
-  List<ty.Address> get friendsAddresses;
+  KtList<ty.Address> get friendsAddresses;
 
-  int foo() {
-    return this.name.length;
+  int numerOfFriends() {
+    return this.friendsAddresses.size;
   }
 }
 

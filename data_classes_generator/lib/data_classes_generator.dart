@@ -8,6 +8,8 @@ import 'package:data_classes/data_classes.dart';
 Builder generateDataClass(BuilderOptions options) =>
     SharedPartBuilder([DataClassGenerator()], 'data_classes');
 
+final quiverPackageUri = "package:quiver/core.dart";
+
 class DataClassCodegenException with Exception {
   String className;
   String fieldName;
@@ -37,21 +39,21 @@ class OptionalType {
   }
 }
 
-bool isQuiverOptional(DartType ty) {
-  return ty.name == "Optional"; // FIXME: resolve module and check that it is quiver/core.dart
+bool isQuiverOptional(DartType ty, ImportModel imports) {
+  final tyLib = ty.element.library;
+  return ty.name == "Optional" && imports.importUri(tyLib) == quiverPackageUri;
 }
 
 // Returns a potential qualified access string for the type, without type arguments
-String qualifyType(DartType ty, Map<String, String> qualifiedImports) {
+String qualifyType(DartType ty, ImportModel imports) {
     final tyLib = ty.element.library;
-    final prefixOrNull = qualifiedImports[tyLib.identifier];
+    final prefixOrNull = imports.importPrefixOrNull(tyLib);
     final prefix = (prefixOrNull != null) ? (prefixOrNull + ".") : "";
     return "${prefix}${ty.name}";
 }
 
-String computeTypeRepr(DartType ty, Map<String, String> qualifiedImports) {
+String computeTypeRepr(DartType ty, ImportModel imports) {
   if (ty is FunctionType) {
-    // FIXME: support function types
     throw DataClassCodegenException("function types are not supported");
   } else if (ty.isDynamic && ty.isUndefined) {
     throw DataClassCodegenException(
@@ -59,11 +61,33 @@ String computeTypeRepr(DartType ty, Map<String, String> qualifiedImports) {
       "Use the name of the mixin instead."
     );
   } else if (ty is ParameterizedType && ty.typeArguments.length > 0) {
-    final base = qualifyType(ty, qualifiedImports);
-    final args = ty.typeArguments.map((tyArg) => computeTypeRepr(tyArg, qualifiedImports));
+    final base = qualifyType(ty, imports);
+    final args = ty.typeArguments.map((tyArg) => computeTypeRepr(tyArg, imports));
     return "${base}<${args.join(", ")}>";
   } else {
-    return qualifyType(ty, qualifiedImports);
+    return qualifyType(ty, imports);
+  }
+}
+
+class ImportModel {
+
+  final Map<String, String> _moduleIdToPrefix = Map();
+  final Map<String, String> _moduleIdToUri = Map();
+
+  String importPrefixOrNull(LibraryElement lib) {
+    return _moduleIdToPrefix[lib.identifier];
+  }
+
+  String importUri(LibraryElement lib) {
+    return _moduleIdToUri[lib.identifier];
+  }
+
+  void addImportElement(ImportElement imp) {
+    final modId = imp.importedLibrary.identifier;
+    this._moduleIdToUri[modId] = imp.uri;
+    if (imp.prefix != null) {
+      this._moduleIdToPrefix[modId] = imp.prefix.name;
+    }
   }
 }
 
@@ -83,14 +107,14 @@ class TypeModel {
 
   factory TypeModel({
     @required DartType ty,
-    @required Map<String, String> qualifiedImports
+    @required ImportModel imports,
   }) {
-    final typeRepr = computeTypeRepr(ty, qualifiedImports);
+    final typeRepr = computeTypeRepr(ty, imports);
     var optionalType = null;
     var typeReprForFactory = typeRepr;
-    if (ty is ParameterizedType && ty.typeArguments.length == 1 && isQuiverOptional(ty)) {
-      optionalType = qualifyType(ty, qualifiedImports);
-      typeReprForFactory = computeTypeRepr(ty.typeArguments[0], qualifiedImports);
+    if (ty is ParameterizedType && ty.typeArguments.length == 1 && isQuiverOptional(ty, imports)) {
+      optionalType = qualifyType(ty, imports);
+      typeReprForFactory = computeTypeRepr(ty.typeArguments[0], imports);
     }
     return TypeModel._(
       typeRepr: typeRepr,
@@ -107,11 +131,11 @@ class FieldModel {
 
   factory FieldModel({
     @required FieldElement field,
-    @required Map<String, String> qualifiedImports
+    @required ImportModel imports,
   }) {
     try {
       final ty = TypeModel(
-        qualifiedImports: qualifiedImports,
+        imports: imports,
         ty: field.type,
       );
       return FieldModel._(
@@ -165,11 +189,11 @@ class FieldModel {
   }
 
   String fieldEq(String otherVar) {
-    return "${name} == ${otherVar}.${name}";
+    return "this.${name} == ${otherVar}.${name}";
   }
 
   String get toStringField {
-    return "${this.name}: " + r"${this.name}";
+    return "${this.name}: " + r"${this." + name + "}";
   }
 
   String get copyWithParam {
@@ -198,12 +222,9 @@ class ClassModel {
 
       // build a map of the qualified imports, mapping module identifiers to import prefixes
       var lib = clazz.library;
-      Map<String, String> qualifiedImports = new Map();
+      final imports = ImportModel();
       lib.imports.forEach((imp) {
-        if (imp.prefix != null) {
-          var modId = imp.importedLibrary.identifier;
-          qualifiedImports[modId] = imp.prefix.name;
-        }
+        imports.addImportElement(imp);
       });
 
       final mixinName = clazz.name;
@@ -221,7 +242,7 @@ class ClassModel {
         } else {
           fields.add(FieldModel(
             field: field,
-            qualifiedImports: qualifiedImports,
+            imports: imports,
           ));
         }
       }
@@ -245,7 +266,7 @@ class ClassModel {
   }
 
   String get fieldList {
-    return "[" + this.fields.map((field) => field.name + ",").join() + "]";
+    return "[" + this.fields.map((field) => "this." + field.name + ",").join() + "]";
   }
 
   String get fieldDeclarations {
@@ -336,7 +357,7 @@ class DataClassGenerator extends GeneratorForAnnotation<DataClass> {
           }
           return (
             other is ${clazz.className} &&
-            runtimeType == other.runtimeType &&
+            this.runtimeType == other.runtimeType &&
             ${clazz.fieldsEq("other")}
           );
         }

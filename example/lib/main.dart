@@ -2,13 +2,13 @@ import 'package:data_classes/data_classes.dart';
 import 'package:example/types.dart' as ty;
 import 'package:quiver/core.dart';
 
-//part 'main.g.dart';
+part 'main.g.dart';
 
 void main() {
-  var userBob = User$(
+  var userBob = User(
     name: "Bob", friends: List(), address: new ty.Address(), age: 31, friendsAddresses: [],
   );
-  var userPaul = User$(
+  var userPaul = User(
     name: "Paul", friends: [userBob], address: new ty.Address(), friendsAddresses: [],
   );
   var userSarah = userPaul.copyWith(name: "Sarah");
@@ -16,10 +16,10 @@ void main() {
 }
 
 @DataClass()
-mixin User on _UserBase {
+mixin User$ on _UserBase {
   String get name;
   Optional<int> get age;
-  List<User> get friends; // FIXME: would like to use User here, but then the type becomes dynamic
+  List<User$> get friends;
   ty.Address get address;
   Optional<ty.Address> get workAddress;
   List<ty.Address> get friendsAddresses;
@@ -29,51 +29,34 @@ mixin User on _UserBase {
   }
 }
 
+/*
 // START generated code
-User User$({
-  @required String name,
-  int age,
-  @required List<User> friends,
-  @required ty.Address address,
-  ty.Address workAddress,
-  @required List<ty.Address> friendsAddresses,
-}) {
-  return _UserImpl(
-    name: name,
-    age: age,
-    friends: friends,
-    address: address,
-    workAddress: workAddress,
-    friendsAddresses: friendsAddresses,
-  );
-}
-
 abstract class _UserBase {
- _UserImpl copyWith({
+ User copyWith({
     String name,
     Optional<int> age,
-    List<_UserImpl> friends,
+    List<User> friends,
     ty.Address address
  });
 }
 
-class _UserImpl extends _UserBase with User {
+class User extends _UserBase with User$ {
   final String name;
   final Optional<int> age;
-  final List<_UserImpl> friends;
+  final List<User> friends;
   final ty.Address address;
   final Optional<ty.Address> workAddress;
   final List<ty.Address> friendsAddresses;
 
-  factory _UserImpl({
+  factory User({
     @required String name,
     int age,
-    @required List<_UserImpl> friends,
+    @required List<User> friends,
     @required ty.Address address,
     ty.Address workAddress,
     @required List<ty.Address> friendsAddresses,
   })  {
-    return _UserImpl.make(
+    return User.make(
       name: name,
       age: age == null ? Optional.absent() : Optional.of(age),
       friends: friends,
@@ -84,7 +67,7 @@ class _UserImpl extends _UserBase with User {
   }
 
   // We cannot have a const constructor because of https://github.com/dart-lang/sdk/issues/37810
-  _UserImpl.make({
+  User.make({
     @required this.name,
     @required this.age,
     @required this.friends,
@@ -100,15 +83,15 @@ class _UserImpl extends _UserBase with User {
     assert(friendsAddresses != null);
   }
 
-  _UserImpl copyWith({
+  User copyWith({
     String name,
     Optional<int> age,
-    List<_UserImpl> friends,
+    List<User> friends,
     ty.Address address,
     ty.Address workAddress,
     List<ty.Address> friendsAddresses,
   }) {
-    return _UserImpl.make(
+    return User.make(
       name: name == null ? this.name : name,
       age: age == null ? this.age : age,
       friends: friends == null ? this.friends : friends,
@@ -126,7 +109,7 @@ class _UserImpl extends _UserBase with User {
       return true;
     }
     return (
-      other is _UserImpl &&
+      other is User &&
       runtimeType == other.runtimeType &&
         name == other.name &&
         age == other.age &&
@@ -152,3 +135,4 @@ class _UserImpl extends _UserBase with User {
   }
 }
 // END generated code
+*/

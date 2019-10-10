@@ -8,6 +8,22 @@ import 'package:data_classes/data_classes.dart';
 Builder generateDataClass(BuilderOptions options) =>
     SharedPartBuilder([DataClassGenerator()], 'data_classes');
 
+class DataClassCodegenException with Exception {
+  String className;
+  String fieldName;
+  final String message;
+  DataClassCodegenException(this.message);
+  String toString() {
+    var loc = "";
+    if (className != null && fieldName != null) {
+      loc = " for mixin ${className} and field ${fieldName}";
+    } else if (className != null) {
+      loc = " for mixin ${className}";
+    }
+    return "Error generating @DataClass() code${loc}: $message";
+  }
+}
+
 class OptionalType {
   final String baseType;
   final String optionalImportPrefix;
@@ -19,20 +35,6 @@ class OptionalType {
   String get optional {
     return optionalImportPrefix + "Optional";
   }
-}
-
-void analyzeType(DartType ty, String indent) {
-    if (ty is FunctionType) {
-      throw "@DateClass cannot handle function type ${ty}";
-    } else if (ty is ParameterizedType && ty.typeArguments.length > 0) {
-      print("${indent}${ty.name}<");
-      for (var tyArg in ty.typeArguments) {
-        analyzeType(tyArg, indent + " ");
-      }
-      print("${indent}>");
-    } else {
-      print("${indent}${ty.name}");
-    }
 }
 
 bool isQuiverOptional(DartType ty) {
@@ -47,12 +49,18 @@ String qualifyType(DartType ty, Map<String, String> qualifiedImports) {
     return "${prefix}${ty.name}";
 }
 
-String computeTypeRepr(String funErrMsg, DartType ty, Map<String, String> qualifiedImports) {
+String computeTypeRepr(DartType ty, Map<String, String> qualifiedImports) {
   if (ty is FunctionType) {
-    throw funErrMsg;
+    // FIXME: support function types
+    throw DataClassCodegenException("function types are not supported");
+  } else if (ty.isDynamic && ty.isUndefined) {
+    throw DataClassCodegenException(
+      "detected unresolvable type, you probably used the class being generated as type. "
+      "Use the name of the mixin instead."
+    );
   } else if (ty is ParameterizedType && ty.typeArguments.length > 0) {
     final base = qualifyType(ty, qualifiedImports);
-    final args = ty.typeArguments.map((tyArg) => qualifyType(tyArg, qualifiedImports));
+    final args = ty.typeArguments.map((tyArg) => computeTypeRepr(tyArg, qualifiedImports));
     return "${base}<${args.join(", ")}>";
   } else {
     return qualifyType(ty, qualifiedImports);
@@ -74,19 +82,15 @@ class TypeModel {
   });
 
   factory TypeModel({
-    @required String className,
-    @required String fieldName,
     @required DartType ty,
     @required Map<String, String> qualifiedImports
   }) {
-    final errMsg = "@DataClass() cannot handle function type ${ty} on field "
-        "${fieldName} in class ${className}";
-    final typeRepr = computeTypeRepr(errMsg, ty, qualifiedImports);
+    final typeRepr = computeTypeRepr(ty, qualifiedImports);
     var optionalType = null;
     var typeReprForFactory = typeRepr;
     if (ty is ParameterizedType && ty.typeArguments.length == 1 && isQuiverOptional(ty)) {
       optionalType = qualifyType(ty, qualifiedImports);
-      typeReprForFactory = computeTypeRepr(errMsg, ty.typeArguments[0], qualifiedImports);
+      typeReprForFactory = computeTypeRepr(ty.typeArguments[0], qualifiedImports);
     }
     return TypeModel._(
       typeRepr: typeRepr,
@@ -102,20 +106,22 @@ class FieldModel {
   final TypeModel type;
 
   factory FieldModel({
-    @required String className,
     @required FieldElement field,
     @required Map<String, String> qualifiedImports
   }) {
-    final ty = TypeModel(
-      className: className,
-      fieldName: field.name,
-      qualifiedImports: qualifiedImports,
-      ty: field.type,
-    );
-    return FieldModel._(
-      name: field.name,
-      type: ty,
-    );
+    try {
+      final ty = TypeModel(
+        qualifiedImports: qualifiedImports,
+        ty: field.type,
+      );
+      return FieldModel._(
+        name: field.name,
+        type: ty,
+      );
+    } on DataClassCodegenException catch (e) {
+      e.fieldName = field.name;
+      throw e;
+    }
   }
 
   FieldModel._({
@@ -172,65 +178,65 @@ class FieldModel {
 }
 
 class ClassModel {
-  final String name;
-  final String internalName;
-  final String baseName;
+  final String mixinName;
+  final String className;
+  final String baseClassName;
   final List<FieldModel> fields;
 
   ClassModel._({
-    @required this.name,
-    @required this.internalName,
-    @required this.baseName,
+    @required this.mixinName,
+    @required this.className,
+    @required this.baseClassName,
     @required this.fields,
   });
 
   factory ClassModel(ClassElement clazz) {
-    //if (!clazz.isValidMixin) {
-      //throw 'Only annotate mixins with `@DataClass()`.';
-    //}
-    if (!clazz.name.startsWith('_')) {
-      throw 'The names of classes annotated with `@DataClass()` should '
-        'start with `_`';
-    }
-
-    // build a map of the qualified imports, mapping module identifiers to import prefixes
-    var lib = clazz.library;
-    Map<String, String> qualifiedImports = new Map();
-    lib.imports.forEach((imp) {
-      if (imp.prefix != null) {
-        var modId = imp.importedLibrary.identifier;
-        qualifiedImports[modId] = imp.prefix.name;
+    try {
+      if (!clazz.name.endsWith(r"$")) {
+        throw DataClassCodegenException(r"the name of the mixin must end with a $");
       }
-    });
 
-    var internalName = clazz.name;
-    var fields = <FieldModel>[];
+      // build a map of the qualified imports, mapping module identifiers to import prefixes
+      var lib = clazz.library;
+      Map<String, String> qualifiedImports = new Map();
+      lib.imports.forEach((imp) {
+        if (imp.prefix != null) {
+          var modId = imp.importedLibrary.identifier;
+          qualifiedImports[modId] = imp.prefix.name;
+        }
+      });
 
-    for (var field in clazz.fields) {
-      var msgPrefix = "Invalid getter '${field.name}' for data class '${internalName}'";
-      if (field.getter == null) {
-        throw "${msgPrefix}: field must have a getter";
-      } else if (!field.isFinal) {
-        throw "${msgPrefix}: field must be final";
-      } else if (field.setter != null) {
-        throw "${msgPrefix}: field must not have a setter";
-      } else {
-        fields.add(FieldModel(
-          className: internalName,
-          field: field,
-          qualifiedImports: qualifiedImports,
-        ));
+      final mixinName = clazz.name;
+      final className = mixinName.substring(0, mixinName.length - 1);
+      final fields = <FieldModel>[];
+
+      for (var field in clazz.fields) {
+        var msgPrefix = "Invalid getter '${field.name}' for data class '${mixinName}'";
+        if (field.getter == null) {
+          throw "${msgPrefix}: field must have a getter";
+        } else if (!field.isFinal) {
+          throw "${msgPrefix}: field must be final";
+        } else if (field.setter != null) {
+          throw "${msgPrefix}: field must not have a setter";
+        } else {
+          fields.add(FieldModel(
+            field: field,
+            qualifiedImports: qualifiedImports,
+          ));
+        }
       }
-    }
 
-    var name = internalName.substring(1);
-    var baseName = internalName + "Base";
-    return ClassModel._(
-      name: name,
-      baseName: baseName,
-      internalName: internalName,
-      fields: fields
-    );
+      final baseName = "_" + className + "Base";
+      return ClassModel._(
+        mixinName: mixinName,
+        baseClassName: baseName,
+        className: className,
+        fields: fields
+      );
+    } on DataClassCodegenException catch (e) {
+      e.className = clazz.name;
+      throw e;
+    }
   }
 
   String get copyWithSignature {
@@ -293,30 +299,30 @@ class DataClassGenerator extends GeneratorForAnnotation<DataClass> {
     var clazz = ClassModel(element as ClassElement);
 
     var code = '''
-      /// This data class has been generated from ${clazz.internalName}
-      abstract class ${clazz.baseName} {
+      /// This data class has been generated from ${clazz.mixinName}
+      abstract class ${clazz.baseClassName} {
         ${clazz.copyWithSignature};
       }
       @immutable
-      class ${clazz.name} extends ${clazz.baseName} with ${clazz.internalName} {
+      class ${clazz.className} extends ${clazz.baseClassName} with ${clazz.mixinName} {
         ${clazz.fieldDeclarations}
 
-        factory ${clazz.name}({
+        factory ${clazz.className}({
           ${clazz.factoryParams}
         }) {
-          return User.make(
+          return ${clazz.className}.make(
             ${clazz.constructorArgs}
           );
         }
 
-        ${clazz.name}.make({
+        ${clazz.className}.make({
           ${clazz.constructorParams}
         }) {
           ${clazz.constructorBody}
         }
 
         ${clazz.copyWithSignature} {
-          return User.make(
+          return ${clazz.className}.make(
             ${clazz.copyWithArgs}
           );
         }
@@ -329,7 +335,7 @@ class DataClassGenerator extends GeneratorForAnnotation<DataClass> {
             return true;
           }
           return (
-            other is ${clazz.name} &&
+            other is ${clazz.className} &&
             runtimeType == other.runtimeType &&
             ${clazz.fieldsEq("other")}
           );
@@ -340,10 +346,10 @@ class DataClassGenerator extends GeneratorForAnnotation<DataClass> {
         }
 
         String toString() {
-          return "${clazz.name}(${clazz.toStringFields})";
+          return "${clazz.className}(${clazz.toStringFields})";
         }
       }''';
-    //rint(code);
+    // print(code);
     return code;
   }
 }

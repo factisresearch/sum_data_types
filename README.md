@@ -2,6 +2,9 @@ This dart library generates immutable data classes with structural equality from
 a blueprint mixin.
 Also see [this issue](https://github.com/dart-lang/language/issues/314).
 
+The library is influence by the [data_classes](https://pub.dev/packages/data_classes)
+library. However, the interface is different, so we created a new package.
+
 # Installation
 
 Add these packages to your dependencies:

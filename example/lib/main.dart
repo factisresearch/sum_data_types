@@ -7,21 +7,21 @@ import "package:test/test.dart";
 part 'main.g.dart';
 
 void main() {
-  final userBob = makeUser(
+  final userBob = UserFactory.make(
     name: "Bob",
     friends: KtList.empty(),
     address: new ty.Address(),
     age: 31,
     friendsAddresses: KtList.empty(),
   );
-  final userPaul = makeUser(
+  final userPaul = UserFactory.make(
     name: "Paul",
     friends: KtList.of(userBob),
     address: new ty.Address(),
     friendsAddresses: KtList.empty(),
   );
   final userSarah = userPaul.copyWith(name: "Sarah");
-  final userSarah2 = makeUser(
+  final userSarah2 = UserFactory.make(
     name: "Sarah",
     friends: KtList.of(userBob),
     address: new ty.Address(),
@@ -79,22 +79,24 @@ abstract class _UserBase {
  });
 }
 
-User makeUser({
-  @required String name,
-  int age,
-  @required KtList<User> friends,
-  @required ty.Address address,
-  ty.Address workAddress,
-  @required KtList<ty.Address> friendsAddresses,
-})  {
-  return _User.make(
-    name: name,
-    age: age == null ? Optional.absent() : Optional.of(age),
-    friends: friends,
-    address: address,
-    workAddress: workAddress == null ? Optional.absent() : Optional.of(workAddress),
-    friendsAddresses: friendsAddresses
-  );
+abstract class UserFactory {
+  static User make({
+    @required String name,
+    int age,
+    @required KtList<User> friends,
+    @required ty.Address address,
+    ty.Address workAddress,
+    @required KtList<ty.Address> friendsAddresses,
+  })  {
+    return _User.make(
+      name: name,
+      age: age == null ? Optional.absent() : Optional.of(age),
+      friends: friends,
+      address: address,
+      workAddress: workAddress == null ? Optional.absent() : Optional.of(workAddress),
+      friendsAddresses: friendsAddresses
+    );
+  }
 }
 
 class _User extends _UserBase with User {

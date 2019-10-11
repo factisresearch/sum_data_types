@@ -312,12 +312,14 @@ class DataClassGenerator extends GeneratorForAnnotation<DataClass> {
 
     var code = '''
       /// This data class has been generated from ${clazz.mixinName}
-      ${clazz.mixinName} make${clazz.mixinName}({
-        ${clazz.factoryParams}
-      }) {
-        return ${clazz.className}.make(
-          ${clazz.constructorArgs}
-        );
+      abstract class ${clazz.mixinName}Factory {
+        static ${clazz.mixinName} make({
+          ${clazz.factoryParams}
+        }) {
+          return ${clazz.className}.make(
+            ${clazz.constructorArgs}
+          );
+        }
       }
       abstract class ${clazz.baseClassName} {
         ${clazz.copyWithSignature};

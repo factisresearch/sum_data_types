@@ -51,15 +51,16 @@ object of the class (i.e. `copyWith` returns a copy of the object).
 
 ## Use the generated class
 
-You create instances of the data class by using the also generated `makeUser` function:
+You create instances of the data class by using the static `make` method of the
+also generated `UserFactory` class.
 
 ```dart
 void main() {
-  final userBob = makeUser(
+  final userBob = UserFactory.make(
     name: "Bob",
     friends: KtList.empty(),
   );
-  final userSarah = makeUser(
+  final userSarah = UserFactory.make(
     name: "Sarah",
     friends: KtList.empty(userBob),
     age: 31,

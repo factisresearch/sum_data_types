@@ -168,21 +168,18 @@ class FieldModel {
   String get constructorArgFromFactory {
     final optionalType = this.type.optionalType;
     if (optionalType != null) {
-      return
-        "${name}: (${name} == null) ? "
-        "${optionalType}.absent() : "
-        "${optionalType}.of(${name})";
+      return "${name}: ${optionalType}.of(${name})";
     } else {
       return "${name}: ${name}";
     }
   }
 
   String get constructorArgFromCopyWith {
-    return "${name}: (${name} == null) ? this.${name} : ${name}";
+    return "${name}: ${name} ?? this.${name}";
   }
 
   String get assertNotNull {
-    return "assert(${name} != null);";
+    return "assert(${name} != null)";
   }
 
   String fieldEq(String otherVar) {
@@ -252,12 +249,15 @@ class ClassModel {
   }
 
   String get copyWithSignature {
-    final params = this.fields.map((field) => field.copyWithParam).join(",");
-    return "${this.className} copyWith({${params}})";
+    final params =
+        (this.fields.isNotEmpty)
+        ? "{" + this.fields.map((field) => field.copyWithParam).join(",") + "}"
+        : "";
+    return "${this.className} copyWith(${params})";
   }
 
-  String get fieldList {
-    return "[" + this.fields.map((field) => "this." + field.name + ",").join() + "]";
+  String get hashUpdates {
+    return this.fields.map((field) => "result = 37 * result + this.${field.name}.hashCode;").join("\n");
   }
 
   String get fieldDeclarations {
@@ -265,19 +265,29 @@ class ClassModel {
   }
 
   String get factoryParams {
-    return this.fields.map((field) => field.factoryParam + ",").join();
+    return
+        this.fields.isNotEmpty
+        ? "{" + this.fields.map((field) => field.factoryParam + ",").join() + "}"
+        : "";
   }
 
   String get constructorParams {
-    return this.fields.map((field) => field.constructorParam + ",").join();
+    return
+        this.fields.isNotEmpty
+        ? "{" + this.fields.map((field) => field.constructorParam + ",").join() + "}"
+        : "";
   }
 
   String get constructorArgs {
     return this.fields.map((field) => field.constructorArgFromFactory + ",").join();
   }
 
-  String get constructorBody {
-    return this.fields.map((field) => field.assertNotNull).join();
+  String get constructorAsserts {
+    if (this.fields.isEmpty) {
+      return ";";
+    } else {
+      return " : " + this.fields.map((field) => field.assertNotNull).join(", ") + ";";
+    }
   }
 
   String get copyWithArgs {
@@ -313,9 +323,9 @@ class DataClassGenerator extends GeneratorForAnnotation<DataClass> {
     var code = '''
       /// This data class has been generated from ${clazz.mixinName}
       abstract class ${clazz.mixinName}Factory {
-        static ${clazz.mixinName} make({
+        static ${clazz.mixinName} make(
           ${clazz.factoryParams}
-        }) {
+        ) {
           return ${clazz.className}.make(
             ${clazz.constructorArgs}
           );
@@ -328,11 +338,10 @@ class DataClassGenerator extends GeneratorForAnnotation<DataClass> {
       class ${clazz.className} extends ${clazz.baseClassName} with ${clazz.mixinName} {
         ${clazz.fieldDeclarations}
 
-        ${clazz.className}.make({
+        // We cannot have a const constructor because of https://github.com/dart-lang/sdk/issues/37810
+        ${clazz.className}.make(
           ${clazz.constructorParams}
-        }) {
-          ${clazz.constructorBody}
-        }
+        ) ${clazz.constructorAsserts}
 
         ${clazz.copyWithSignature} {
           return ${clazz.className}.make(
@@ -341,9 +350,6 @@ class DataClassGenerator extends GeneratorForAnnotation<DataClass> {
         }
 
         bool operator ==(Object other) {
-          if (other == null) {
-            return false;
-          }
           if (identical(this, other)) {
             return true;
           }
@@ -355,7 +361,9 @@ class DataClassGenerator extends GeneratorForAnnotation<DataClass> {
         }
 
         int get hashCode {
-          return hashList(${clazz.fieldList});
+          var result = 17;
+          ${clazz.hashUpdates}
+          return result;
         }
 
         String toString() {

@@ -68,17 +68,11 @@ mixin User on _UserBase {
   }
 }
 
+@DataClass()
+mixin NullaryType {}
+
 /*
 // START generated code
-abstract class _UserBase {
- User copyWith({
-    String name,
-    Optional<int> age,
-    List<User> friends,
-    ty.Address address
- });
-}
-
 abstract class UserFactory {
   static User make({
     @required String name,
@@ -87,18 +81,29 @@ abstract class UserFactory {
     @required ty.Address address,
     ty.Address workAddress,
     @required KtList<ty.Address> friendsAddresses,
-  })  {
+  }) {
     return _User.make(
       name: name,
-      age: age == null ? Optional.absent() : Optional.of(age),
+      age: Optional.of(age),
       friends: friends,
       address: address,
-      workAddress: workAddress == null ? Optional.absent() : Optional.of(workAddress),
-      friendsAddresses: friendsAddresses
+      workAddress: Optional.of(workAddress),
+      friendsAddresses: friendsAddresses,
     );
   }
 }
 
+abstract class _UserBase {
+  _User copyWith(
+      {String name,
+      Optional<int> age,
+      KtList<User> friends,
+      ty.Address address,
+      Optional<ty.Address> workAddress,
+      KtList<ty.Address> friendsAddresses});
+}
+
+@immutable
 class _User extends _UserBase with User {
   final String name;
   final Optional<int> age;
@@ -115,64 +120,97 @@ class _User extends _UserBase with User {
     @required this.address,
     @required this.workAddress,
     @required this.friendsAddresses,
-  }) {
-    assert(name != null);
-    assert(friends != null);
-    assert(address != null);
-    assert(age != null);
-    assert(workAddress != null);
-    assert(friendsAddresses != null);
-  }
+  })  : assert(name != null),
+        assert(age != null),
+        assert(friends != null),
+        assert(address != null),
+        assert(workAddress != null),
+        assert(friendsAddresses != null);
 
-  User copyWith({
-    String name,
-    Optional<int> age,
-    List<User> friends,
-    ty.Address address,
-    ty.Address workAddress,
-    List<ty.Address> friendsAddresses,
-  }) {
+  _User copyWith(
+      {String name,
+      Optional<int> age,
+      KtList<User> friends,
+      ty.Address address,
+      Optional<ty.Address> workAddress,
+      KtList<ty.Address> friendsAddresses}) {
     return _User.make(
-      name: name == null ? this.name : name,
-      age: age == null ? this.age : age,
-      friends: friends == null ? this.friends : friends,
-      address: address == null ? this.address : address,
-      workAddress: workAddress == null ? this.workAddress : workAddress,
-      friendsAddresses: friendsAddresses == null ? this.friendsAddresses : friendsAddresses,
+      name: name ?? this.name,
+      age: age ?? this.age,
+      friends: friends ?? this.friends,
+      address: address ?? this.address,
+      workAddress: workAddress ?? this.workAddress,
+      friendsAddresses: friendsAddresses ?? this.friendsAddresses,
     );
   }
 
   bool operator ==(Object other) {
-    if (other == null) {
-      return false;
-    }
     if (identical(this, other)) {
       return true;
     }
-    return (
-      other is User &&
-      runtimeType == other.runtimeType &&
-        name == other.name &&
-        age == other.age &&
-        friends == other.friends &&
-        address == other.address
-    );
+    return (other is _User &&
+        this.runtimeType == other.runtimeType &&
+        this.name == other.name &&
+        this.age == other.age &&
+        this.friends == other.friends &&
+        this.address == other.address &&
+        this.workAddress == other.workAddress &&
+        this.friendsAddresses == other.friendsAddresses);
   }
 
-  int get hashCode => hashList([
-        name,
-        age,
-        friends,
-        address,
-      ]);
+  int get hashCode {
+    var result = 17;
+    result = 37 * result + this.name.hashCode;
+    result = 37 * result + this.age.hashCode;
+    result = 37 * result + this.friends.hashCode;
+    result = 37 * result + this.address.hashCode;
+    result = 37 * result + this.workAddress.hashCode;
+    result = 37 * result + this.friendsAddresses.hashCode;
+    return result;
+  }
 
   String toString() {
-    return 'User(\n'
-        '  name: $name\n'
-        '  age: $age\n'
-        '  friends: $friends\n'
-        '  adress: $address\n'
-        ')';
+    return "User(name: ${this.name}, age: ${this.age}, friends: ${this.friends}, address: ${this.address}, workAddress: ${this.workAddress}, friendsAddresses: ${this.friendsAddresses})";
+  }
+}
+
+/// This data class has been generated from NullaryType
+abstract class NullaryTypeFactory {
+  static NullaryType make() {
+    return _NullaryType.make();
+  }
+}
+
+abstract class _NullaryTypeBase {
+  _NullaryType copyWith();
+}
+
+@immutable
+class _NullaryType extends _NullaryTypeBase with NullaryType {
+  // We cannot have a const constructor because of https://github.com/dart-lang/sdk/issues/37810
+  _NullaryType.make();
+
+  _NullaryType copyWith() {
+    return _NullaryType.make();
+  }
+
+  bool operator ==(Object other) {
+    if (identical(this, other)) {
+      return true;
+    }
+    return (other is _NullaryType &&
+        this.runtimeType == other.runtimeType &&
+        true);
+  }
+
+  int get hashCode {
+    var result = 17;
+
+    return result;
+  }
+
+  String toString() {
+    return "NullaryType()";
   }
 }
 // END generated code

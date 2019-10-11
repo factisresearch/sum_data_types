@@ -168,7 +168,7 @@ class FieldModel {
   String get constructorArgFromFactory {
     final optionalType = this.type.optionalType;
     if (optionalType != null) {
-      return "${name}: ${optionalType}.of(${name})";
+      return "${name}: ${optionalType}.fromNullable(${name})";
     } else {
       return "${name}: ${name}";
     }

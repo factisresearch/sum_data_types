@@ -4,7 +4,7 @@ import 'package:quiver/core.dart';
 import 'package:kt_dart/collection.dart';
 import "package:test/test.dart";
 
-part 'main.g.dart';
+part 'data_types.g.dart';
 
 void main() {
   final userBob = UserFactory.make(

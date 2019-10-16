@@ -6,7 +6,7 @@ import 'package:kt_dart/collection.dart';
 import 'package:test/test.dart';
 
 void main() {
-  final nothing = SomethingFactory.nothing();
+  final nothing = SomethingFactory.nothing;
   final userPaul = UserFactory.make(
     name: "Paul",
     friends: KtList.empty(),
@@ -63,7 +63,7 @@ void main() {
   });
 
   test("no strange error", () {
-    final nothing = SomethingFactory.nothing();
+    final nothing = SomethingFactory.nothing;
     expect(() => nothing.iswitcho(), throwsA(TypeMatcher<ArgumentError>()));
   });
 }
@@ -80,9 +80,7 @@ mixin Something implements _SomethingBase {
 
 // generated code
 abstract class SomethingFactory {
-  static Something nothing() {
-    return _Something(nothing: const Unit());
-  }
+  static Something nothing = _Something(nothing: const Unit());
 
   static Something user(User x) {
     return _Something(user: x);

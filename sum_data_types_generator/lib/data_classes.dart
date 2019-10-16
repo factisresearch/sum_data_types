@@ -4,27 +4,12 @@ import 'package:build/build.dart';
 import 'package:build/src/builder/build_step.dart';
 import 'package:source_gen/source_gen.dart';
 import 'package:sum_data_types/main.dart';
+import './common.dart';
 
 Builder generateDataClass(BuilderOptions options) =>
     SharedPartBuilder([DataClassGenerator()], 'sum_data_types');
 
 final quiverPackageUri = "package:quiver/core.dart";
-
-class DataClassCodegenException with Exception {
-  String className;
-  String fieldName;
-  final String message;
-  DataClassCodegenException(this.message);
-  String toString() {
-    var loc = "";
-    if (className != null && fieldName != null) {
-      loc = " for mixin ${className} and field ${fieldName}";
-    } else if (className != null) {
-      loc = " for mixin ${className}";
-    }
-    return "Error generating @DataClass() code${loc}: $message";
-  }
-}
 
 class OptionalType {
   final String baseType;
@@ -42,50 +27,6 @@ class OptionalType {
 bool isQuiverOptional(DartType ty, ImportModel imports) {
   final tyLib = ty.element.library;
   return ty.name == "Optional" && imports.importUri(tyLib) == quiverPackageUri;
-}
-
-// Returns a potential qualified access string for the type, without type arguments
-String qualifyType(DartType ty, ImportModel imports) {
-    final tyLib = ty.element.library;
-    final prefixOrNull = imports.importPrefixOrNull(tyLib);
-    final prefix = (prefixOrNull != null) ? (prefixOrNull + ".") : "";
-    return "${prefix}${ty.name}";
-}
-
-String computeTypeRepr(DartType ty, ImportModel imports) {
-  if (ty is FunctionType) {
-    throw DataClassCodegenException("function types are not supported");
-  } else if (ty.isDynamic) {
-    return "dynamic";
-  } else if (ty is ParameterizedType && ty.typeArguments.length > 0) {
-    final base = qualifyType(ty, imports);
-    final args = ty.typeArguments.map((tyArg) => computeTypeRepr(tyArg, imports));
-    return "${base}<${args.join(", ")}>";
-  } else {
-    return qualifyType(ty, imports);
-  }
-}
-
-class ImportModel {
-
-  final Map<String, String> _moduleIdToPrefix = Map();
-  final Map<String, String> _moduleIdToUri = Map();
-
-  String importPrefixOrNull(LibraryElement lib) {
-    return _moduleIdToPrefix[lib.identifier];
-  }
-
-  String importUri(LibraryElement lib) {
-    return _moduleIdToUri[lib.identifier];
-  }
-
-  void addImportElement(ImportElement imp) {
-    final modId = imp.importedLibrary.identifier;
-    this._moduleIdToUri[modId] = imp.uri;
-    if (imp.prefix != null) {
-      this._moduleIdToPrefix[modId] = imp.prefix.name;
-    }
-  }
 }
 
 class TypeModel {
@@ -139,7 +80,7 @@ class FieldModel {
         name: field.name,
         type: ty,
       );
-    } on DataClassCodegenException catch (e) {
+    } on CodegenException catch (e) {
       e.fieldName = field.name;
       throw e;
     }
@@ -242,7 +183,7 @@ class ClassModel {
         className: className,
         fields: fields
       );
-    } on DataClassCodegenException catch (e) {
+    } on CodegenException catch (e) {
       e.className = clazz.name;
       throw e;
     }
@@ -318,59 +259,63 @@ class DataClassGenerator extends GeneratorForAnnotation<DataClass> {
     if (!(element is ClassElement)) {
       throw 'Only annotate mixins with `@DataClass()`.';
     }
-    var clazz = ClassModel(element as ClassElement);
-
-    var code = '''
-      /// This data class has been generated from ${clazz.mixinName}
-      abstract class ${clazz.mixinName}Factory {
-        static ${clazz.mixinName} make(
-          ${clazz.factoryParams}
-        ) {
-          return ${clazz.className}.make(
-            ${clazz.constructorArgs}
-          );
-        }
-      }
-      abstract class ${clazz.baseClassName} {
-        ${clazz.copyWithSignature};
-      }
-      @immutable
-      class ${clazz.className} extends ${clazz.baseClassName} with ${clazz.mixinName} {
-        ${clazz.fieldDeclarations}
-
-        // We cannot have a const constructor because of https://github.com/dart-lang/sdk/issues/37810
-        ${clazz.className}.make(
-          ${clazz.constructorParams}
-        ) ${clazz.constructorAsserts}
-
-        ${clazz.copyWithSignature} {
-          return ${clazz.className}.make(
-            ${clazz.copyWithArgs}
-          );
-        }
-
-        bool operator ==(Object other) {
-          if (identical(this, other)) {
-            return true;
+    try {
+      var clazz = ClassModel(element as ClassElement);
+      var code = '''
+        /// This data class has been generated from ${clazz.mixinName}
+        abstract class ${clazz.mixinName}Factory {
+          static ${clazz.mixinName} make(
+            ${clazz.factoryParams}
+          ) {
+            return ${clazz.className}.make(
+              ${clazz.constructorArgs}
+            );
           }
-          return (
-            other is ${clazz.className} &&
-            this.runtimeType == other.runtimeType &&
-            ${clazz.fieldsEq("other")}
-          );
         }
+        abstract class ${clazz.baseClassName} {
+          ${clazz.copyWithSignature};
+        }
+        @immutable
+        class ${clazz.className} extends ${clazz.baseClassName} with ${clazz.mixinName} {
+          ${clazz.fieldDeclarations}
 
-        int get hashCode {
-          var result = 17;
-          ${clazz.hashUpdates}
-          return result;
-        }
+          // We cannot have a const constructor because of https://github.com/dart-lang/sdk/issues/37810
+          ${clazz.className}.make(
+            ${clazz.constructorParams}
+          ) ${clazz.constructorAsserts}
 
-        String toString() {
-          return "${clazz.mixinName}(${clazz.toStringFields})";
-        }
-      }''';
-    // print(code);
-    return code;
+          ${clazz.copyWithSignature} {
+            return ${clazz.className}.make(
+              ${clazz.copyWithArgs}
+            );
+          }
+
+          bool operator ==(Object other) {
+            if (identical(this, other)) {
+              return true;
+            }
+            return (
+              other is ${clazz.className} &&
+              this.runtimeType == other.runtimeType &&
+              ${clazz.fieldsEq("other")}
+            );
+          }
+
+          int get hashCode {
+            var result = 17;
+            ${clazz.hashUpdates}
+            return result;
+          }
+
+          String toString() {
+            return "${clazz.mixinName}(${clazz.toStringFields})";
+          }
+        }''';
+      // print(code);
+      return code;
+    } on CodegenException catch (e) {
+      e.generatorName = "DataClass";
+      throw e;
+    }
   }
 }

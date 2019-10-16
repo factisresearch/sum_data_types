@@ -253,21 +253,21 @@ class _Something<T> extends _SomethingBase<T> with Something<T> {
     dynamic other,
   ) {
     return other.runtimeType == runtimeType &&
-        other.nothing == nothing &&
-        other.user == user &&
-        other.address == address &&
-        other.something == something &&
-        other.param == param;
+        other._nothing == this._nothing &&
+        other._user == this._user &&
+        other._address == this._address &&
+        other._something == this._something &&
+        other._param == this._param;
   }
 
   @override
   int get hashCode {
     var result = 17;
-    result = 37 * result + nothing.hashCode;
-    result = 37 * result + user.hashCode;
-    result = 37 * result + address.hashCode;
-    result = 37 * result + something.hashCode;
-    result = 37 * result + param.hashCode;
+    result = 37 * result + this._nothing.hashCode;
+    result = 37 * result + this._user.hashCode;
+    result = 37 * result + this._address.hashCode;
+    result = 37 * result + this._something.hashCode;
+    result = 37 * result + this._param.hashCode;
     return result;
   }
 

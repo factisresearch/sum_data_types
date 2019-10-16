@@ -6,7 +6,7 @@ import 'package:kt_dart/collection.dart';
 import 'package:test/test.dart';
 
 void main() {
-  final nothing = SomethingFactory.nothing;
+  final nothing = SomethingFactory.nothing();
   final userPaul = UserFactory.make(
     name: "Paul",
     friends: KtList.empty(),
@@ -63,72 +63,128 @@ void main() {
   });
 
   test("no strange error", () {
-    final nothing = SomethingFactory.nothing;
+    final nothing = SomethingFactory.nothing();
     expect(() => nothing.iswitcho(), throwsA(TypeMatcher<ArgumentError>()));
   });
 }
 
-@SumType([
-  Case<void>(name: "nothing"),
-  Case<User>(name: "user"),
-  Case<Optional<ty.Address>>(name: "address"),
-  Case<Something>(name: "something"),
-])
-mixin Something implements _SomethingBase {
-
+//@SumType()
+mixin Something<T> implements _SomethingBase<T> {
+  Unit get _nothing;
+  User get _user;
+  Optional<ty.Address> get _address;
+  Something get _something;
+  T get _param;
 }
 
 // generated code
 abstract class SomethingFactory {
-  static Something nothing = _Something(nothing: const Unit());
-
-  static Something user(User x) {
+  static Something<T> nothing<T>() {
+    return _Something(nothing: const Unit());
+  }
+  static Something<T> user<T>(User x) {
     return _Something(user: x);
   }
-  static Something address(Optional<ty.Address> x) {
+  static Something<T> address<T>(Optional<ty.Address> x) {
     return _Something(address: x);
   }
-  static Something something(Something x) {
+  static Something<T> something<T>(Something x) {
     return _Something(something: x);
+  }
+  static Something<T> param<T>(T x) {
+    return _Something(param: x);
   }
 }
 
-abstract class _SomethingBase {
+abstract class _SomethingBase<T> {
+  Optional<Unit> get nothing;
+  Optional<User> get user;
+  Optional<Optional<ty.Address>> get address;
+  Optional<Something> get something;
+  Optional<T> get param;
+
   __T iswitch<__T>({
     @required __T Function() nothing,
     @required __T Function(User) user,
     @required __T Function(Optional<ty.Address>) address,
     @required __T Function(Something) something,
+    @required __T Function(T) param,
   });
   __T iswitcho<__T>({
     __T Function() nothing,
     __T Function(User) user,
     __T Function(Optional<ty.Address>) address,
     __T Function(Something) something,
+    __T Function(T) param,
     @required __T Function() otherwise,
   });
 
   const _SomethingBase();
 }
 
-class _Something extends _SomethingBase with Something {
+class _Something<T> extends _SomethingBase<T> with Something<T> {
 
-  final Unit nothing;
-  final User user;
-  final Optional<ty.Address> address;
-  final Something something;
+  final Unit _nothing;
+  final User _user;
+  final Optional<ty.Address> _address;
+  final Something _something;
+  final T _param;
 
-  const _Something({
-    this.nothing,
-    this.user,
-    this.address,
-    this.something
+  Optional<Unit> get nothing {
+    if (this._nothing != null) {
+      return Optional.of(this._nothing);
+    } else {
+      return Optional.absent();
+    }
+  }
+
+  Optional<User> get user {
+    if (this._user != null) {
+      return Optional.of(this._user);
+    } else {
+      return Optional.absent();
+    }
+  }
+
+  Optional<Optional<ty.Address>> get address {
+    if (this._address != null) {
+      return Optional.of(this._address);
+    } else {
+      return Optional.absent();
+    }
+  }
+  Optional<Something> get something {
+    if (this._something != null) {
+      return Optional.of(this._something);
+    } else {
+      return Optional.absent();
+    }
+  }
+  Optional<T> get param {
+    if (this._param != null) {
+      return Optional.of(this._param);
+    } else {
+      return Optional.absent();
+    }
+  }
+
+  _Something({
+    Unit nothing,
+    User user,
+    Optional<ty.Address> address,
+    Something something,
+    T param,
   }) : assert(
          (nothing != null && user == null && address == null && something == null) ||
          (nothing == null && user != null && address == null && something == null) ||
          (nothing == null && user == null && address != null && something == null) ||
          (nothing == null && user == null && address == null && something != null)
-       );
+       ),
+       this._nothing = nothing,
+       this._user = user,
+       this._address = address,
+       this._something = something,
+       this._param = param;
 
   @override
   __T iswitch<__T>({
@@ -136,28 +192,35 @@ class _Something extends _SomethingBase with Something {
     @required __T Function(User) user,
     @required __T Function(Optional<ty.Address>) address,
     @required __T Function(Something) something,
+    @required __T Function(T) param,
   }) {
-    if (this.nothing != null) {
+    if (this._nothing != null) {
       if (nothing != null) {
         return nothing();
       } else {
         throw new ArgumentError.notNull("nothing");
       }
-    } else if (this.user != null) {
+    } else if (this._user != null) {
       if (user != null) {
-        return user(this.user);
+        return user(this._user);
       } else {
         throw new ArgumentError.notNull("user");
       }
-    } else if (this.address != null) {
+    } else if (this._address != null) {
       if (address != null) {
-        return address(this.address);
+        return address(this._address);
       } else {
         throw new ArgumentError.notNull("address");
       }
-    } else if (this.something != null) {
+    } else if (this._something != null) {
       if (something != null) {
-        return something(this.something);
+        return something(this._something);
+      } else {
+        throw new ArgumentError.notNull("something");
+      }
+    } else if (this._param != null) {
+      if (param != null) {
+        return param(this._param);
       } else {
         throw new ArgumentError.notNull("something");
       }
@@ -172,6 +235,7 @@ class _Something extends _SomethingBase with Something {
     __T Function(User) user,
     __T Function(Optional<ty.Address>) address,
     __T Function(Something) something,
+    __T Function(T) param,
     @required __T Function() otherwise,
   }) {
     __T _otherwise(Object _) => otherwise();
@@ -180,6 +244,7 @@ class _Something extends _SomethingBase with Something {
       user: user ?? _otherwise,
       address: address ?? _otherwise,
       something: something ?? _otherwise,
+      param: param ?? _otherwise,
     );
   }
 
@@ -191,7 +256,8 @@ class _Something extends _SomethingBase with Something {
         other.nothing == nothing &&
         other.user == user &&
         other.address == address &&
-        other.something == something;
+        other.something == something &&
+        other.param == param;
   }
 
   @override
@@ -201,6 +267,7 @@ class _Something extends _SomethingBase with Something {
     result = 37 * result + user.hashCode;
     result = 37 * result + address.hashCode;
     result = 37 * result + something.hashCode;
+    result = 37 * result + param.hashCode;
     return result;
   }
 
@@ -211,6 +278,7 @@ class _Something extends _SomethingBase with Something {
       user: (value) => "user($value)",
       address: (value) => "address($value)",
       something: (value) => "something($value)",
+      param: (value) => "param($value)",
     );
     return "Something.$ctor";
   }

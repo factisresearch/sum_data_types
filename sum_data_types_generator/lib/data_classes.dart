@@ -43,10 +43,10 @@ class TypeModel {
     @required this.optionalType,
   });
 
-  factory TypeModel({
-    @required DartType ty,
-    @required ImportModel imports,
-  }) {
+  factory TypeModel(
+    DartType ty,
+    ImportModel imports,
+  ) {
     final typeRepr = computeTypeRepr(ty, imports);
     var optionalType = null;
     var typeReprForFactory = typeRepr;
@@ -64,32 +64,12 @@ class TypeModel {
 
 class FieldModel {
 
-  final String name;
-  final TypeModel type;
+  final CommonFieldModel<TypeModel> _commonModel;
+  TypeModel get type => _commonModel.type;
+  String get name => _commonModel.name;
 
-  factory FieldModel({
-    @required FieldElement field,
-    @required ImportModel imports,
-  }) {
-    try {
-      final ty = TypeModel(
-        imports: imports,
-        ty: field.type,
-      );
-      return FieldModel._(
-        name: field.name,
-        type: ty,
-      );
-    } on CodegenException catch (e) {
-      e.fieldName = field.name;
-      throw e;
-    }
-  }
-
-  FieldModel._({
-    @required this.name,
-    @required this.type,
-  });
+  FieldModel(FieldElement fld, ImportModel imports) :
+      this._commonModel = CommonFieldModel(fld, (DartType ty) => TypeModel(ty, imports));
 
   String get declaration {
     return "final ${this.type.typeRepr} ${this.name};";
@@ -137,57 +117,21 @@ class FieldModel {
 }
 
 class ClassModel {
-  final String mixinName;
-  final String className;
-  final String baseClassName;
-  final List<FieldModel> fields;
 
-  ClassModel._({
-    @required this.mixinName,
-    @required this.className,
-    @required this.baseClassName,
-    @required this.fields,
-  });
+  final CommonClassModel<FieldModel> _commonModel;
 
-  factory ClassModel(ClassElement clazz) {
-    try {
-      // build a map of the qualified imports, mapping module identifiers to import prefixes
-      var lib = clazz.library;
-      final imports = ImportModel();
-      lib.imports.forEach((imp) {
-        imports.addImportElement(imp);
-      });
+  List<FieldModel> get fields => _commonModel.fields;
+  String get className => _commonModel.className;
+  String get baseClassName => _commonModel.baseClassName;
+  String get mixinName => _commonModel.mixinName;
+  String get factoryName => _commonModel.factoryName;
 
-      final mixinName = clazz.name;
-      final className = "_" + mixinName;
-      final baseName = className + "Base";
-      final fields = <FieldModel>[];
-
-      for (var field in clazz.fields) {
-        var msgPrefix = "Invalid getter '${field.name}' for data class '${mixinName}'";
-        if (field.getter == null && !field.isFinal) {
-          throw "${msgPrefix}: field must have a getter";
-        } else if (field.setter != null) {
-          throw "${msgPrefix}: field must not have a setter";
-        } else {
-          fields.add(FieldModel(
-            field: field,
-            imports: imports,
-          ));
-        }
-      }
-
-      return ClassModel._(
-        mixinName: mixinName,
-        baseClassName: baseName,
-        className: className,
-        fields: fields
-      );
-    } on CodegenException catch (e) {
-      e.className = clazz.name;
-      throw e;
-    }
-  }
+  ClassModel(ClassElement clazz) :
+      this._commonModel =
+          CommonClassModel(
+            clazz,
+            (FieldElement fld, ImportModel imports) => FieldModel(fld, imports),
+          );
 
   String get copyWithSignature {
     final params =
@@ -198,7 +142,8 @@ class ClassModel {
   }
 
   String get hashUpdates {
-    return this.fields.map((field) => "result = 37 * result + this.${field.name}.hashCode;").join("\n");
+    return this.fields.map((field) =>
+        "result = 37 * result + this.${field.name}.hashCode;").join("\n");
   }
 
   String get fieldDeclarations {
@@ -263,7 +208,7 @@ class DataClassGenerator extends GeneratorForAnnotation<DataClass> {
       var clazz = ClassModel(element as ClassElement);
       var code = '''
         /// This data class has been generated from ${clazz.mixinName}
-        abstract class ${clazz.mixinName}Factory {
+        abstract class ${clazz.factoryName} {
           static ${clazz.mixinName} make(
             ${clazz.factoryParams}
           ) {

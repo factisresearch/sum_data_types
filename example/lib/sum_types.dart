@@ -1,6 +1,6 @@
 import 'package:sum_data_types/main.dart';
 import 'package:example/types.dart' as ty;
-import 'package:example/data_types.dart';
+import 'package:example/data_classes.dart';
 import 'package:quiver/core.dart';
 import 'package:kt_dart/collection.dart';
 import 'package:test/test.dart';
@@ -12,6 +12,7 @@ void main() {
     friends: KtList.empty(),
     address: new ty.Address(),
     friendsAddresses: KtList.empty(),
+    foo: EitherFactory.makeRight(42),
   );
   final user = SomethingFactory.user(userPaul);
   final address = SomethingFactory.address(Optional.of(new ty.Address()));
@@ -45,7 +46,8 @@ void main() {
       user.toString(),
       equals(
         'Something.user(User(name: Paul, age: Optional { absent }, friends: [], '
-        'address: SomeAddress, workAddress: Optional { absent }, friendsAddresses: []))'
+        'address: SomeAddress, workAddress: Optional { absent }, friendsAddresses: [], '
+        'foo: Right(42)))'
       )
     );
     expect(

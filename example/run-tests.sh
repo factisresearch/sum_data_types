@@ -9,4 +9,4 @@ if [ "$1" != "--skip-codegen" ]; then
     pub run build_runner build || exit 1
 fi
 
-pub run test lib/data_types.dart lib/sum_types.dart || exit 1
+pub run test lib/data_classes.dart lib/sum_types.dart || exit 1

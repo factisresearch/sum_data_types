@@ -1,5 +1,6 @@
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
+import 'package:meta/meta.dart';
 
 class CodegenException with Exception {
   String className;
@@ -64,6 +65,90 @@ class ImportModel {
     this._moduleIdToUri[modId] = imp.uri;
     if (imp.prefix != null) {
       this._moduleIdToPrefix[modId] = imp.prefix.name;
+    }
+  }
+}
+
+typedef MkType<T> = T Function(DartType ty);
+
+class CommonFieldModel<TypeModel> {
+
+  final String name;
+  final TypeModel type;
+
+  CommonFieldModel._({
+    @required this.name,
+    @required this.type,
+  });
+
+  factory CommonFieldModel(FieldElement field, MkType mkType) {
+    try {
+      final ty = mkType(field.type);
+      return CommonFieldModel._(
+        name: field.name,
+        type: ty,
+      );
+    } on CodegenException catch (e) {
+      e.fieldName = field.name;
+      throw e;
+    }
+  }
+}
+
+typedef MkField<T> = T Function(FieldElement f, ImportModel imports);
+
+class CommonClassModel<FieldModel> {
+
+  final String mixinName;
+  final String className;
+  final String baseClassName;
+  final List<FieldModel> fields;
+
+  String get factoryName {
+    return mixinName + "Factory";
+  }
+
+  CommonClassModel.mk({
+    @required this.mixinName,
+    @required this.className,
+    @required this.baseClassName,
+    @required this.fields,
+  });
+
+  factory CommonClassModel(ClassElement clazz, MkField<FieldModel> mkField) {
+    try {
+      // build a map of the qualified imports, mapping module identifiers to import prefixes
+      var lib = clazz.library;
+      final imports = ImportModel();
+      lib.imports.forEach((imp) {
+        imports.addImportElement(imp);
+      });
+
+      final mixinName = clazz.name;
+      final className = "_" + mixinName;
+      final baseName = className + "Base";
+      final fields = <FieldModel>[];
+
+      for (var field in clazz.fields) {
+        var msgPrefix = "Invalid getter '${field.name}' for data class '${mixinName}'";
+        if (field.getter == null && !field.isFinal) {
+          throw "${msgPrefix}: field must have a getter";
+        } else if (field.setter != null) {
+          throw "${msgPrefix}: field must not have a setter";
+        } else {
+          fields.add(mkField(field, imports));
+        }
+      }
+
+      return CommonClassModel.mk(
+        mixinName: mixinName,
+        baseClassName: baseName,
+        className: className,
+        fields: fields
+      );
+    } on CodegenException catch (e) {
+      e.className = clazz.name;
+      throw e;
     }
   }
 }

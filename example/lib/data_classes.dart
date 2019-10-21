@@ -4,7 +4,7 @@ import 'package:quiver/core.dart';
 import 'package:kt_dart/collection.dart';
 import "package:test/test.dart";
 
-part 'data_types.g.dart';
+part 'data_classes.g.dart';
 
 void main() {
   final userBob = UserFactory.make(
@@ -13,19 +13,22 @@ void main() {
     address: new ty.Address(),
     age: 31,
     friendsAddresses: KtList.empty(),
+    foo: EitherFactory.makeLeft("foo"),
   );
   final userPaul = UserFactory.make(
     name: "Paul",
     friends: KtList.of(userBob),
     address: new ty.Address(),
     friendsAddresses: KtList.empty(),
+    foo: EitherFactory.makeRight(42),
   );
   final userSarah = userPaul.copyWith(name: "Sarah");
   final userSarah2 = UserFactory.make(
     name: "Sarah",
     friends: KtList.of(userBob),
     address: new ty.Address(),
-    friendsAddresses: KtList.empty()
+    friendsAddresses: KtList.empty(),
+    foo: EitherFactory.makeRight(42),
   );
 
   test("equals", () {
@@ -47,11 +50,68 @@ void main() {
       equals(
         'User(name: Sarah, age: Optional { absent }, friends: '
         '[User(name: Bob, age: Optional { value: 31 }, friends: [], address: SomeAddress, '
-        'workAddress: Optional { absent }, friendsAddresses: [])], '
-        'address: SomeAddress, workAddress: Optional { absent }, friendsAddresses: [])'
+        'workAddress: Optional { absent }, friendsAddresses: [], foo: Left(foo))], '
+        'address: SomeAddress, workAddress: Optional { absent }, friendsAddresses: [], '
+        'foo: Right(42))'
       )
     );
   });
+}
+
+// FIXME: replace by generated sum type
+mixin Either<L, R> {
+  L left();
+  R right();
+}
+
+abstract class EitherFactory {
+  static Either<L, R> makeLeft<L, R>(L l) {
+    return _EitherImpl._(l, null);
+  }
+
+  static Either<L, R> makeRight<L, R>(R r) {
+    return _EitherImpl._(null, r);
+  }
+}
+
+class _EitherImpl<L, R> with Either<L, R> {
+  final L _left;
+  final R _right;
+
+  _EitherImpl._(L l, R r): this._left = l, this._right = r;
+
+  L left() {
+    return this._left;
+  }
+
+  R right() {
+    return this._right;
+  }
+
+  bool operator ==(Object other) {
+    if (identical(this, other)) {
+      return true;
+    }
+    return (other is _EitherImpl &&
+        this.runtimeType == other.runtimeType &&
+        this._left == other._left &&
+        this._right == other._right);
+  }
+
+  int get hashCode {
+    var result = 17;
+    result = 37 * result + this._left.hashCode;
+    result = 37 * result + this._right.hashCode;
+    return result;
+  }
+
+  String toString() {
+    if (this._left != null) {
+      return "Left(${this._left})";
+    } else {
+      return "Right(${this._right})";
+    }
+  }
 }
 
 @DataClass()
@@ -62,6 +122,7 @@ mixin User on _UserBase {
   ty.Address get address;
   Optional<ty.Address> get workAddress;
   KtList<ty.Address> get friendsAddresses;
+  Either<String, int> get foo;
 
   int numerOfFriends() {
     return this.friendsAddresses.size;

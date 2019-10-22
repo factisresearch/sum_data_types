@@ -80,11 +80,11 @@ mixin Empty implements _EmptyBase {
 
 @SumType()
 mixin Something<T> implements _SomethingBase<T> {
-  Unit get nothing;
-  User get user;
-  Optional<ty.Address> get address;
-  Something get something;
-  T get param;
+  Unit get _nothing;
+  User get _user;
+  Optional<ty.Address> get _address;
+  Something get _something;
+  T get _param;
 }
 
 /*

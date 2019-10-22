@@ -7,10 +7,12 @@ import 'package:sum_data_types/main.dart';
 import './common.dart';
 
 class TypeModel {
+  final bool isUnit;
   final String typeRepr;
 
   TypeModel._({
     @required this.typeRepr,
+    @required this.isUnit,
   });
 
   factory TypeModel(
@@ -18,11 +20,8 @@ class TypeModel {
       ImportModel imports,
   ) {
     final typeRepr = computeTypeRepr(ty, imports);
-    return TypeModel._(typeRepr: typeRepr);
-  }
-
-  bool get isUnit {
-    return false; // FIXME
+    final isUnit = isType(ty, "Unit", 'package:sum_data_types/main.dart', imports);
+    return TypeModel._(isUnit: isUnit, typeRepr: typeRepr);
   }
 }
 
@@ -30,10 +29,12 @@ class FieldModel {
   final CommonFieldModel<TypeModel> _commonModel;
   TypeModel get type => _commonModel.type;
   String get name => _commonModel.name;
-  String get internalName => '_' + name;
+  String get internalName => _commonModel.internalName;
 
   FieldModel(FieldElement fld, ImportModel imports) :
-      this._commonModel = CommonFieldModel(fld, (DartType ty) => TypeModel(ty, imports));
+      this._commonModel = CommonFieldModel(
+        fld, (DartType ty) => TypeModel(ty, imports), FieldNameConfig.Private
+      );
 
   String factoryMethod(String resultType, String tyArgs, String constructor) {
     String mkFun(String arg, String result) {
@@ -65,9 +66,10 @@ class FieldModel {
   }
 
   String get getterImpl {
-    return '''$getterDecl {
-      return Optional.fromNullable(this.${internalName});
-    }''';
+    return '''@override
+      $getterDecl {
+        return Optional.fromNullable(this.${internalName});
+      }''';
   }
 
   String get constructorParam {
@@ -112,13 +114,10 @@ class ClassModel {
   String get baseClassName => _commonModel.baseClassName;
   String get mixinName => _commonModel.mixinName;
   String get factoryName => _commonModel.factoryName;
+  List<String> get typeArgs => _commonModel.typeArgs;
 
   String get mixinType {
     return this.mixinName + this.typeArgsWithParens;
-  }
-
-  List<String> get typeArgs {
-    return []; // FIXME
   }
 
   String get typeArgsWithParens {
@@ -209,7 +208,7 @@ class SumTypeGenerator extends GeneratorForAnnotation<SumType> {
         abstract class ${clazz.factoryName} {
           ${clazz.factoryMethods}
         }
-        abstract class ${clazz.baseClassName} {
+        abstract class ${clazz.baseClassName}${clazz.typeArgsWithParens} {
           const ${clazz.baseClassName}();
           ${clazz.getterDecls}
           $tyArg iswitch<$tyArg>({
@@ -230,12 +229,14 @@ class SumTypeGenerator extends GeneratorForAnnotation<SumType> {
             ${clazz.constructorParams}
           }) : ${clazz.constructorInitializers};
 
+          @override
           $tyArg iswitch<$tyArg>({
             ${clazz.switchParams(tyArg, true)}
           }) {
             ${clazz.iswitchBody}
           }
 
+          @override
           $tyArg iswitcho<$tyArg>({
             ${clazz.switchParams(tyArg, false)},
             @required $tyArg Function() $otherwise,
@@ -246,7 +247,7 @@ class SumTypeGenerator extends GeneratorForAnnotation<SumType> {
           }
         }
         ''';
-      print(code);
+      //print(code);
       return code;
     } on CodegenException catch (e) {
       e.generatorName = "SumType";

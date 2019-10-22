@@ -25,8 +25,7 @@ class OptionalType {
 }
 
 bool isQuiverOptional(DartType ty, ImportModel imports) {
-  final tyLib = ty.element.library;
-  return ty.name == "Optional" && imports.importUri(tyLib) == quiverPackageUri;
+  return isType(ty, "Optional", quiverPackageUri, imports);
 }
 
 class TypeModel {
@@ -69,7 +68,9 @@ class FieldModel {
   String get name => _commonModel.name;
 
   FieldModel(FieldElement fld, ImportModel imports) :
-      this._commonModel = CommonFieldModel(fld, (DartType ty) => TypeModel(ty, imports));
+      this._commonModel = CommonFieldModel(
+        fld, (DartType ty) => TypeModel(ty, imports), FieldNameConfig.Public
+      );
 
   String get declaration {
     return "final ${this.type.typeRepr} ${this.name};";

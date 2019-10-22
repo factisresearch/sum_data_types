@@ -11,9 +11,9 @@ class CodegenException with Exception {
   String toString() {
     var loc = "";
     if (className != null && fieldName != null) {
-      loc = " for mixin ${className} and field ${fieldName}";
+      loc = " for mixin '${className}' and field '${fieldName}'";
     } else if (className != null) {
-      loc = " for mixin ${className}";
+      loc = " for mixin '${className}'";
     }
     var genName = "";
     if (generatorName != null) {
@@ -21,6 +21,11 @@ class CodegenException with Exception {
     }
     return "Error generating${genName} code${loc}: $message";
   }
+}
+
+bool isType(DartType ty, String name, String packageUri, ImportModel imports) {
+  final tyLib = ty.element.library;
+  return ty.name == name && imports.importUri(tyLib) == packageUri;
 }
 
 // Returns a potential qualified access string for the type, without type arguments
@@ -71,21 +76,48 @@ class ImportModel {
 
 typedef MkType<T> = T Function(DartType ty);
 
+
+enum FieldNameConfig {
+  Public, Private
+}
+
 class CommonFieldModel<TypeModel> {
 
   final String name;
+  final String internalName;
   final TypeModel type;
 
   CommonFieldModel._({
     @required this.name,
     @required this.type,
+    @required this.internalName,
   });
 
-  factory CommonFieldModel(FieldElement field, MkType mkType) {
+  factory CommonFieldModel(FieldElement field, MkType mkType, FieldNameConfig fieldCfg) {
     try {
       final ty = mkType(field.type);
+      var name, internalName;
+      switch (fieldCfg) {
+        case FieldNameConfig.Public: {
+          if (field.name.startsWith('_')) {
+            throw new CodegenException("fieldname must not start with an underscore");
+          }
+          name = field.name;
+          internalName = '_' + name;
+          break;
+        }
+        case FieldNameConfig.Private: {
+          if (!field.name.startsWith('_')) {
+            throw new CodegenException("fieldname must start with an underscore");
+          }
+          name = field.name.substring(1);
+          internalName = field.name;
+          break;
+        }
+      }
       return CommonFieldModel._(
-        name: field.name,
+        name: name,
+        internalName: internalName,
         type: ty,
       );
     } on CodegenException catch (e) {
@@ -103,6 +135,7 @@ class CommonClassModel<FieldModel> {
   final String className;
   final String baseClassName;
   final List<FieldModel> fields;
+  final List<String> typeArgs;
 
   String get factoryName {
     return mixinName + "Factory";
@@ -113,6 +146,7 @@ class CommonClassModel<FieldModel> {
     @required this.className,
     @required this.baseClassName,
     @required this.fields,
+    @required this.typeArgs,
   });
 
   factory CommonClassModel(ClassElement clazz, MkField<FieldModel> mkField) {
@@ -125,6 +159,11 @@ class CommonClassModel<FieldModel> {
       });
 
       final mixinName = clazz.name;
+      // without the toList(), we get a runtime error
+      // "type 'MappedListIterable<TypeParameterElement, String>'
+      //  is not a subtype of type 'List<String>'"
+      // Looks like darts type system is not sound!
+      final List<String> typeArgs = clazz.typeParameters.map((param) => param.name).toList();
       final className = "_" + mixinName;
       final baseName = className + "Base";
       final fields = <FieldModel>[];
@@ -144,7 +183,8 @@ class CommonClassModel<FieldModel> {
         mixinName: mixinName,
         baseClassName: baseName,
         className: className,
-        fields: fields
+        fields: fields,
+        typeArgs: typeArgs,
       );
     } on CodegenException catch (e) {
       e.className = clazz.name;

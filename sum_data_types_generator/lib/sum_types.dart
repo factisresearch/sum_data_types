@@ -94,7 +94,7 @@ class FieldModel {
       if ($name != null) {
         return $name($funArg);
       } else {
-        throw new ArgumentError.notNull("$name");
+        throw ArgumentError.notNull("$name");
       }
     }
     ''';

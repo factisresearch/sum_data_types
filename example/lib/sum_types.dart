@@ -200,31 +200,31 @@ class _Something<T> extends _SomethingBase<T> with Something<T> {
       if (nothing != null) {
         return nothing();
       } else {
-        throw new ArgumentError.notNull("nothing");
+        throw ArgumentError.notNull("nothing");
       }
     } else if (this._user != null) {
       if (user != null) {
         return user(this._user);
       } else {
-        throw new ArgumentError.notNull("user");
+        throw ArgumentError.notNull("user");
       }
     } else if (this._address != null) {
       if (address != null) {
         return address(this._address);
       } else {
-        throw new ArgumentError.notNull("address");
+        throw ArgumentError.notNull("address");
       }
     } else if (this._something != null) {
       if (something != null) {
         return something(this._something);
       } else {
-        throw new ArgumentError.notNull("something");
+        throw ArgumentError.notNull("something");
       }
     } else if (this._param != null) {
       if (param != null) {
         return param(this._param);
       } else {
-        throw new ArgumentError.notNull("something");
+        throw ArgumentError.notNull("something");
       }
     } else {
       throw StateError("an instance of Something has no case selected");

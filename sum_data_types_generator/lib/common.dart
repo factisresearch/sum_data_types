@@ -28,6 +28,12 @@ bool isType(DartType ty, String name, String packageUri, ImportModel imports) {
   return ty.name == name && imports.importUri(tyLib) == packageUri;
 }
 
+final quiverPackageUri = "package:quiver/core.dart";
+
+bool isQuiverOptional(DartType ty, ImportModel imports) {
+  return isType(ty, "Optional", quiverPackageUri, imports);
+}
+
 // Returns a potential qualified access string for the type, without type arguments
 String qualifyType(DartType ty, ImportModel imports) {
     final tyLib = ty.element.library;
@@ -56,6 +62,7 @@ class ImportModel {
 
   final Map<String, String> _moduleIdToPrefix = Map();
   final Map<String, String> _moduleIdToUri = Map();
+  final Map<String, String> _uriToModuleId = Map();
 
   String importPrefixOrNull(LibraryElement lib) {
     return _moduleIdToPrefix[lib.identifier];
@@ -68,8 +75,26 @@ class ImportModel {
   void addImportElement(ImportElement imp) {
     final modId = imp.importedLibrary.identifier;
     this._moduleIdToUri[modId] = imp.uri;
+    this._uriToModuleId[imp.uri] = modId;
     if (imp.prefix != null) {
       this._moduleIdToPrefix[modId] = imp.prefix.name;
+    }
+  }
+
+  String lookupOptionalType() {
+    final modId = _uriToModuleId[quiverPackageUri];
+    if (modId == null) {
+      throw new CodegenException(
+        "Cannot reference type 'Optional'. Please import the package '$quiverPackageUri', "
+        "either unqualified or qualified."
+      );
+    } else {
+      final prefix = _moduleIdToPrefix[modId];
+      if (prefix == null) {
+        return "Optional";
+      } else {
+        return prefix + ".Optional";
+      }
     }
   }
 }

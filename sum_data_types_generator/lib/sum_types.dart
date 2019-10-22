@@ -27,6 +27,7 @@ class TypeModel {
 
 class FieldModel {
   final CommonFieldModel<TypeModel> _commonModel;
+  final ImportModel _imports;
   TypeModel get type => _commonModel.type;
   String get name => _commonModel.name;
   String get internalName => _commonModel.internalName;
@@ -34,7 +35,8 @@ class FieldModel {
   FieldModel(FieldElement fld, ImportModel imports) :
       this._commonModel = CommonFieldModel(
         fld, (DartType ty) => TypeModel(ty, imports), FieldNameConfig.Private
-      );
+      ),
+      this._imports = imports;
 
   String factoryMethod(String resultType, String tyArgs, String constructor) {
     String mkFun(String arg, String result) {
@@ -51,8 +53,8 @@ class FieldModel {
   }
 
   String get getterDecl {
-    // Assumes that Optional is in scope
-    return 'Optional<${type.typeRepr}> get $name';
+    final optional = _imports.lookupOptionalType();
+    return '$optional<${type.typeRepr}> get $name';
   }
 
   String switchParam(String tyArg, bool req) {
@@ -66,9 +68,10 @@ class FieldModel {
   }
 
   String get getterImpl {
+    final optional = _imports.lookupOptionalType();
     return '''@override
       $getterDecl {
-        return Optional.fromNullable(this.${internalName});
+        return $optional.fromNullable(this.${internalName});
       }''';
   }
 

@@ -9,25 +9,6 @@ import './common.dart';
 Builder generateDataClass(BuilderOptions options) =>
     SharedPartBuilder([DataClassGenerator()], 'sum_data_types');
 
-final quiverPackageUri = "package:quiver/core.dart";
-
-class OptionalType {
-  final String baseType;
-  final String optionalImportPrefix;
-  OptionalType({
-    @required this.baseType,
-    @required this.optionalImportPrefix
-  });
-
-  String get optional {
-    return optionalImportPrefix + "Optional";
-  }
-}
-
-bool isQuiverOptional(DartType ty, ImportModel imports) {
-  return isType(ty, "Optional", quiverPackageUri, imports);
-}
-
 class TypeModel {
   final String typeRepr;
   final String typeReprForFactory;

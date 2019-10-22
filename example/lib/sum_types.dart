@@ -1,7 +1,8 @@
 import 'package:sum_data_types/main.dart';
 import 'package:example/types.dart' as ty;
 import 'package:example/data_classes.dart';
-import 'package:quiver/core.dart';
+// Import quiver qualified to test wether the generated code uses the right prefix
+import 'package:quiver/core.dart' as quiv;
 import 'package:kt_dart/collection.dart';
 import 'package:test/test.dart';
 
@@ -17,8 +18,8 @@ void main() {
     foo: EitherFactory.makeRight(42),
   );
   final user = SomethingFactory.user(userPaul);
-  final address = SomethingFactory.address(Optional.of(new ty.Address()));
-  final address2 = SomethingFactory.address(Optional.of(new ty.Address()));
+  final address = SomethingFactory.address(quiv.Optional.of(new ty.Address()));
+  final address2 = SomethingFactory.address(quiv.Optional.of(new ty.Address()));
   final something = SomethingFactory.something(user);
 
   test("equals", () {
@@ -82,7 +83,7 @@ mixin Empty implements _EmptyBase {
 mixin Something<T> implements _SomethingBase<T> {
   Unit get _nothing;
   User get _user;
-  Optional<ty.Address> get _address;
+  quiv.Optional<ty.Address> get _address;
   Something get _something;
   T get _param;
 }

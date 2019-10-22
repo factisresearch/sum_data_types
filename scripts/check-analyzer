@@ -1,0 +1,26 @@
+#!/bin/bash
+
+HERE=$(cd $(dirname ${BASH_SOURCE[0]}) > /dev/null && pwd -P)
+cd $HERE/..
+
+set -o errexit
+set -o pipefail
+set -o nounset
+
+function doCheck()
+{
+    d="$1"
+    echo
+    echo "Running dartanalyzer in $d ..."
+    if [ "$d" == "example" ]; then
+        pub run build_runner build || exit 1
+    fi
+    dartanalyzer --fatal-infos --fatal-warnings lib || exit 1
+    echo "Finished running dartanalyzer in $d"
+}
+
+for d in sum_data_types sum_data_types_generator example; do
+    pushd "$d" > /dev/null
+    doCheck "$d" || exit 1
+    popd > /dev/null
+done

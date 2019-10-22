@@ -42,7 +42,7 @@ void main() {
     expect(
       nothing.toString(),
       equals(
-        'Something.nothing()'
+        'Something.nothing'
       )
     );
     expect(
@@ -265,7 +265,7 @@ class _Something<T> extends _SomethingBase<T> with Something<T> {
   @override
   String toString() {
     final ctor = iswitch(
-      nothing: () => "nothing()",
+      nothing: () => "nothing",
       user: (value) => "user($value)",
       address: (value) => "address($value)",
       something: (value) => "something($value)",

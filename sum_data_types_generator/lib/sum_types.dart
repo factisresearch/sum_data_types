@@ -104,6 +104,14 @@ class FieldModel {
     final _otherwise = this.type.isUnit ? otherwise : '(Object _) => $otherwise()';
     return '$name: $name ?? $_otherwise';
   }
+
+  String get toStringSwitch {
+    if (type.isUnit) {
+      return '$name: () => "$name"';
+    } else {
+      return '$name: (__value\$) => "$name(" + __value\$.toString() + ")"';
+    }
+  }
 }
 
 class ClassModel {
@@ -196,6 +204,10 @@ class ClassModel {
   String iswitchArgsFromOtherwise(String otherwise) {
     return this.fields.map((field) => field.iswitchArgFromOtherwise(otherwise)).join(",\n");
   }
+
+  String get toStringSwitch {
+    return this.fields.map((field) => field.toStringSwitch).join(",\n");
+  }
 }
 
 class SumTypeGenerator extends GeneratorForAnnotation<SumType> {
@@ -261,6 +273,11 @@ class SumTypeGenerator extends GeneratorForAnnotation<SumType> {
 
           ${hashCodeImpl(clazz.fieldNames)}
 
+          @override
+          toString() {
+            final __x\$ = iswitch(${clazz.toStringSwitch});
+            return "${clazz.mixinName}." + __x\$;
+          }
         }
         ''';
       //print(code);

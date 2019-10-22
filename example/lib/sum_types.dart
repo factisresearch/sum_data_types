@@ -73,12 +73,6 @@ void main() {
   });
 }
 
-/* FIXME: we need this test!
-@SumType()
-mixin Empty implements _EmptyBase {
-}
-*/
-
 @SumType()
 mixin Something<T> implements _SomethingBase<T> {
   Unit get _nothing;

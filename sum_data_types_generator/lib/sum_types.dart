@@ -224,6 +224,9 @@ class SumTypeGenerator extends GeneratorForAnnotation<SumType> {
     }
     try {
       final clazz = ClassModel(element as ClassElement);
+      if (clazz.fields.isEmpty) {
+        throw CodegenException("no alternatives defined for ${clazz.mixinName}");
+      }
       const tyArg = r'__T$';
       const otherwise = r'otherwise__$';
       final code = '''

@@ -217,3 +217,34 @@ class CommonClassModel<FieldModel> {
     }
   }
 }
+
+String eqImpl(String className, List<String> fieldNames) {
+  final other = r'__other$';
+  var fieldsEq = "true";
+  if (fieldNames.length > 0) {
+    fieldsEq = fieldNames.map((name) => 'this.$name == $other.$name').join(" && ");
+  }
+  return '''@override
+    bool operator ==(Object $other) {
+      if (identical(this, other)) {
+        return true;
+      }
+      return (
+        other is $className &&
+        this.runtimeType == other.runtimeType &&
+        $fieldsEq
+      );
+    }''';
+}
+
+String hashCodeImpl(List<String> fieldNames) {
+  final result = r'__result$';
+  final updates = fieldNames.map((name) =>
+      "$result = 37 * $result + this.$name.hashCode;").join("\n");
+  return '''@override
+    int get hashCode {
+      var $result = 17;
+      $updates
+      return $result;
+    }''';
+}

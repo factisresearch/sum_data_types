@@ -118,6 +118,7 @@ class ClassModel {
   String get mixinName => _commonModel.mixinName;
   String get factoryName => _commonModel.factoryName;
   List<String> get typeArgs => _commonModel.typeArgs;
+  List<String> get fieldNames => fields.map((f) => f.name);
 
   String get mixinType {
     return this.mixinName + this.typeArgsWithParens;
@@ -248,6 +249,11 @@ class SumTypeGenerator extends GeneratorForAnnotation<SumType> {
               ${clazz.iswitchArgsFromOtherwise(otherwise)}
             );
           }
+
+          ${eqImpl(clazz.className, clazz.fieldNames)}
+
+          ${hashCodeImpl(clazz.fieldNames)}
+
         }
         ''';
       //print(code);

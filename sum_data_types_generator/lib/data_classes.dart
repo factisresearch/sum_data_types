@@ -85,10 +85,6 @@ class FieldModel {
     return "assert(${name} != null)";
   }
 
-  String fieldEq(String otherVar) {
-    return "this.${name} == ${otherVar}.${name}";
-  }
-
   String get toStringField {
     return "${this.name}: " + r"${this." + name + "}";
   }
@@ -107,6 +103,7 @@ class ClassModel {
   String get baseClassName => _commonModel.baseClassName;
   String get mixinName => _commonModel.mixinName;
   String get factoryName => _commonModel.factoryName;
+  List<String> get fieldNames => fields.map((f) => f.name);
 
   ClassModel(ClassElement clazz) :
       this._commonModel =
@@ -121,11 +118,6 @@ class ClassModel {
         ? "{" + this.fields.map((field) => field.copyWithParam).join(",") + "}"
         : "";
     return "${this.className} copyWith(${params})";
-  }
-
-  String get hashUpdates {
-    return this.fields.map((field) =>
-        "result = 37 * result + this.${field.name}.hashCode;").join("\n");
   }
 
   String get fieldDeclarations {
@@ -160,14 +152,6 @@ class ClassModel {
 
   String get copyWithArgs {
     return this.fields.map((field) => field.constructorArgFromCopyWith + ",").join();
-  }
-
-  String fieldsEq(String otherVar) {
-    if (this.fields.length == 0) {
-      return "true";
-    } else {
-      return this.fields.map((field) => field.fieldEq(otherVar)).join(" && ");
-    }
   }
 
   String get toStringFields {
@@ -217,23 +201,11 @@ class DataClassGenerator extends GeneratorForAnnotation<DataClass> {
             );
           }
 
-          bool operator ==(Object other) {
-            if (identical(this, other)) {
-              return true;
-            }
-            return (
-              other is ${clazz.className} &&
-              this.runtimeType == other.runtimeType &&
-              ${clazz.fieldsEq("other")}
-            );
-          }
+          ${eqImpl(clazz.className, clazz.fieldNames)}
 
-          int get hashCode {
-            var result = 17;
-            ${clazz.hashUpdates}
-            return result;
-          }
+          ${hashCodeImpl(clazz.fieldNames)}
 
+          @override
           String toString() {
             return "${clazz.mixinName}(${clazz.toStringFields})";
           }

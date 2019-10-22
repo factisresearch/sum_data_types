@@ -75,6 +75,11 @@ void main() {
   test("with unknown", () {
     final unknown = WithUnknownFactory.unknown(42);
     expect(unknown.toString(), equals("WithUnknown.unknown(42)"));
+    final s = unknown.iswitcho(
+      known: (s) => "known",
+      otherwise: () => "otherwise",
+    );
+    expect(s, equals("otherwise"));
   });
 }
 

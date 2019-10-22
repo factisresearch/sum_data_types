@@ -218,7 +218,7 @@ class SumTypeGenerator extends GeneratorForAnnotation<SumType> {
         throw CodegenException("no alternatives defined for ${clazz.mixinName}");
       }
       const tyArg = r'__T$';
-      const otherwise = r'otherwise__$';
+      final otherwise = clazz.fieldNames.contains('otherwise') ? r'otherwise__$' : 'otherwise';
       final code = '''
         /// This data class has been generated from ${clazz.mixinName}
         abstract class ${clazz.factoryName} {

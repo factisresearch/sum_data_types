@@ -5,6 +5,8 @@ import 'package:quiver/core.dart';
 import 'package:kt_dart/collection.dart';
 import 'package:test/test.dart';
 
+part 'sum_types.g.dart';
+
 void main() {
   final nothing = SomethingFactory.nothing();
   final userPaul = UserFactory.make(
@@ -70,7 +72,14 @@ void main() {
   });
 }
 
-//@SumType()
+/* FIXME: we need this test!
+@SumType()
+mixin Empty implements _EmptyBase {
+
+}
+*/
+
+@SumType()
 mixin Something<T> implements _SomethingBase<T> {
   Unit get _nothing;
   User get _user;
@@ -79,6 +88,7 @@ mixin Something<T> implements _SomethingBase<T> {
   T get _param;
 }
 
+/*
 // generated code
 abstract class SomethingFactory {
   static Something<T> nothing<T>() {
@@ -133,41 +143,21 @@ class _Something<T> extends _SomethingBase<T> with Something<T> {
   final T _param;
 
   Optional<Unit> get nothing {
-    if (this._nothing != null) {
-      return Optional.of(this._nothing);
-    } else {
-      return Optional.absent();
-    }
+    return Optional.fromNullable(this._nothing);
   }
 
   Optional<User> get user {
-    if (this._user != null) {
-      return Optional.of(this._user);
-    } else {
-      return Optional.absent();
-    }
+    return Optional.fromNullable(this._user);
   }
 
   Optional<Optional<ty.Address>> get address {
-    if (this._address != null) {
-      return Optional.of(this._address);
-    } else {
-      return Optional.absent();
-    }
+    return Optional.fromNullable(this._address);
   }
   Optional<Something> get something {
-    if (this._something != null) {
-      return Optional.of(this._something);
-    } else {
-      return Optional.absent();
-    }
+    return Optional.fromNullable(this._something);
   }
   Optional<T> get param {
-    if (this._param != null) {
-      return Optional.of(this._param);
-    } else {
-      return Optional.absent();
-    }
+    return Optional.fromNullable(this._param);
   }
 
   _Something({
@@ -240,13 +230,12 @@ class _Something<T> extends _SomethingBase<T> with Something<T> {
     __T Function(T) param,
     @required __T Function() otherwise,
   }) {
-    __T _otherwise(Object _) => otherwise();
     return iswitch(
       nothing: nothing ?? otherwise,
-      user: user ?? _otherwise,
-      address: address ?? _otherwise,
-      something: something ?? _otherwise,
-      param: param ?? _otherwise,
+      user: user ?? (Object _) => otherwise(),
+      address: address ?? (Object _) => otherwise(),
+      something: something ?? (Object _) => otherwise(),
+      param: param ?? (Object _) => otherwise(),
     );
   }
 
@@ -285,3 +274,4 @@ class _Something<T> extends _SomethingBase<T> with Something<T> {
     return "Something.$ctor";
   }
 }
+*/

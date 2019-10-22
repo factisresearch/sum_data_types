@@ -1,0 +1,47 @@
+include: package:pedantic/analysis_options.yaml
+
+linter:
+  rules:
+    - avoid_field_initializers_in_const_classes
+    - avoid_implementing_value_types
+    - avoid_null_checks_in_equality_operators
+    - avoid_positional_boolean_parameters
+    - avoid_single_cascade_in_expression_statements
+    - avoid_unused_constructor_parameters
+    - await_only_futures
+    - camel_case_types
+    - cancel_subscriptions
+    - close_sinks
+    - control_flow_in_finally
+    - curly_braces_in_flow_control_structures
+    - directives_ordering
+    - empty_constructor_bodies
+    - empty_statements
+    - hash_and_equals
+    - implementation_imports
+    - iterable_contains_unrelated_type
+    - library_names
+    - list_remove_unrelated_type
+    - non_constant_identifier_names
+    - only_throw_errors
+    - package_api_docs
+    - package_names
+    - package_prefixed_library_names
+    - prefer_const_constructors_in_immutables
+    - prefer_const_declarations
+    - prefer_final_fields
+    - prefer_final_locals
+    - slash_for_doc_comments
+    - test_types_in_equals
+    - throw_in_finally
+    - type_init_formals
+    - unnecessary_brace_in_string_interps
+    - unnecessary_getters_setters
+    - unnecessary_statements
+
+analyzer:
+  exclude:
+    - lib/**/*.g.dart
+  strong-mode:
+    implicit-casts: false
+    implicit-dynamic: false

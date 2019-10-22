@@ -1,7 +1,8 @@
+import 'dart:async';
+
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:build/build.dart';
-import 'package:build/src/builder/build_step.dart';
 import 'package:source_gen/source_gen.dart';
 import 'package:sum_data_types/main.dart';
 import './common.dart';
@@ -23,6 +24,10 @@ class TypeModel {
     final isUnit = isType(ty, "Unit", 'package:sum_data_types/main.dart', imports);
     return TypeModel._(isUnit: isUnit, typeRepr: typeRepr);
   }
+}
+
+enum SwitchMode {
+  Required, Optional
 }
 
 class FieldModel {
@@ -47,7 +52,7 @@ class FieldModel {
     if (this.type.isUnit) {
       return mkFun('', 'const ${type.typeRepr}()');
     } else {
-      final x = r'__x$';
+      const x = r'__x$';
       return mkFun('${type.typeRepr} $x', x);
     }
   }
@@ -57,10 +62,10 @@ class FieldModel {
     return '$optional<${type.typeRepr}> get $name';
   }
 
-  String switchParam(String tyArg, bool req) {
-    String switchArg = this.type.isUnit ? '' : this.type.typeRepr;
-    String prefix = req ? '@required ' : '';
-    return '${prefix}${tyArg} Function($switchArg) $name';
+  String switchParam(String tyArg, SwitchMode mode) {
+    final switchArg = this.type.isUnit ? '' : this.type.typeRepr;
+    final prefix = (mode == SwitchMode.Required) ? '@required ' : '';
+    return '$prefix$tyArg Function($switchArg) $name';
   }
 
   String get fieldDecl {
@@ -71,7 +76,7 @@ class FieldModel {
     final optional = _imports.lookupOptionalType();
     return '''@override
       $getterDecl {
-        return $optional.fromNullable(this.${internalName});
+        return $optional.fromNullable(this.$internalName);
       }''';
   }
 
@@ -118,14 +123,14 @@ class ClassModel {
   String get mixinName => _commonModel.mixinName;
   String get factoryName => _commonModel.factoryName;
   List<String> get typeArgs => _commonModel.typeArgs;
-  List<String> get fieldNames => fields.map((f) => f.name);
+  List<String> get fieldNames => fields.map((f) => f.name).toList();
 
   String get mixinType {
     return this.mixinName + this.typeArgsWithParens;
   }
 
   String get typeArgsWithParens {
-    if (this.typeArgs.length > 0) {
+    if (this.typeArgs.isNotEmpty) {
       return '<' + this.typeArgs.join(",") + '>';
     } else {
       return '';
@@ -133,7 +138,7 @@ class ClassModel {
   }
 
   String get factoryMethods {
-    String resultType = this.mixinType;
+    final resultType = this.mixinType;
     return this.fields.map((field) => field.factoryMethod(
       resultType, this.typeArgsWithParens, this.className
     )).join("\n");
@@ -143,8 +148,8 @@ class ClassModel {
     return this.fields.map((field) => field.getterDecl + ";").join("\n");
   }
 
-  String switchParams(String tyArg, bool req) {
-    return this.fields.map((field) => field.switchParam(tyArg, req)).join(",\n");
+  String switchParams(String tyArg, SwitchMode mode) {
+    return this.fields.map((field) => field.switchParam(tyArg, mode)).join(",\n");
   }
 
   String get fieldDecls {
@@ -160,7 +165,7 @@ class ClassModel {
   }
 
   String get constructorInitializers {
-    if (this.fields.length == 0) {
+    if (this.fields.isEmpty) {
       return '';
     }
     final preds = <String>[];
@@ -196,17 +201,19 @@ class ClassModel {
 class SumTypeGenerator extends GeneratorForAnnotation<SumType> {
 
   @override
-  generateForAnnotatedElement(Element element, ConstantReader annotation, BuildStep _) {
+  FutureOr<String> generateForAnnotatedElement(
+    Element element, ConstantReader annotation, BuildStep _
+  ) {
     if (element == null) {
-      throw "@SumType() applied to something that is null";
+      throw Exception("@SumType() applied to something that is null");
     }
     if (!(element is ClassElement)) {
-      throw 'Only annotate mixins with `@SumType()`.';
+      throw Exception('Only annotate mixins with `@SumType()`.');
     }
     try {
       final clazz = ClassModel(element as ClassElement);
-      final tyArg = r'__T$';
-      final otherwise = r'otherwise__$';
+      const tyArg = r'__T$';
+      const otherwise = r'otherwise__$';
       final code = '''
         /// This data class has been generated from ${clazz.mixinName}
         abstract class ${clazz.factoryName} {
@@ -216,10 +223,10 @@ class SumTypeGenerator extends GeneratorForAnnotation<SumType> {
           const ${clazz.baseClassName}();
           ${clazz.getterDecls}
           $tyArg iswitch<$tyArg>({
-            ${clazz.switchParams(tyArg, true)}
+            ${clazz.switchParams(tyArg, SwitchMode.Required)}
           });
           $tyArg iswitcho<$tyArg>({
-            ${clazz.switchParams(tyArg, false)},
+            ${clazz.switchParams(tyArg, SwitchMode.Optional)},
             @required $tyArg Function() $otherwise,
           });
         }
@@ -235,14 +242,14 @@ class SumTypeGenerator extends GeneratorForAnnotation<SumType> {
 
           @override
           $tyArg iswitch<$tyArg>({
-            ${clazz.switchParams(tyArg, true)}
+            ${clazz.switchParams(tyArg, SwitchMode.Required)}
           }) {
             ${clazz.iswitchBody}
           }
 
           @override
           $tyArg iswitcho<$tyArg>({
-            ${clazz.switchParams(tyArg, false)},
+            ${clazz.switchParams(tyArg, SwitchMode.Optional)},
             @required $tyArg Function() $otherwise,
           }) {
             return iswitch(
@@ -260,7 +267,7 @@ class SumTypeGenerator extends GeneratorForAnnotation<SumType> {
       return code;
     } on CodegenException catch (e) {
       e.generatorName = "SumType";
-      throw e;
+      rethrow;
     }
   }
 }

@@ -1,7 +1,8 @@
+import 'dart:async';
+
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:build/build.dart';
-import 'package:build/src/builder/build_step.dart';
 import 'package:source_gen/source_gen.dart';
 import 'package:sum_data_types/main.dart';
 import './common.dart';
@@ -28,7 +29,7 @@ class TypeModel {
     ImportModel imports,
   ) {
     final typeRepr = computeTypeRepr(ty, imports);
-    var optionalType = null;
+    String optionalType;
     var typeReprForFactory = typeRepr;
     if (ty is ParameterizedType && ty.typeArguments.length == 1 && isQuiverOptional(ty, imports)) {
       optionalType = qualifyType(ty, imports);
@@ -58,31 +59,31 @@ class FieldModel {
   }
 
   String get factoryParam {
-    String prefix = this.type.isOptional ? "" : "@required ";
-    return "${prefix}${this.type.typeReprForFactory} ${name}";
+    final prefix = this.type.isOptional ? "" : "@required ";
+    return "$prefix${this.type.typeReprForFactory} $name";
   }
 
   // Parameter of the constructor
   String get constructorParam {
-    return "@required this.${name}";
+    return "@required this.$name";
   }
 
   // Argument for calling the constructor from the factory
   String get constructorArgFromFactory {
     final optionalType = this.type.optionalType;
     if (optionalType != null) {
-      return "${name}: ${optionalType}.fromNullable(${name})";
+      return "$name: $optionalType.fromNullable($name)";
     } else {
-      return "${name}: ${name}";
+      return "$name: $name";
     }
   }
 
   String get constructorArgFromCopyWith {
-    return "${name}: ${name} ?? this.${name}";
+    return "$name: $name ?? this.$name";
   }
 
   String get assertNotNull {
-    return "assert(${name} != null)";
+    return "assert($name != null)";
   }
 
   String get toStringField {
@@ -103,7 +104,7 @@ class ClassModel {
   String get baseClassName => _commonModel.baseClassName;
   String get mixinName => _commonModel.mixinName;
   String get factoryName => _commonModel.factoryName;
-  List<String> get fieldNames => fields.map((f) => f.name);
+  List<String> get fieldNames => fields.map((f) => f.name).toList();
 
   ClassModel(ClassElement clazz) :
       this._commonModel =
@@ -117,7 +118,7 @@ class ClassModel {
         (this.fields.isNotEmpty)
         ? "{" + this.fields.map((field) => field.copyWithParam).join(",") + "}"
         : "";
-    return "${this.className} copyWith(${params})";
+    return "${this.className} copyWith($params)";
   }
 
   String get fieldDeclarations {
@@ -162,17 +163,17 @@ class ClassModel {
 class DataClassGenerator extends GeneratorForAnnotation<DataClass> {
 
   @override
-  generateForAnnotatedElement(
+  FutureOr<String> generateForAnnotatedElement(
       Element element, ConstantReader annotation, BuildStep _) {
     if (element == null) {
-      throw "@DataClass() applied to something that is null";
+      throw Exception("@DataClass() applied to something that is null");
     }
     if (!(element is ClassElement)) {
-      throw 'Only annotate mixins with `@DataClass()`.';
+      throw Exception('Only annotate mixins with `@DataClass()`.');
     }
     try {
-      var clazz = ClassModel(element as ClassElement);
-      var code = '''
+      final clazz = ClassModel(element as ClassElement);
+      final code = '''
         /// This data class has been generated from ${clazz.mixinName}
         abstract class ${clazz.factoryName} {
           static ${clazz.mixinName} make(
@@ -214,7 +215,7 @@ class DataClassGenerator extends GeneratorForAnnotation<DataClass> {
       return code;
     } on CodegenException catch (e) {
       e.generatorName = "DataClass";
-      throw e;
+      rethrow;
     }
   }
 }

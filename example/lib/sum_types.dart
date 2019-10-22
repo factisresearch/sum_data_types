@@ -9,18 +9,18 @@ import 'package:test/test.dart';
 part 'sum_types.g.dart';
 
 void main() {
-  final nothing = SomethingFactory.nothing();
+  final nothing = SomethingFactory.nothing<String>();
   final userPaul = UserFactory.make(
     name: "Paul",
     friends: KtList.empty(),
-    address: new ty.Address(),
+    address: ty.Address(),
     friendsAddresses: KtList.empty(),
     foo: EitherFactory.makeRight(42),
   );
-  final user = SomethingFactory.user(userPaul);
-  final address = SomethingFactory.address(quiv.Optional.of(new ty.Address()));
-  final address2 = SomethingFactory.address(quiv.Optional.of(new ty.Address()));
-  final something = SomethingFactory.something(user);
+  final user = SomethingFactory.user<String>(userPaul);
+  final address = SomethingFactory.address<String>(quiv.Optional.of(ty.Address()));
+  final address2 = SomethingFactory.address<String>(quiv.Optional.of(ty.Address()));
+  final something = SomethingFactory.something<String>(user);
 
   test("equals", () {
     expect(address == null, isFalse);
@@ -68,8 +68,8 @@ void main() {
   });
 
   test("no strange error", () {
-    final nothing = SomethingFactory.nothing();
-    expect(() => nothing.iswitcho(), throwsA(TypeMatcher<ArgumentError>()));
+    final nothing = SomethingFactory.nothing<String>();
+    expect(() => nothing.iswitcho<String>(), throwsA(TypeMatcher<ArgumentError>()));
   });
 }
 

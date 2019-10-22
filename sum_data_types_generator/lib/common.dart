@@ -11,15 +11,15 @@ class CodegenException with Exception {
   String toString() {
     var loc = "";
     if (className != null && fieldName != null) {
-      loc = " for mixin '${className}' and field '${fieldName}'";
+      loc = " for mixin '$className' and field '$fieldName'";
     } else if (className != null) {
-      loc = " for mixin '${className}'";
+      loc = " for mixin '$className'";
     }
     var genName = "";
     if (generatorName != null) {
-      genName = " @${generatorName}";
+      genName = " @$generatorName";
     }
-    return "Error generating${genName} code${loc}: $message";
+    return "Error generating$genName code$loc: $message";
   }
 }
 
@@ -28,7 +28,7 @@ bool isType(DartType ty, String name, String packageUri, ImportModel imports) {
   return ty.name == name && imports.importUri(tyLib) == packageUri;
 }
 
-final quiverPackageUri = "package:quiver/core.dart";
+const quiverPackageUri = "package:quiver/core.dart";
 
 bool isQuiverOptional(DartType ty, ImportModel imports) {
   return isType(ty, "Optional", quiverPackageUri, imports);
@@ -39,7 +39,7 @@ String qualifyType(DartType ty, ImportModel imports) {
     final tyLib = ty.element.library;
     final prefixOrNull = imports.importPrefixOrNull(tyLib);
     final prefix = (prefixOrNull != null) ? (prefixOrNull + ".") : "";
-    return "${prefix}${ty.name}";
+    return "$prefix${ty.name}";
 }
 
 // Returns a textual representation of the given type, including generic types
@@ -49,10 +49,10 @@ String computeTypeRepr(DartType ty, ImportModel imports) {
     throw CodegenException("function types are not supported");
   } else if (ty.isDynamic) {
     return "dynamic";
-  } else if (ty is ParameterizedType && ty.typeArguments.length > 0) {
+  } else if (ty is ParameterizedType && ty.typeArguments.isNotEmpty) {
     final base = qualifyType(ty, imports);
     final args = ty.typeArguments.map((tyArg) => computeTypeRepr(tyArg, imports));
-    return "${base}<${args.join(", ")}>";
+    return "$base<${args.join(", ")}>";
   } else {
     return qualifyType(ty, imports);
   }
@@ -84,7 +84,7 @@ class ImportModel {
   String lookupOptionalType() {
     final modId = _uriToModuleId[quiverPackageUri];
     if (modId == null) {
-      throw new CodegenException(
+      throw CodegenException(
         "Cannot reference type 'Optional'. Please import the package '$quiverPackageUri', "
         "either unqualified or qualified."
       );
@@ -118,14 +118,14 @@ class CommonFieldModel<TypeModel> {
     @required this.internalName,
   });
 
-  factory CommonFieldModel(FieldElement field, MkType mkType, FieldNameConfig fieldCfg) {
+  factory CommonFieldModel(FieldElement field, MkType<TypeModel> mkType, FieldNameConfig fieldCfg) {
     try {
       final ty = mkType(field.type);
-      var name, internalName;
+      String name, internalName;
       switch (fieldCfg) {
         case FieldNameConfig.Public: {
           if (field.name.startsWith('_')) {
-            throw new CodegenException("fieldname must not start with an underscore");
+            throw CodegenException("fieldname must not start with an underscore");
           }
           name = field.name;
           internalName = '_' + name;
@@ -133,7 +133,7 @@ class CommonFieldModel<TypeModel> {
         }
         case FieldNameConfig.Private: {
           if (!field.name.startsWith('_')) {
-            throw new CodegenException("fieldname must start with an underscore");
+            throw CodegenException("fieldname must start with an underscore");
           }
           name = field.name.substring(1);
           internalName = field.name;
@@ -147,7 +147,7 @@ class CommonFieldModel<TypeModel> {
       );
     } on CodegenException catch (e) {
       e.fieldName = field.name;
-      throw e;
+      rethrow;
     }
   }
 }
@@ -177,7 +177,7 @@ class CommonClassModel<FieldModel> {
   factory CommonClassModel(ClassElement clazz, MkField<FieldModel> mkField) {
     try {
       // build a map of the qualified imports, mapping module identifiers to import prefixes
-      var lib = clazz.library;
+      final lib = clazz.library;
       final imports = ImportModel();
       lib.imports.forEach((imp) {
         imports.addImportElement(imp);
@@ -194,11 +194,11 @@ class CommonClassModel<FieldModel> {
       final fields = <FieldModel>[];
 
       for (var field in clazz.fields) {
-        var msgPrefix = "Invalid getter '${field.name}' for data class '${mixinName}'";
+        final msgPrefix = "Invalid getter '${field.name}' for data class '$mixinName'";
         if (field.getter == null && !field.isFinal) {
-          throw "${msgPrefix}: field must have a getter";
+          throw Exception("$msgPrefix: field must have a getter");
         } else if (field.setter != null) {
-          throw "${msgPrefix}: field must not have a setter";
+          throw Exception("$msgPrefix: field must not have a setter");
         } else {
           fields.add(mkField(field, imports));
         }
@@ -213,7 +213,7 @@ class CommonClassModel<FieldModel> {
       );
     } on CodegenException catch (e) {
       e.className = clazz.name;
-      throw e;
+      rethrow;
     }
   }
 }
@@ -238,7 +238,7 @@ String eqImpl(String className, List<String> fieldNames) {
 }
 
 String hashCodeImpl(List<String> fieldNames) {
-  final result = r'__result$';
+  const result = r'__result$';
   final updates = fieldNames.map((name) =>
       "$result = 37 * $result + this.$name.hashCode;").join("\n");
   return '''@override

@@ -15,7 +15,7 @@ void main() {
     friends: KtList.empty(),
     address: ty.Address(),
     friendsAddresses: KtList.empty(),
-    foo: EitherFactory.makeRight(42),
+    foo: EitherFactory.right(42),
   );
   final user = SomethingFactory.user<String>(userPaul);
   final address = SomethingFactory.address<String>(quiv.Optional.of(ty.Address()));
@@ -50,7 +50,7 @@ void main() {
       equals(
         'Something.user(User(name: Paul, age: Optional { absent }, friends: [], '
         'address: SomeAddress, workAddress: Optional { absent }, friendsAddresses: [], '
-        'foo: Right(42)))'
+        'foo: Either.right(42)))'
       )
     );
     expect(

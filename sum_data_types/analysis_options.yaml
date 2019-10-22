@@ -40,8 +40,6 @@ linter:
     - unnecessary_statements
 
 analyzer:
-  exclude:
-    - lib/**/*.g.dart
   strong-mode:
     implicit-casts: false
     implicit-dynamic: false

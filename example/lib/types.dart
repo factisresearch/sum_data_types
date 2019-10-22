@@ -7,6 +7,6 @@ class Address {
   int get hashCode => 0;
 
   bool operator ==(Object other) {
-    return (other != null && other is Address && runtimeType == other.runtimeType);
+    return (other is Address && runtimeType == other.runtimeType);
   }
 }

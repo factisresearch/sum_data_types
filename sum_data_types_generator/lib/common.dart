@@ -184,10 +184,6 @@ class CommonClassModel<FieldModel> {
       });
 
       final mixinName = clazz.name;
-      // without the toList(), we get a runtime error
-      // "type 'MappedListIterable<TypeParameterElement, String>'
-      //  is not a subtype of type 'List<String>'"
-      // Looks like darts type system is not sound!
       final List<String> typeArgs = clazz.typeParameters.map((param) => param.name).toList();
       final className = "_" + mixinName;
       final baseName = className + "Base";

@@ -37,15 +37,15 @@ class FieldModel {
 
   String factoryMethod(String resultType, String tyArgs, String constructor) {
     String mkFun(String arg, String result) {
-      return '''static $resultType ${this.name}<$tyArgs>($arg) {
-        return $constructor(${this.name}: $result);
+      return '''static $resultType $name$tyArgs($arg) {
+        return $constructor($name: $result);
       }''';
     }
     if (this.type.isUnit) {
-      return mkFun('', 'const ${this.type.typeRepr}()');
+      return mkFun('', 'const ${type.typeRepr}()');
     } else {
       final x = r'__x$';
-      return mkFun('${this.type.typeRepr} $x', x);
+      return mkFun('${type.typeRepr} $x', x);
     }
   }
 
@@ -57,11 +57,11 @@ class FieldModel {
   String switchParam(String tyArg, bool req) {
     String switchArg = this.type.isUnit ? '' : this.type.typeRepr;
     String prefix = req ? '@required ' : '';
-    return '${prefix}${tyArg} Function($switchArg) this.name';
+    return '${prefix}${tyArg} Function($switchArg) $name';
   }
 
   String get fieldDecl {
-    return 'final ${type.typeRepr} ${this.internalName};';
+    return 'final ${type.typeRepr} $internalName;';
   }
 
   String get getterImpl {
@@ -80,11 +80,11 @@ class FieldModel {
 
   String get iswitchIf {
     final funArg = this.type.isUnit ? '' : 'this.$internalName';
-    return '''if (${this.internalName} != null) {
+    return '''if (this.$internalName != null) {
       if ($name != null) {
-        return ${this.name}($funArg);
+        return $name($funArg);
       } else {
-        throw new ArgumentError.notNull("${this.name}");
+        throw new ArgumentError.notNull("$name");
       }
     }
     ''';
@@ -92,7 +92,7 @@ class FieldModel {
 
   String iswitchArgFromOtherwise(String otherwise) {
     final _otherwise = this.type.isUnit ? otherwise : '(Object _) => $otherwise()';
-    return '${this.name}: ${this.name} ?? $_otherwise';
+    return '$name: $name ?? $_otherwise';
   }
 }
 
@@ -114,7 +114,7 @@ class ClassModel {
   String get factoryName => _commonModel.factoryName;
 
   String get mixinType {
-    return this.mixinName; // FIXME
+    return this.mixinName + this.typeArgsWithParens;
   }
 
   List<String> get typeArgs {
@@ -122,19 +122,22 @@ class ClassModel {
   }
 
   String get typeArgsWithParens {
-    return '<' + this.typeArgs.join(",") + '>';
+    if (this.typeArgs.length > 0) {
+      return '<' + this.typeArgs.join(",") + '>';
+    } else {
+      return '';
+    }
   }
 
   String get factoryMethods {
     String resultType = this.mixinType;
-    String tyArgs = this.typeArgs.join(',');
     return this.fields.map((field) => field.factoryMethod(
-      resultType, tyArgs, this.className
+      resultType, this.typeArgsWithParens, this.className
     )).join("\n");
   }
 
   String get getterDecls {
-    return this.fields.map((field) => field.getterDecl).join(";\n");
+    return this.fields.map((field) => field.getterDecl + ";").join("\n");
   }
 
   String switchParams(String tyArg, bool req) {
@@ -178,7 +181,7 @@ class ClassModel {
   String get iswitchBody {
     final ifElse = this.fields.map((field) => field.iswitchIf).join(' else ');
     return '''$ifElse else {
-      throw StateError("an instance of ${this.mixinName} has no case selected");
+      throw StateError("an instance of $mixinName has no case selected");
     }''';
   }
 
@@ -200,7 +203,7 @@ class SumTypeGenerator extends GeneratorForAnnotation<SumType> {
     try {
       final clazz = ClassModel(element as ClassElement);
       final tyArg = r'__T$';
-      final otherwise = r'__otherwise$';
+      final otherwise = r'otherwise__$';
       final code = '''
         /// This data class has been generated from ${clazz.mixinName}
         abstract class ${clazz.factoryName} {

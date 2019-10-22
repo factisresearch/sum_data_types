@@ -75,17 +75,16 @@ void main() {
 /* FIXME: we need this test!
 @SumType()
 mixin Empty implements _EmptyBase {
-
 }
 */
 
 @SumType()
 mixin Something<T> implements _SomethingBase<T> {
-  Unit get _nothing;
-  User get _user;
-  Optional<ty.Address> get _address;
-  Something get _something;
-  T get _param;
+  Unit get nothing;
+  User get user;
+  Optional<ty.Address> get address;
+  Something get something;
+  T get param;
 }
 
 /*

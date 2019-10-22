@@ -71,6 +71,17 @@ void main() {
     final nothing = SomethingFactory.nothing<String>();
     expect(() => nothing.iswitcho<String>(), throwsA(TypeMatcher<ArgumentError>()));
   });
+
+  test("with unknown", () {
+    final unknown = WithUnknownFactory.unknown(42);
+    expect(unknown.toString(), equals("WithUnknown.unknown(42)"));
+  });
+}
+
+@SumType()
+mixin WithUnknown on _WithUnknownBase {
+  String get _known;
+  dynamic get _unknown;
 }
 
 @SumType()

@@ -76,7 +76,7 @@ class FieldModel {
     final optional = _imports.lookupOptionalType();
     return '''@override
       $getterDecl {
-        return $optional.fromNullable(this.$internalName);
+        return $optional<${type.typeRepr}>.fromNullable(this.$internalName);
       }''';
   }
 
@@ -109,7 +109,7 @@ class FieldModel {
     if (type.isUnit) {
       return '$name: () => "$name"';
     } else {
-      return '$name: (__value\$) => "$name(" + __value\$.toString() + ")"';
+      return '$name: (${type.typeRepr} __value\$) => "$name(" + __value\$.toString() + ")"';
     }
   }
 }

@@ -132,18 +132,8 @@ class ClassModel {
   String get factoryName => _commonModel.factoryName;
   List<String> get typeArgs => _commonModel.typeArgs;
   List<String> get fieldNames => fields.map((f) => f.name).toList();
-
-  String get mixinType {
-    return this.mixinName + this.typeArgsWithParens;
-  }
-
-  String get typeArgsWithParens {
-    if (this.typeArgs.isNotEmpty) {
-      return '<' + this.typeArgs.join(",") + '>';
-    } else {
-      return '';
-    }
-  }
+  String get mixinType => _commonModel.mixinType;
+  String get typeArgsWithParens => _commonModel.typeArgsWithParens;
 
   String get factoryMethods {
     final resultType = this.mixinType;

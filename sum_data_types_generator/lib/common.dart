@@ -216,6 +216,18 @@ class CommonClassModel<FieldModel> {
       rethrow;
     }
   }
+
+  String get mixinType {
+    return this.mixinName + this.typeArgsWithParens;
+  }
+
+  String get typeArgsWithParens {
+    if (this.typeArgs.isNotEmpty) {
+      return '<' + this.typeArgs.join(",") + '>';
+    } else {
+      return '';
+    }
+  }
 }
 
 String eqImpl(String className, List<String> fieldNames) {

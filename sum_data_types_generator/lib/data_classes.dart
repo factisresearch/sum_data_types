@@ -105,6 +105,8 @@ class ClassModel {
   String get mixinName => _commonModel.mixinName;
   String get factoryName => _commonModel.factoryName;
   List<String> get fieldNames => fields.map((f) => f.name).toList();
+  String get mixinType => _commonModel.mixinType;
+  String get typeArgsWithParens => _commonModel.typeArgsWithParens;
 
   ClassModel(ClassElement clazz) :
       this._commonModel =
@@ -118,7 +120,7 @@ class ClassModel {
         (this.fields.isNotEmpty)
         ? "{" + this.fields.map((field) => field.copyWithParam).join(",") + "}"
         : "";
-    return "${this.className} copyWith($params)";
+    return "${this.mixinType} copyWith($params)";
   }
 
   String get fieldDeclarations {
@@ -176,7 +178,7 @@ class DataClassGenerator extends GeneratorForAnnotation<DataClass> {
       final code = '''
         /// This data class has been generated from ${clazz.mixinName}
         abstract class ${clazz.factoryName} {
-          static ${clazz.mixinName} make(
+          static ${clazz.mixinType} make${clazz.typeArgsWithParens}(
             ${clazz.factoryParams}
           ) {
             return ${clazz.className}.make(
@@ -184,11 +186,14 @@ class DataClassGenerator extends GeneratorForAnnotation<DataClass> {
             );
           }
         }
-        abstract class ${clazz.baseClassName} {
+        abstract class ${clazz.baseClassName}${clazz.typeArgsWithParens} {
           ${clazz.copyWithSignature};
         }
         @immutable
-        class ${clazz.className} extends ${clazz.baseClassName} with ${clazz.mixinName} {
+        class ${clazz.className}${clazz.typeArgsWithParens}
+            extends ${clazz.baseClassName}${clazz.typeArgsWithParens}
+            with ${clazz.mixinName}${clazz.typeArgsWithParens}
+        {
           ${clazz.fieldDeclarations}
 
           // We cannot have a const constructor because of https://github.com/dart-lang/sdk/issues/37810

@@ -56,6 +56,17 @@ void main() {
       )
     );
   });
+
+  test("container", () {
+    final c = ContainerFactory.make(payload: "foo", id: "blub");
+    expect(c.toString(), "Container(id: blub, payload: foo)");
+  });
+}
+
+@DataClass()
+mixin Container<T> on _ContainerBase<T> {
+  String get id;
+  T get payload;
 }
 
 @SumType()

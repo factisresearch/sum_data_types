@@ -1,9 +1,11 @@
-This dart library generates immutable data classes with structural equality from
-a blueprint mixin.
+This dart library generates immutable data classes and classes for sum types from
+a blueprint mixin. The generated class define structural equality and `hashCode`. They
+also provide a meaningful implementation of `toString`.
 Also see [this issue](https://github.com/dart-lang/language/issues/314).
 
 The library is influence by the [data_classes](https://pub.dev/packages/data_classes)
-library. However, the interface is different, so we created a new package.
+and the [sum_types](https://github.com/werediver/sum_types.dart)
+libraries. However, their interfaces are different, so we created a new package.
 
 # Installation
 
@@ -18,7 +20,10 @@ dev_dependencies:
   sum_data_types_generator: [insert newest version here]
 ```
 
-# Usage
+# Data Classes
+
+A data class is similar to an immutable record. The fields of a data class are used to define
+equality and `hashCode` in a structural way.
 
 ## Define a blueprint mixin
 
@@ -75,3 +80,52 @@ the [quiver.core](https://api.flutter.dev/flutter/quiver.core/Optional-class.htm
 It is recommended to use immutable collections, for example from the
 [kt.dart](https://github.com/passsy/kt.dart) package. You can also use the builtin collections
 such as `List``, but their equality is based on pointer-equality and not on structural equality.
+
+# Sum Types
+
+A sum type combines various alternatives of types under a new type. The generated code
+defines switching functiosn for distinguishing between the different alternatives.
+
+## Define a blueprint mixin
+
+Here is an example:
+
+```dart
+import 'package:sum_data_types/main.dart';
+
+@SumType()
+mixin Either<A, B> on _EitherBase<A, B> {
+  A get _left;
+  B get _right;
+}
+```
+
+The `@SumType()` annotation triggers generation of the data class from the mixin
+following the annotation.
+The mixin should define getters for each alternative of the sum type. The name
+of the getters must start with an underscore. The code generation
+then generates code for `==` (structural equality), `hashCode` and `toString`.
+Additionally, it generates
+`iswitch` and `iswitcho` methods which you can use to switch over the various alternatives.
+Here is an example use of the `iswitch` method:
+
+```dart
+void foo(Either<String, int> x) {
+  x.iswitch(
+    left: (s) => print("String: " + s),
+    right: (i) => print("int: " + i.toString())
+  );
+}
+```
+
+The `iswitcho` method has an additional `otherwise` label, so you do not have to cover
+all cases when using `iswitcho`.
+
+## Use the generated class
+
+You create instances of the data class by using the static `left` and `right` methods of the
+also generated `EitherFactor` class.
+
+```dart
+EitherFactory.right(42)
+```

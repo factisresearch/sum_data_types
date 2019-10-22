@@ -39,32 +39,14 @@ void main() {
 
   test("toString", () {
     expect(address.toString(), equals(address2.toString()));
+    expect(nothing.toString(), equals('Something.nothing'));
     expect(
-      nothing.toString(),
-      equals(
-        'Something.nothing'
-      )
-    );
-    expect(
-      user.toString(),
-      equals(
-        'Something.user(User(name: Paul, age: Optional { absent }, friends: [], '
-        'address: SomeAddress, workAddress: Optional { absent }, friendsAddresses: [], '
-        'foo: Either.right(42)))'
-      )
-    );
-    expect(
-      address.toString(),
-      equals(
-        'Something.address(Optional { value: SomeAddress })'
-      )
-    );
-    expect(
-      something.toString(),
-      equals(
-        'Something.something(${user.toString()})'
-      )
-    );
+        user.toString(),
+        equals('Something.user(User(name: Paul, age: Optional { absent }, friends: [], '
+            'address: SomeAddress, workAddress: Optional { absent }, friendsAddresses: [], '
+            'foo: Either.right(42)))'));
+    expect(address.toString(), equals('Something.address(Optional { value: SomeAddress })'));
+    expect(something.toString(), equals('Something.something(${user.toString()})'));
   });
 
   test("no strange error", () {

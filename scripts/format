@@ -1,0 +1,27 @@
+#!/bin/bash
+
+HERE=$(cd $(dirname ${BASH_SOURCE[0]}) > /dev/null && pwd -P)
+cd $HERE/..
+
+set -o errexit
+set -o pipefail
+set -o nounset
+
+function usage()
+{
+    echo "$0 [--check]"
+    exit 1
+}
+
+opt="--overwrite"
+if [ "${1-}" == "--help" ]; then
+    usage
+elif [ "${1-}" == "--check" ]; then
+    opt="--dry-run"
+elif [ ! -z "${1-}" ]; then
+    usage
+fi
+
+find sum_data_types/lib sum_data_types_generator/lib example/lib \
+    -name '*.dart' -not -name '*.g.dart' \
+    -exec dartfmt $opt --fix-optional-new --line-length 100 \{\} \;

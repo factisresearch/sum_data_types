@@ -17,8 +17,8 @@ class TypeModel {
   });
 
   factory TypeModel(
-      DartType ty,
-      ImportModel imports,
+    DartType ty,
+    ImportModel imports,
   ) {
     final typeRepr = computeTypeRepr(ty, imports);
     final isUnit = isType(ty, "Unit", 'package:sum_data_types/main.dart', imports);
@@ -26,9 +26,7 @@ class TypeModel {
   }
 }
 
-enum SwitchMode {
-  Required, Optional
-}
+enum SwitchMode { Required, Optional }
 
 class FieldModel {
   final CommonFieldModel<TypeModel> _commonModel;
@@ -37,11 +35,10 @@ class FieldModel {
   String get name => _commonModel.name;
   String get internalName => _commonModel.internalName;
 
-  FieldModel(FieldElement fld, ImportModel imports) :
-      this._commonModel = CommonFieldModel(
-        fld, (DartType ty) => TypeModel(ty, imports), FieldNameConfig.Private
-      ),
-      this._imports = imports;
+  FieldModel(FieldElement fld, ImportModel imports)
+      : this._commonModel =
+            CommonFieldModel(fld, (DartType ty) => TypeModel(ty, imports), FieldNameConfig.Private),
+        this._imports = imports;
 
   String factoryMethod(String resultType, String tyArgs, String constructor) {
     String mkFun(String arg, String result) {
@@ -49,6 +46,7 @@ class FieldModel {
         return $constructor($name: $result);
       }''';
     }
+
     if (this.type.isUnit) {
       return mkFun('', 'const ${type.typeRepr}()');
     } else {
@@ -115,15 +113,13 @@ class FieldModel {
 }
 
 class ClassModel {
-
   final CommonClassModel<FieldModel> _commonModel;
 
-  ClassModel(ClassElement clazz) :
-      this._commonModel =
-          CommonClassModel(
-            clazz,
-            (FieldElement fld, ImportModel imports) => FieldModel(fld, imports),
-          );
+  ClassModel(ClassElement clazz)
+      : this._commonModel = CommonClassModel(
+          clazz,
+          (FieldElement fld, ImportModel imports) => FieldModel(fld, imports),
+        );
 
   List<FieldModel> get fields => _commonModel.fields;
   String get className => _commonModel.className;
@@ -137,9 +133,10 @@ class ClassModel {
 
   String get factoryMethods {
     final resultType = this.mixinType;
-    return this.fields.map((field) => field.factoryMethod(
-      resultType, this.typeArgsWithParens, this.className
-    )).join("\n");
+    return this
+        .fields
+        .map((field) => field.factoryMethod(resultType, this.typeArgsWithParens, this.className))
+        .join("\n");
   }
 
   String get getterDecls {
@@ -201,11 +198,9 @@ class ClassModel {
 }
 
 class SumTypeGenerator extends GeneratorForAnnotation<SumType> {
-
   @override
   FutureOr<String> generateForAnnotatedElement(
-    Element element, ConstantReader annotation, BuildStep _
-  ) {
+      Element element, ConstantReader annotation, BuildStep _) {
     if (element == null) {
       throw Exception("@SumType() applied to something that is null");
     }

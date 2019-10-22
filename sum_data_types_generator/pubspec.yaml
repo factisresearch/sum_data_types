@@ -15,7 +15,7 @@ dependencies:
     git:
       url: https://github.com/factisresearch/sum_data_types
       path: sum_data_types
-      ref: e9842deaddce7500eb74304e126a5d7ce47ba6ad
+      ref: a45f1a95fabb5ff27da3fad149af018aad00ba8a
   source_gen: ^0.9.0
 
 dev_dependencies:

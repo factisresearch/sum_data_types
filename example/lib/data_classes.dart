@@ -4,28 +4,31 @@ import 'package:quiver/core.dart';
 import 'package:kt_dart/collection.dart';
 import "package:test/test.dart";
 
-part 'main.g.dart';
+part 'data_classes.g.dart';
 
 void main() {
   final userBob = UserFactory.make(
     name: "Bob",
     friends: KtList.empty(),
-    address: new ty.Address(),
+    address: ty.Address(),
     age: 31,
     friendsAddresses: KtList.empty(),
+    foo: EitherFactory.left("foo"),
   );
   final userPaul = UserFactory.make(
     name: "Paul",
     friends: KtList.of(userBob),
-    address: new ty.Address(),
+    address: ty.Address(),
     friendsAddresses: KtList.empty(),
+    foo: EitherFactory.right(42),
   );
   final userSarah = userPaul.copyWith(name: "Sarah");
   final userSarah2 = UserFactory.make(
     name: "Sarah",
     friends: KtList.of(userBob),
-    address: new ty.Address(),
-    friendsAddresses: KtList.empty()
+    address: ty.Address(),
+    friendsAddresses: KtList.empty(),
+    foo: EitherFactory.right(42),
   );
 
   test("equals", () {
@@ -47,11 +50,29 @@ void main() {
       equals(
         'User(name: Sarah, age: Optional { absent }, friends: '
         '[User(name: Bob, age: Optional { value: 31 }, friends: [], address: SomeAddress, '
-        'workAddress: Optional { absent }, friendsAddresses: [])], '
-        'address: SomeAddress, workAddress: Optional { absent }, friendsAddresses: [])'
+        'workAddress: Optional { absent }, friendsAddresses: [], foo: Either.left(foo))], '
+        'address: SomeAddress, workAddress: Optional { absent }, friendsAddresses: [], '
+        'foo: Either.right(42))'
       )
     );
   });
+
+  test("container", () {
+    final c = ContainerFactory.make(payload: "foo", id: "blub");
+    expect(c.toString(), "Container(id: blub, payload: foo)");
+  });
+}
+
+@DataClass()
+mixin Container<T> on _ContainerBase<T> {
+  String get id;
+  T get payload;
+}
+
+@SumType()
+mixin Either<A, B> on _EitherBase<A, B> {
+  A get _left;
+  B get _right;
 }
 
 @DataClass()
@@ -62,6 +83,7 @@ mixin User on _UserBase {
   ty.Address get address;
   Optional<ty.Address> get workAddress;
   KtList<ty.Address> get friendsAddresses;
+  Either<String, int> get foo;
 
   int numerOfFriends() {
     return this.friendsAddresses.size;

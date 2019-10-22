@@ -1,4 +1,4 @@
 *.lock
 .packages
 .dart_tool
-example/lib/main.g.dart
+example/lib/*.g.dart

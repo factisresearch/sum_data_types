@@ -219,19 +219,19 @@ class CommonClassModel<FieldModel> {
 }
 
 String eqImpl(String className, List<String> fieldNames) {
-  final other = r'__other$';
+  const other = r'__other$';
   var fieldsEq = "true";
-  if (fieldNames.length > 0) {
+  if (fieldNames.isNotEmpty) {
     fieldsEq = fieldNames.map((name) => 'this.$name == $other.$name').join(" && ");
   }
   return '''@override
     bool operator ==(Object $other) {
-      if (identical(this, other)) {
+      if (identical(this, $other)) {
         return true;
       }
       return (
-        other is $className &&
-        this.runtimeType == other.runtimeType &&
+        $other is $className &&
+        this.runtimeType == $other.runtimeType &&
         $fieldsEq
       );
     }''';

@@ -46,15 +46,12 @@ void main() {
   test("toString", () {
     expect(userSarah.toString(), equals(userSarah2.toString()));
     expect(
-      userSarah.toString(),
-      equals(
-        'User(name: Sarah, age: Optional { absent }, friends: '
-        '[User(name: Bob, age: Optional { value: 31 }, friends: [], address: SomeAddress, '
-        'workAddress: Optional { absent }, friendsAddresses: [], foo: Either.left(foo))], '
-        'address: SomeAddress, workAddress: Optional { absent }, friendsAddresses: [], '
-        'foo: Either.right(42))'
-      )
-    );
+        userSarah.toString(),
+        equals('User(name: Sarah, age: Optional { absent }, friends: '
+            '[User(name: Bob, age: Optional { value: 31 }, friends: [], address: SomeAddress, '
+            'workAddress: Optional { absent }, friendsAddresses: [], foo: Either.left(foo))], '
+            'address: SomeAddress, workAddress: Optional { absent }, friendsAddresses: [], '
+            'foo: Either.right(42))'));
   });
 
   test("container", () {

@@ -1,5 +1,4 @@
 class Address {
-
   String toString() {
     return "SomeAddress";
   }

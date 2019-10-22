@@ -36,23 +36,18 @@ class TypeModel {
       typeReprForFactory = computeTypeRepr(ty.typeArguments[0], imports);
     }
     return TypeModel._(
-      typeRepr: typeRepr,
-      typeReprForFactory: typeReprForFactory,
-      optionalType: optionalType
-    );
+        typeRepr: typeRepr, typeReprForFactory: typeReprForFactory, optionalType: optionalType);
   }
 }
 
 class FieldModel {
-
   final CommonFieldModel<TypeModel> _commonModel;
   TypeModel get type => _commonModel.type;
   String get name => _commonModel.name;
 
-  FieldModel(FieldElement fld, ImportModel imports) :
-      this._commonModel = CommonFieldModel(
-        fld, (DartType ty) => TypeModel(ty, imports), FieldNameConfig.Public
-      );
+  FieldModel(FieldElement fld, ImportModel imports)
+      : this._commonModel =
+            CommonFieldModel(fld, (DartType ty) => TypeModel(ty, imports), FieldNameConfig.Public);
 
   String get declaration {
     return "final ${this.type.typeRepr} ${this.name};";
@@ -96,7 +91,6 @@ class FieldModel {
 }
 
 class ClassModel {
-
   final CommonClassModel<FieldModel> _commonModel;
 
   List<FieldModel> get fields => _commonModel.fields;
@@ -108,16 +102,14 @@ class ClassModel {
   String get mixinType => _commonModel.mixinType;
   String get typeArgsWithParens => _commonModel.typeArgsWithParens;
 
-  ClassModel(ClassElement clazz) :
-      this._commonModel =
-          CommonClassModel(
-            clazz,
-            (FieldElement fld, ImportModel imports) => FieldModel(fld, imports),
-          );
+  ClassModel(ClassElement clazz)
+      : this._commonModel = CommonClassModel(
+          clazz,
+          (FieldElement fld, ImportModel imports) => FieldModel(fld, imports),
+        );
 
   String get copyWithSignature {
-    final params =
-        (this.fields.isNotEmpty)
+    final params = (this.fields.isNotEmpty)
         ? "{" + this.fields.map((field) => field.copyWithParam).join(",") + "}"
         : "";
     return "${this.mixinType} copyWith($params)";
@@ -128,15 +120,13 @@ class ClassModel {
   }
 
   String get factoryParams {
-    return
-        this.fields.isNotEmpty
+    return this.fields.isNotEmpty
         ? "{" + this.fields.map((field) => field.factoryParam + ",").join() + "}"
         : "";
   }
 
   String get constructorParams {
-    return
-        this.fields.isNotEmpty
+    return this.fields.isNotEmpty
         ? "{" + this.fields.map((field) => field.constructorParam + ",").join() + "}"
         : "";
   }
@@ -163,7 +153,6 @@ class ClassModel {
 }
 
 class DataClassGenerator extends GeneratorForAnnotation<DataClass> {
-
   @override
   FutureOr<String> generateForAnnotatedElement(
       Element element, ConstantReader annotation, BuildStep _) {

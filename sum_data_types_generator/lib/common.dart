@@ -36,10 +36,10 @@ bool isQuiverOptional(DartType ty, ImportModel imports) {
 
 // Returns a potential qualified access string for the type, without type arguments
 String qualifyType(DartType ty, ImportModel imports) {
-    final tyLib = ty.element.library;
-    final prefixOrNull = imports.importPrefixOrNull(tyLib);
-    final prefix = (prefixOrNull != null) ? (prefixOrNull + ".") : "";
-    return "$prefix${ty.name}";
+  final tyLib = ty.element.library;
+  final prefixOrNull = imports.importPrefixOrNull(tyLib);
+  final prefix = (prefixOrNull != null) ? (prefixOrNull + ".") : "";
+  return "$prefix${ty.name}";
 }
 
 // Returns a textual representation of the given type, including generic types
@@ -59,7 +59,6 @@ String computeTypeRepr(DartType ty, ImportModel imports) {
 }
 
 class ImportModel {
-
   final Map<String, String> _moduleIdToPrefix = Map();
   final Map<String, String> _moduleIdToUri = Map();
   final Map<String, String> _uriToModuleId = Map();
@@ -85,9 +84,8 @@ class ImportModel {
     final modId = _uriToModuleId[quiverPackageUri];
     if (modId == null) {
       throw CodegenException(
-        "Cannot reference type 'Optional'. Please import the package '$quiverPackageUri', "
-        "either unqualified or qualified."
-      );
+          "Cannot reference type 'Optional'. Please import the package '$quiverPackageUri', "
+          "either unqualified or qualified.");
     } else {
       final prefix = _moduleIdToPrefix[modId];
       if (prefix == null) {
@@ -101,13 +99,9 @@ class ImportModel {
 
 typedef MkType<T> = T Function(DartType ty);
 
-
-enum FieldNameConfig {
-  Public, Private
-}
+enum FieldNameConfig { Public, Private }
 
 class CommonFieldModel<TypeModel> {
-
   final String name;
   final String internalName;
   final TypeModel type;
@@ -123,22 +117,24 @@ class CommonFieldModel<TypeModel> {
       final ty = mkType(field.type);
       String name, internalName;
       switch (fieldCfg) {
-        case FieldNameConfig.Public: {
-          if (field.name.startsWith('_')) {
-            throw CodegenException("fieldname must not start with an underscore");
+        case FieldNameConfig.Public:
+          {
+            if (field.name.startsWith('_')) {
+              throw CodegenException("fieldname must not start with an underscore");
+            }
+            name = field.name;
+            internalName = '_' + name;
+            break;
           }
-          name = field.name;
-          internalName = '_' + name;
-          break;
-        }
-        case FieldNameConfig.Private: {
-          if (!field.name.startsWith('_')) {
-            throw CodegenException("fieldname must start with an underscore");
+        case FieldNameConfig.Private:
+          {
+            if (!field.name.startsWith('_')) {
+              throw CodegenException("fieldname must start with an underscore");
+            }
+            name = field.name.substring(1);
+            internalName = field.name;
+            break;
           }
-          name = field.name.substring(1);
-          internalName = field.name;
-          break;
-        }
       }
       return CommonFieldModel._(
         name: name,
@@ -155,7 +151,6 @@ class CommonFieldModel<TypeModel> {
 typedef MkField<T> = T Function(FieldElement f, ImportModel imports);
 
 class CommonClassModel<FieldModel> {
-
   final String mixinName;
   final String className;
   final String baseClassName;
@@ -246,9 +241,14 @@ String eqImpl(String className, List<String> fieldNames) {
 }
 
 String hashCodeImpl(List<String> fieldNames) {
+  if (fieldNames.isEmpty) {
+    return '''@override
+      int get hashCode { return 0; }
+    ''';
+  }
   const result = r'__result$';
-  final updates = fieldNames.map((name) =>
-      "$result = 37 * $result + this.$name.hashCode;").join("\n");
+  final updates =
+      fieldNames.map((name) => "$result = 37 * $result + this.$name.hashCode;").join("\n");
   return '''@override
     int get hashCode {
       var $result = 17;

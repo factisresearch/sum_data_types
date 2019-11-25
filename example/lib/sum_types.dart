@@ -66,13 +66,13 @@ void main() {
 }
 
 @SumType()
-mixin WithUnknown on _WithUnknownBase {
+mixin WithUnknown {
   String get _known;
   dynamic get _unknown;
 }
 
 @SumType()
-mixin Something<T> implements _SomethingBase<T> {
+mixin Something<T> {
   Unit get _nothing;
   User get _user;
   quiv.Optional<ty.Address> get _address;

@@ -153,7 +153,7 @@ typedef MkField<T> = T Function(FieldElement f, ImportModel imports);
 class CommonClassModel<FieldModel> {
   final String mixinName;
   final String className;
-  final String baseClassName;
+  final String extensionName;
   final List<FieldModel> fields;
   final List<String> typeArgs;
 
@@ -164,7 +164,7 @@ class CommonClassModel<FieldModel> {
   CommonClassModel.mk({
     @required this.mixinName,
     @required this.className,
-    @required this.baseClassName,
+    @required this.extensionName,
     @required this.fields,
     @required this.typeArgs,
   });
@@ -181,7 +181,7 @@ class CommonClassModel<FieldModel> {
       final mixinName = clazz.name;
       final List<String> typeArgs = clazz.typeParameters.map((param) => param.name).toList();
       final className = "_" + mixinName;
-      final baseName = className + "Base";
+      final extensionName = mixinName + "Methods";
       final fields = <FieldModel>[];
 
       for (var field in clazz.fields) {
@@ -197,7 +197,7 @@ class CommonClassModel<FieldModel> {
 
       return CommonClassModel.mk(
         mixinName: mixinName,
-        baseClassName: baseName,
+        extensionName: extensionName,
         className: className,
         fields: fields,
         typeArgs: typeArgs,

@@ -61,13 +61,13 @@ void main() {
 }
 
 @DataClass()
-mixin Container<T> on _ContainerBase<T> {
+mixin Container<T> {
   String get id;
   T get payload;
 }
 
 @SumType()
-mixin Either<A, B> on _EitherBase<A, B> {
+mixin Either<A, B> {
   A get _left;
   B get _right;
 }
@@ -80,7 +80,7 @@ void foo(Either<String, int> x) {
 }
 
 @DataClass()
-mixin User on _UserBase {
+mixin User {
   String get name;
   Optional<int> get age;
   KtList<User> get friends;

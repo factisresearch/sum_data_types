@@ -86,7 +86,7 @@ class FieldModel {
   }
 
   String get copyWithParam {
-    return "${this.type.typeRepr} ${this.name}";
+    return "${this.type.typeRepr} ${this.name},";
   }
 }
 
@@ -112,7 +112,7 @@ class ClassModel {
 
   String get copyWithSignature {
     final params = (this.fields.isNotEmpty)
-        ? "{" + this.fields.map((field) => field.copyWithParam).join(",") + "}"
+        ? "{" + this.fields.map((field) => field.copyWithParam).join("") + "}"
         : "";
     return "${this.mixinType} copyWith($params)";
   }

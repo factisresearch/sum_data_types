@@ -42,9 +42,8 @@ class FieldModel {
 
   String factoryMethod(String resultType, String tyArgs, String constructor) {
     String mkFun(String arg, String result) {
-      return '''static $resultType $name$tyArgs($arg) {
-        return $constructor($name: $result);
-      }''';
+      return '''static $resultType $name$tyArgs($arg) =>
+          $constructor($name: $result);''';
     }
 
     if (this.type.isUnit) {
@@ -72,14 +71,11 @@ class FieldModel {
 
   String get getterImpl {
     final optional = _imports.lookupOptionalType();
-    return '''@override
-      $getterDecl {
-        return $optional<${type.typeRepr}>.fromNullable(this.$internalName);
-      }''';
+    return "$getterDecl => $optional<${type.typeRepr}>.fromNullable(this.$internalName);";
   }
 
   String get constructorParam {
-    return '${type.typeRepr} $name';
+    return '${type.typeRepr} $name,';
   }
 
   String get constructorAssignment {
@@ -89,25 +85,22 @@ class FieldModel {
   String get iswitchIf {
     final funArg = this.type.isUnit ? '' : 'this.$internalName';
     return '''if (this.$internalName != null) {
-      if ($name != null) {
-        return $name($funArg);
-      } else {
-        throw ArgumentError.notNull("$name");
-      }
+      if ($name == null) throw ArgumentError.notNull("$name");
+      return $name($funArg);
     }
     ''';
   }
 
   String iswitchArgFromOtherwise(String otherwise) {
     final _otherwise = this.type.isUnit ? otherwise : '(Object _) => $otherwise()';
-    return '$name: $name ?? $_otherwise';
+    return '$name: $name ?? $_otherwise,';
   }
 
   String get toStringSwitch {
     if (type.isUnit) {
       return '$name: () => "$name"';
     } else {
-      return '$name: (${type.typeRepr} __value\$) => "$name(" + __value\$.toString() + ")"';
+      return '$name: (${type.typeRepr} __value\$) => "$name(\${__value\$})"';
     }
   }
 }
@@ -158,7 +151,7 @@ class ClassModel {
   }
 
   String get constructorParams {
-    return this.fields.map((field) => field.constructorParam).join(",\n");
+    return this.fields.map((field) => field.constructorParam).join("\n");
   }
 
   String get constructorInitializers {
@@ -191,7 +184,7 @@ class ClassModel {
   }
 
   String iswitchArgsFromOtherwise(String otherwise) {
-    return this.fields.map((field) => field.iswitchArgFromOtherwise(otherwise)).join(",\n");
+    return this.fields.map((field) => field.iswitchArgFromOtherwise(otherwise)).join("\n");
   }
 
   String get toStringSwitch {
@@ -244,7 +237,9 @@ class SumTypeGenerator extends GeneratorForAnnotation<SumType> {
             with ${clazz.mixinName}${clazz.typeArgsWithParens}
         {
           ${clazz.fieldDecls}
+
           ${clazz.getterImpls}
+
           ${clazz.className}({
             ${clazz.constructorParams}
           }) : ${clazz.constructorInitializers};

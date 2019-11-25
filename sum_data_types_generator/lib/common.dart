@@ -265,21 +265,16 @@ String eqImpl(String className, List<String> fieldNames) {
   }
   return '''@override
     bool operator ==(Object $other) {
-      if (identical(this, $other)) {
-        return true;
-      }
-      return (
-        $other is $className &&
-        this.runtimeType == $other.runtimeType &&
-        $fieldsEq
-      );
+      if (identical(this, $other)) return true;
+      if (this.runtimeType != $other.runtimeType) return false;
+      return $other is $className && $fieldsEq;
     }''';
 }
 
 String hashCodeImpl(List<String> fieldNames) {
   if (fieldNames.isEmpty) {
     return '''@override
-      int get hashCode { return 0; }
+      int get hashCode => 0;
     ''';
   }
   const result = r'__result$';

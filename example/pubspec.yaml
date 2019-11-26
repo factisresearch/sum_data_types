@@ -5,10 +5,11 @@ author: Stefan Wehr (wehr@cp-med.com)
 homepage: https://github.com/factisresearch/sum_data_types
 
 environment:
-  sdk: ">=2.5.0 <3.0.0"
+  sdk: ">=2.6.0 <3.0.0"
 
 dependencies:
   quiver: '>=2.0.0 <3.0.0'
+  pedantic: ^1.8.0
   kt_dart: ^0.6.2
   sum_data_types:
     git:

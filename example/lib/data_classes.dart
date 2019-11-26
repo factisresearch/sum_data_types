@@ -73,10 +73,7 @@ mixin Either<A, B> on _EitherBase<A, B> {
 }
 
 void foo(Either<String, int> x) {
-  x.iswitch(
-    left: (s) => print("String: " + s),
-    right: (i) => print("int: " + i.toString())
-  );
+  x.iswitch(left: (s) => print("String: " + s), right: (i) => print("int: " + i.toString()));
 }
 
 @DataClass()

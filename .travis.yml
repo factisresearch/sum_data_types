@@ -1,0 +1,4 @@
+language: dart
+dart:
+- stable
+script: ${TRAVIS_BUILD_DIR}/scripts/check-all --prepare

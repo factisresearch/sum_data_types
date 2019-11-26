@@ -51,7 +51,7 @@ void main() {
 
   test("no strange error", () {
     final nothing = SomethingFactory.nothing<String>();
-    // ignore: missing_required_param
+    // ignore: missing_required_param, missing_required_param_with_details
     expect(() => nothing.iswitcho<String>(), throwsA(TypeMatcher<ArgumentError>()));
   });
 

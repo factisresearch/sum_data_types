@@ -7,7 +7,7 @@ set -o errexit
 set -o pipefail
 set -o nounset
 
-if [ ${1-} == "--prepare" ]; then
+if [ "${1-}" == "--prepare" ]; then
    echo
    echo "Preparing ..."
    scripts/prepare || exit 1
@@ -19,7 +19,7 @@ scripts/check-format || exit 1
 echo "Done checking code format"
 echo
 echo "Running analyzer checks ..."
-scripts/check-analyzer || exti 1
+scripts/check-analyzer || exit 1
 echo "Done with analyzer checks"
 echo
 echo "Running tests ..."

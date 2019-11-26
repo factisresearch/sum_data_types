@@ -9,6 +9,7 @@ environment:
 
 dependencies:
   quiver: '>=2.0.0 <3.0.0'
+  pedantic: ^1.8.0
   kt_dart: ^0.6.2
   sum_data_types:
     git:

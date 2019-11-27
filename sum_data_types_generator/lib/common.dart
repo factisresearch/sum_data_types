@@ -66,14 +66,25 @@ class ImportModel {
   final Map<String, String> _uriToModuleId = Map();
 
   String importPrefixOrNull(LibraryElement lib) {
-    return _moduleIdToPrefix[lib.identifier];
+    if (lib == null) {
+      return null;
+    } else {
+      return _moduleIdToPrefix[lib.identifier];
+    }
   }
 
   String importUri(LibraryElement lib) {
-    return _moduleIdToUri[lib.identifier];
+    if (lib == null) {
+      return null;
+    } else {
+      return _moduleIdToUri[lib.identifier];
+    }
   }
 
   void addImportElement(ImportElement imp) {
+    if (imp.importedLibrary == null) {
+      return;
+    }
     final modId = imp.importedLibrary.identifier;
     this._moduleIdToUri[modId] = imp.uri;
     this._uriToModuleId[imp.uri] = modId;

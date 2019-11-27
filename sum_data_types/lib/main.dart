@@ -10,9 +10,9 @@ class DataClass {
   final bool genToString;
   final bool genEqHashCode;
 
-  const DataClass({bool toString, bool eqHashCode}):
-      genToString = toString ?? true,
-      genEqHashCode = eqHashCode ?? true;
+  const DataClass({bool toString, bool eqHashCode})
+      : genToString = toString ?? true,
+        genEqHashCode = eqHashCode ?? true;
 }
 
 //
@@ -23,9 +23,9 @@ class SumType {
   final bool genToString;
   final bool genEqHashCode;
 
-  const SumType({bool toString, bool eqHashCode}):
-      genToString = toString ?? true,
-      genEqHashCode = eqHashCode ?? true;
+  const SumType({bool toString, bool eqHashCode})
+      : genToString = toString ?? true,
+        genEqHashCode = eqHashCode ?? true;
 }
 
 @immutable

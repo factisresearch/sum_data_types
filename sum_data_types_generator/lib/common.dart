@@ -168,9 +168,9 @@ class CodgenConfig {
   final bool genToString;
   final bool genEqHashCode;
 
-  const CodgenConfig({bool toString, bool eqHashCode}):
-      genToString = toString ?? true,
-      genEqHashCode = eqHashCode ?? true;
+  const CodgenConfig({bool toString, bool eqHashCode})
+      : genToString = toString ?? true,
+        genEqHashCode = eqHashCode ?? true;
 }
 
 class CommonClassModel<FieldModel> {
@@ -194,7 +194,11 @@ class CommonClassModel<FieldModel> {
     @required this.config,
   });
 
-  factory CommonClassModel(ClassElement clazz, MkField<FieldModel> mkField, ConstantReader reader,) {
+  factory CommonClassModel(
+    ClassElement clazz,
+    MkField<FieldModel> mkField,
+    ConstantReader reader,
+  ) {
     try {
       // build a map of the qualified imports, mapping module identifiers to import prefixes
       final lib = clazz.library;
@@ -288,4 +292,3 @@ String hashCodeImpl(List<String> fieldNames) {
       return $result;
     }''';
 }
-

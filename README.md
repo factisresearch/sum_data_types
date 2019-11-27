@@ -58,6 +58,21 @@ Additionally, it generates
 a `copyWith` method through which you can non-destructively modify some fields of an existing
 object of the class (i.e. `copyWith` returns a copy of the object).
 
+You can customize the code generation by using the two boolean flags `toString` and
+`eqHashCode`. If you set one of the flags to `false`, then no code for `toString` or `==` and
+`hashCode`, respectively, is generated. Example:
+
+```dart
+@DataClass(toString: false)
+mixin UserWithPassword {
+  String get userId;
+  String get password;
+
+  String toString() {
+    return "User($userId)"; // do not print the password
+  }
+}
+```
 ## Use the generated class
 
 You create instances of the data class by using the static `make` method of the
@@ -124,6 +139,10 @@ void foo(Either<String, int> x) {
 
 The `iswitcho` method has an additional `otherwise` label, so you do not have to cover
 all cases when using `iswitcho`.
+
+You can customize the code generation by using the two boolean flags `toString` and
+`eqHashCode`. If you set one of the flags to `false`, then no code for `toString` or `==` and
+`hashCode`, respectively, is generated.
 
 ## Use the generated class
 

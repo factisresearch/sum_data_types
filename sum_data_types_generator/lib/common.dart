@@ -1,6 +1,8 @@
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:meta/meta.dart';
+import 'package:source_gen/source_gen.dart';
+import 'package:sum_data_types/main.dart';
 
 class CodegenException with Exception {
   String className;
@@ -64,14 +66,25 @@ class ImportModel {
   final Map<String, String> _uriToModuleId = Map();
 
   String importPrefixOrNull(LibraryElement lib) {
-    return _moduleIdToPrefix[lib.identifier];
+    if (lib == null) {
+      return null;
+    } else {
+      return _moduleIdToPrefix[lib.identifier];
+    }
   }
 
   String importUri(LibraryElement lib) {
-    return _moduleIdToUri[lib.identifier];
+    if (lib == null) {
+      return null;
+    } else {
+      return _moduleIdToUri[lib.identifier];
+    }
   }
 
   void addImportElement(ImportElement imp) {
+    if (imp.importedLibrary == null) {
+      return;
+    }
     final modId = imp.importedLibrary.identifier;
     this._moduleIdToUri[modId] = imp.uri;
     this._uriToModuleId[imp.uri] = modId;
@@ -150,12 +163,23 @@ class CommonFieldModel<TypeModel> {
 
 typedef MkField<T> = T Function(FieldElement f, ImportModel imports);
 
+@immutable
+class CodgenConfig {
+  final bool genToString;
+  final bool genEqHashCode;
+
+  const CodgenConfig({bool toString, bool eqHashCode})
+      : genToString = toString ?? true,
+        genEqHashCode = eqHashCode ?? true;
+}
+
 class CommonClassModel<FieldModel> {
   final String mixinName;
   final String className;
   final String baseClassName;
   final List<FieldModel> fields;
   final List<String> typeArgs;
+  final CodgenConfig config;
 
   String get factoryName {
     return mixinName + "Factory";
@@ -167,9 +191,14 @@ class CommonClassModel<FieldModel> {
     @required this.baseClassName,
     @required this.fields,
     @required this.typeArgs,
+    @required this.config,
   });
 
-  factory CommonClassModel(ClassElement clazz, MkField<FieldModel> mkField) {
+  factory CommonClassModel(
+    ClassElement clazz,
+    MkField<FieldModel> mkField,
+    ConstantReader reader,
+  ) {
     try {
       // build a map of the qualified imports, mapping module identifiers to import prefixes
       final lib = clazz.library;
@@ -185,22 +214,29 @@ class CommonClassModel<FieldModel> {
       final fields = <FieldModel>[];
 
       for (var field in clazz.fields) {
-        final msgPrefix = "Invalid getter '${field.name}' for data class '$mixinName'";
-        if (field.getter == null && !field.isFinal) {
-          throw Exception("$msgPrefix: field must have a getter");
-        } else if (field.setter != null) {
-          throw Exception("$msgPrefix: field must not have a setter");
-        } else {
-          fields.add(mkField(field, imports));
+        if (field.name != "hashCode") {
+          final msgPrefix = "Invalid getter '${field.name}' for data class '$mixinName'";
+          if (field.getter == null && !field.isFinal) {
+            throw Exception("$msgPrefix: field must have a getter");
+          } else if (field.setter != null) {
+            throw Exception("$msgPrefix: field must not have a setter");
+          } else {
+            fields.add(mkField(field, imports));
+          }
         }
       }
 
+      // The fields are from the SumDataType class.
+      final genToString = reader.objectValue.getField("genToString").toBoolValue();
+      final genEqHashCode = reader.objectValue.getField("genEqHashCode").toBoolValue();
+      final annotation = CodgenConfig(toString: genToString, eqHashCode: genEqHashCode);
       return CommonClassModel.mk(
         mixinName: mixinName,
         baseClassName: baseName,
         className: className,
         fields: fields,
         typeArgs: typeArgs,
+        config: annotation,
       );
     } on CodegenException catch (e) {
       e.className = clazz.name;

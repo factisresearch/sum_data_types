@@ -58,6 +58,17 @@ void main() {
     final c = ContainerFactory.make(payload: "foo", id: "blub");
     expect(c.toString(), "Container(id: blub, payload: foo)");
   });
+
+  test("customToString", () {
+    final c = CustomToStringFactory.make(bar: "1", foo: "2");
+    expect(c.toString(), equals("custom"));
+  });
+
+  test("customEq", () {
+    final c = CustomEqFactory.make(bar: "1", foo: "2");
+    expect(c == c, equals(false));
+    expect(c.hashCode, equals(42));
+  });
 }
 
 @DataClass()
@@ -93,6 +104,31 @@ mixin User on _UserBase {
 
 @DataClass()
 mixin NullaryType {}
+
+@DataClass(toString: false)
+mixin CustomToString on _CustomToStringBase {
+  String get foo;
+  String get bar;
+
+  String toString() {
+    return "custom";
+  }
+}
+
+@DataClass(eqHashCode: false)
+mixin CustomEq on _CustomEqBase {
+  String get foo;
+  String get bar;
+
+  @override
+  bool operator ==(Object other) {
+    return false;
+  }
+
+  int get hashCode {
+    return 42;
+  }
+}
 
 /*
 // START generated code

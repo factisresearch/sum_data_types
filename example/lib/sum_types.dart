@@ -93,7 +93,7 @@ mixin Something<T> {
 }
 
 @SumType(toString: false)
-mixin CustomToString on _CustomToStringBase {
+mixin CustomToString {
   String get _foo;
 
   String toString() {
@@ -102,7 +102,7 @@ mixin CustomToString on _CustomToStringBase {
 }
 
 @SumType(eqHashCode: false)
-mixin CustomEq on _CustomEqBase {
+mixin CustomEq {
   String get _foo;
 
   @override

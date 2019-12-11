@@ -106,7 +106,7 @@ mixin User {
 mixin NullaryType {}
 
 @DataClass(toString: false)
-mixin CustomToString on _CustomToStringBase {
+mixin CustomToString {
   String get foo;
   String get bar;
 
@@ -116,7 +116,7 @@ mixin CustomToString on _CustomToStringBase {
 }
 
 @DataClass(eqHashCode: false)
-mixin CustomEq on _CustomEqBase {
+mixin CustomEq {
   String get foo;
   String get bar;
 

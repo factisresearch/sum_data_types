@@ -176,7 +176,7 @@ class CodgenConfig {
 class CommonClassModel<FieldModel> {
   final String mixinName;
   final String className;
-  final String baseClassName;
+  final String extensionName;
   final List<FieldModel> fields;
   final List<String> typeArgs;
   final CodgenConfig config;
@@ -188,7 +188,7 @@ class CommonClassModel<FieldModel> {
   CommonClassModel.mk({
     @required this.mixinName,
     @required this.className,
-    @required this.baseClassName,
+    @required this.extensionName,
     @required this.fields,
     @required this.typeArgs,
     @required this.config,
@@ -210,7 +210,7 @@ class CommonClassModel<FieldModel> {
       final mixinName = clazz.name;
       final List<String> typeArgs = clazz.typeParameters.map((param) => param.name).toList();
       final className = "_" + mixinName;
-      final baseName = className + "Base";
+      final extensionName = mixinName + "Methods";
       final fields = <FieldModel>[];
 
       for (var field in clazz.fields) {
@@ -232,7 +232,7 @@ class CommonClassModel<FieldModel> {
       final annotation = CodgenConfig(toString: genToString, eqHashCode: genEqHashCode);
       return CommonClassModel.mk(
         mixinName: mixinName,
-        baseClassName: baseName,
+        extensionName: extensionName,
         className: className,
         fields: fields,
         typeArgs: typeArgs,
@@ -265,21 +265,16 @@ String eqImpl(String className, List<String> fieldNames) {
   }
   return '''@override
     bool operator ==(Object $other) {
-      if (identical(this, $other)) {
-        return true;
-      }
-      return (
-        $other is $className &&
-        this.runtimeType == $other.runtimeType &&
-        $fieldsEq
-      );
+      if (identical(this, $other)) return true;
+      if (this.runtimeType != $other.runtimeType) return false;
+      return $other is $className && $fieldsEq;
     }''';
 }
 
 String hashCodeImpl(List<String> fieldNames) {
   if (fieldNames.isEmpty) {
     return '''@override
-      int get hashCode { return 0; }
+      int get hashCode => 0;
     ''';
   }
   const result = r'__result$';

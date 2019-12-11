@@ -86,7 +86,7 @@ class FieldModel {
   }
 
   String get copyWithParam {
-    return "${this.type.typeRepr} ${this.name}";
+    return "${this.type.typeRepr} ${this.name},";
   }
 }
 
@@ -95,7 +95,7 @@ class ClassModel {
 
   List<FieldModel> get fields => _commonModel.fields;
   String get className => _commonModel.className;
-  String get baseClassName => _commonModel.baseClassName;
+  String get extensionName => _commonModel.extensionName;
   String get mixinName => _commonModel.mixinName;
   String get factoryName => _commonModel.factoryName;
   List<String> get fieldNames => fields.map((f) => f.name).toList();
@@ -112,7 +112,7 @@ class ClassModel {
 
   String get copyWithSignature {
     final params = (this.fields.isNotEmpty)
-        ? "{" + this.fields.map((field) => field.copyWithParam).join(",") + "}"
+        ? "{" + this.fields.map((field) => field.copyWithParam).join("") + "}"
         : "";
     return "${this.mixinType} copyWith($params)";
   }
@@ -183,12 +183,15 @@ class DataClassGenerator extends GeneratorForAnnotation<DataClass> {
             );
           }
         }
-        abstract class ${clazz.baseClassName}${clazz.typeArgsWithParens} {
-          ${clazz.copyWithSignature};
+        extension ${clazz.extensionName}${clazz.typeArgsWithParens} on ${clazz.mixinName}${clazz.typeArgsWithParens} {
+          ${clazz.copyWithSignature} {
+            return ${clazz.className}.make(
+              ${clazz.copyWithArgs}
+            );
+          }
         }
         @immutable
         class ${clazz.className}${clazz.typeArgsWithParens}
-            extends ${clazz.baseClassName}${clazz.typeArgsWithParens}
             with ${clazz.mixinName}${clazz.typeArgsWithParens}
         {
           ${clazz.fieldDeclarations}
@@ -197,12 +200,6 @@ class DataClassGenerator extends GeneratorForAnnotation<DataClass> {
           ${clazz.className}.make(
             ${clazz.constructorParams}
           ) ${clazz.constructorAsserts}
-
-          ${clazz.copyWithSignature} {
-            return ${clazz.className}.make(
-              ${clazz.copyWithArgs}
-            );
-          }
 
           ${clazz.config.genEqHashCode ? eqImpl(clazz.className, clazz.fieldNames) : ""}
 

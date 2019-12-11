@@ -42,9 +42,8 @@ class FieldModel {
 
   String factoryMethod(String resultType, String tyArgs, String constructor) {
     String mkFun(String arg, String result) {
-      return '''static $resultType $name$tyArgs($arg) {
-        return $constructor($name: $result);
-      }''';
+      return '''static $resultType $name$tyArgs($arg) =>
+          $constructor($name: $result);''';
     }
 
     if (this.type.isUnit) {
@@ -72,14 +71,11 @@ class FieldModel {
 
   String get getterImpl {
     final optional = _imports.lookupOptionalType();
-    return '''@override
-      $getterDecl {
-        return $optional<${type.typeRepr}>.fromNullable(this.$internalName);
-      }''';
+    return "$getterDecl => $optional<${type.typeRepr}>.fromNullable(this.$internalName);";
   }
 
   String get constructorParam {
-    return '${type.typeRepr} $name';
+    return '${type.typeRepr} $name,';
   }
 
   String get constructorAssignment {
@@ -89,25 +85,22 @@ class FieldModel {
   String get iswitchIf {
     final funArg = this.type.isUnit ? '' : 'this.$internalName';
     return '''if (this.$internalName != null) {
-      if ($name != null) {
-        return $name($funArg);
-      } else {
-        throw ArgumentError.notNull("$name");
-      }
+      if ($name == null) throw ArgumentError.notNull("$name");
+      return $name($funArg);
     }
     ''';
   }
 
   String iswitchArgFromOtherwise(String otherwise) {
     final _otherwise = this.type.isUnit ? otherwise : '(Object _) => $otherwise()';
-    return '$name: $name ?? $_otherwise';
+    return '$name: $name ?? $_otherwise,';
   }
 
   String get toStringSwitch {
     if (type.isUnit) {
       return '$name: () => "$name"';
     } else {
-      return '$name: (${type.typeRepr} __value\$) => "$name(" + __value\$.toString() + ")"';
+      return '$name: (${type.typeRepr} __value\$) => "$name(\${__value\$})"';
     }
   }
 }
@@ -124,7 +117,7 @@ class ClassModel {
 
   List<FieldModel> get fields => _commonModel.fields;
   String get className => _commonModel.className;
-  String get baseClassName => _commonModel.baseClassName;
+  String get extensionName => _commonModel.extensionName;
   String get mixinName => _commonModel.mixinName;
   String get factoryName => _commonModel.factoryName;
   List<String> get typeArgs => _commonModel.typeArgs;
@@ -141,10 +134,6 @@ class ClassModel {
         .join("\n");
   }
 
-  String get getterDecls {
-    return this.fields.map((field) => field.getterDecl + ";").join("\n");
-  }
-
   String switchParams(String tyArg, SwitchMode mode) {
     return this.fields.map((field) => field.switchParam(tyArg, mode)).join(",\n");
   }
@@ -158,7 +147,7 @@ class ClassModel {
   }
 
   String get constructorParams {
-    return this.fields.map((field) => field.constructorParam).join(",\n");
+    return this.fields.map((field) => field.constructorParam).join("\n");
   }
 
   String get constructorInitializers {
@@ -191,7 +180,7 @@ class ClassModel {
   }
 
   String iswitchArgsFromOtherwise(String otherwise) {
-    return this.fields.map((field) => field.iswitchArgFromOtherwise(otherwise)).join(",\n");
+    return this.fields.map((field) => field.iswitchArgFromOtherwise(otherwise)).join("\n");
   }
 
   String get toStringSwitch {
@@ -220,7 +209,7 @@ class SumTypeGenerator extends GeneratorForAnnotation<SumType> {
         @override
         toString() {
           final __x\$ = iswitch(${clazz.toStringSwitch});
-          return "${clazz.mixinName}." + __x\$;
+          return "${clazz.mixinName}.\${__x\$}";
         }
       ''';
       final code = '''
@@ -228,35 +217,13 @@ class SumTypeGenerator extends GeneratorForAnnotation<SumType> {
         abstract class ${clazz.factoryName} {
           ${clazz.factoryMethods}
         }
-        abstract class ${clazz.baseClassName}${clazz.typeArgsWithParens} {
-          const ${clazz.baseClassName}();
-          ${clazz.getterDecls}
+        extension ${clazz.extensionName}${clazz.typeArgsWithParens} on ${clazz.mixinName}${clazz.typeArgsWithParens} {
           $tyArg iswitch<$tyArg>({
-            ${clazz.switchParams(tyArg, SwitchMode.Required)}
-          });
-          $tyArg iswitcho<$tyArg>({
-            ${clazz.switchParams(tyArg, SwitchMode.Optional)},
-            @required $tyArg Function() $otherwise,
-          });
-        }
-        class ${clazz.className}${clazz.typeArgsWithParens}
-            extends ${clazz.baseClassName}${clazz.typeArgsWithParens}
-            with ${clazz.mixinName}${clazz.typeArgsWithParens}
-        {
-          ${clazz.fieldDecls}
-          ${clazz.getterImpls}
-          ${clazz.className}({
-            ${clazz.constructorParams}
-          }) : ${clazz.constructorInitializers};
-
-          @override
-          $tyArg iswitch<$tyArg>({
-            ${clazz.switchParams(tyArg, SwitchMode.Required)}
+            ${clazz.switchParams(tyArg, SwitchMode.Required)},
           }) {
             ${clazz.iswitchBody}
           }
 
-          @override
           $tyArg iswitcho<$tyArg>({
             ${clazz.switchParams(tyArg, SwitchMode.Optional)},
             @required $tyArg Function() $otherwise,
@@ -265,6 +232,17 @@ class SumTypeGenerator extends GeneratorForAnnotation<SumType> {
               ${clazz.iswitchArgsFromOtherwise(otherwise)}
             );
           }
+        }
+        class ${clazz.className}${clazz.typeArgsWithParens}
+            with ${clazz.mixinName}${clazz.typeArgsWithParens}
+        {
+          ${clazz.fieldDecls}
+
+          ${clazz.getterImpls}
+
+          ${clazz.className}({
+            ${clazz.constructorParams}
+          }) : ${clazz.constructorInitializers};
 
           ${clazz.config.genEqHashCode ? eqImpl(clazz.className, clazz.fieldNames) : ""}
 

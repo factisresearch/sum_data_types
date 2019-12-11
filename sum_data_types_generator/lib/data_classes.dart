@@ -101,11 +101,13 @@ class ClassModel {
   List<String> get fieldNames => fields.map((f) => f.name).toList();
   String get mixinType => _commonModel.mixinType;
   String get typeArgsWithParens => _commonModel.typeArgsWithParens;
+  CodgenConfig get config => _commonModel.config;
 
-  ClassModel(ClassElement clazz)
+  ClassModel(ClassElement clazz, ConstantReader reader)
       : this._commonModel = CommonClassModel(
           clazz,
           (FieldElement fld, ImportModel imports) => FieldModel(fld, imports),
+          reader,
         );
 
   String get copyWithSignature {
@@ -163,7 +165,13 @@ class DataClassGenerator extends GeneratorForAnnotation<DataClass> {
       throw Exception('Only annotate mixins with `@DataClass()`.');
     }
     try {
-      final clazz = ClassModel(element as ClassElement);
+      final clazz = ClassModel(element as ClassElement, annotation);
+      final toStringMethod = '''
+        @override
+        String toString() {
+          return "${clazz.mixinName}(${clazz.toStringFields})";
+        }
+      ''';
       final code = '''
         /// This data class has been generated from ${clazz.mixinName}
         abstract class ${clazz.factoryName} {
@@ -193,14 +201,11 @@ class DataClassGenerator extends GeneratorForAnnotation<DataClass> {
             ${clazz.constructorParams}
           ) ${clazz.constructorAsserts}
 
-          ${eqImpl(clazz.className, clazz.fieldNames)}
+          ${clazz.config.genEqHashCode ? eqImpl(clazz.className, clazz.fieldNames) : ""}
 
-          ${hashCodeImpl(clazz.fieldNames)}
+          ${clazz.config.genEqHashCode ? hashCodeImpl(clazz.fieldNames) : ""}
 
-          @override
-          String toString() {
-            return "${clazz.mixinName}(${clazz.toStringFields})";
-          }
+          ${clazz.config.genToString ? toStringMethod : ""}
         }''';
       // print(code);
       return code;

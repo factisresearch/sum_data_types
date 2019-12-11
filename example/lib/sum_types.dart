@@ -51,6 +51,7 @@ void main() {
 
   test("no strange error", () {
     final nothing = SomethingFactory.nothing<String>();
+    // ignore: missing_required_param_with_details, missing_required_param
     expect(() => nothing.iswitcho<String>(), throwsA(TypeMatcher<ArgumentError>()));
   });
 
@@ -62,6 +63,17 @@ void main() {
       otherwise: () => "otherwise",
     );
     expect(s, equals("otherwise"));
+  });
+
+  test("customToString", () {
+    final c = CustomToStringFactory.foo("1");
+    expect(c.toString(), equals("custom"));
+  });
+
+  test("customEq", () {
+    final c = CustomEqFactory.foo("1");
+    expect(c == c, equals(false));
+    expect(c.hashCode, equals(42));
   });
 }
 
@@ -78,6 +90,29 @@ mixin Something<T> {
   quiv.Optional<ty.Address> get _address;
   Something get _something;
   T get _param;
+}
+
+@SumType(toString: false)
+mixin CustomToString on _CustomToStringBase {
+  String get _foo;
+
+  String toString() {
+    return "custom";
+  }
+}
+
+@SumType(eqHashCode: false)
+mixin CustomEq on _CustomEqBase {
+  String get _foo;
+
+  @override
+  bool operator ==(Object other) {
+    return false;
+  }
+
+  int get hashCode {
+    return 42;
+  }
 }
 
 /*

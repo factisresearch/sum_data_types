@@ -108,10 +108,11 @@ class FieldModel {
 class ClassModel {
   final CommonClassModel<FieldModel> _commonModel;
 
-  ClassModel(ClassElement clazz)
+  ClassModel(ClassElement clazz, ConstantReader reader)
       : this._commonModel = CommonClassModel(
           clazz,
           (FieldElement fld, ImportModel imports) => FieldModel(fld, imports),
+          reader,
         );
 
   List<FieldModel> get fields => _commonModel.fields;
@@ -123,6 +124,7 @@ class ClassModel {
   List<String> get fieldNames => fields.map((f) => f.name).toList();
   String get mixinType => _commonModel.mixinType;
   String get typeArgsWithParens => _commonModel.typeArgsWithParens;
+  CodgenConfig get config => _commonModel.config;
 
   String get factoryMethods {
     final resultType = this.mixinType;
@@ -197,12 +199,19 @@ class SumTypeGenerator extends GeneratorForAnnotation<SumType> {
       throw Exception('Only annotate mixins with `@SumType()`.');
     }
     try {
-      final clazz = ClassModel(element as ClassElement);
+      final clazz = ClassModel(element as ClassElement, annotation);
       if (clazz.fields.isEmpty) {
         throw CodegenException("no alternatives defined for ${clazz.mixinName}");
       }
       const tyArg = r'__T$';
       final otherwise = clazz.fieldNames.contains('otherwise') ? r'otherwise__$' : 'otherwise';
+      final toStringMethod = '''
+        @override
+        toString() {
+          final __x\$ = iswitch(${clazz.toStringSwitch});
+          return "${clazz.mixinName}.\${__x\$}";
+        }
+      ''';
       final code = '''
         /// This data class has been generated from ${clazz.mixinName}
         abstract class ${clazz.factoryName} {
@@ -235,15 +244,11 @@ class SumTypeGenerator extends GeneratorForAnnotation<SumType> {
             ${clazz.constructorParams}
           }) : ${clazz.constructorInitializers};
 
-          ${eqImpl(clazz.className, clazz.fieldNames)}
+          ${clazz.config.genEqHashCode ? eqImpl(clazz.className, clazz.fieldNames) : ""}
 
-          ${hashCodeImpl(clazz.fieldNames)}
+          ${clazz.config.genEqHashCode ? hashCodeImpl(clazz.fieldNames) : ""}
 
-          @override
-          toString() {
-            final __x\$ = iswitch(${clazz.toStringSwitch});
-            return "${clazz.mixinName}.\${__x\$}";
-          }
+          ${clazz.config.genToString ? toStringMethod : ""}
         }
         ''';
       //print(code);

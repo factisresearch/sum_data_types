@@ -9,13 +9,14 @@ environment:
 
 dependencies:
   analyzer: ^0.39.1
+  pedantic: ^1.8.0
   build: ^1.2.0
   # sum_data_types: ^0.0.1
   sum_data_types:
     git:
       url: https://github.com/factisresearch/sum_data_types
       path: sum_data_types
-      ref: a45f1a95fabb5ff27da3fad149af018aad00ba8a
+      ref: 518fd7a037eaebd9442c5202faec7b81c72ce717
   source_gen: ^0.9.0
 
 dev_dependencies:

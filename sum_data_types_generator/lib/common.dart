@@ -10,6 +10,8 @@ class CodegenException with Exception {
   String generatorName;
   final String message;
   CodegenException(this.message);
+
+  @override
   String toString() {
     var loc = '';
     if (className != null && fieldName != null) {
@@ -61,9 +63,9 @@ String computeTypeRepr(DartType ty, ImportModel imports) {
 }
 
 class ImportModel {
-  final Map<String, String> _moduleIdToPrefix = Map();
-  final Map<String, String> _moduleIdToUri = Map();
-  final Map<String, String> _uriToModuleId = Map();
+  final Map<String, String> _moduleIdToPrefix = {};
+  final Map<String, String> _moduleIdToUri = {};
+  final Map<String, String> _uriToModuleId = {};
 
   String importPrefixOrNull(LibraryElement lib) {
     if (lib == null) {
@@ -98,7 +100,7 @@ class ImportModel {
     if (modId == null) {
       throw CodegenException(
           "Cannot reference type 'Optional'. Please import the package '$quiverPackageUri', "
-          "either unqualified or qualified.");
+          'either unqualified or qualified.');
     } else {
       final prefix = _moduleIdToPrefix[modId];
       if (prefix == null) {

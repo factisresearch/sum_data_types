@@ -82,7 +82,7 @@ class FieldModel {
   }
 
   String get toStringField {
-    return '${this.name}: ' + r'${this.' + name + '}';
+    return '${this.name}: \${this.$name}';
   }
 
   String get copyWithParam {

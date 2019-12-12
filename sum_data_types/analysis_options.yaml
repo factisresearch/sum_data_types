@@ -39,6 +39,7 @@ linter:
     unnecessary_getters_setters: true
     unnecessary_statements: true
     unnecessary_this: false
+    omit_local_variable_types: false
 
 analyzer:
   strong-mode:

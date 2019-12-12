@@ -50,7 +50,7 @@ class FieldModel {
             CommonFieldModel(fld, (DartType ty) => TypeModel(ty, imports), FieldNameConfig.Public);
 
   String get declaration {
-    return "final ${this.type.typeRepr} ${this.name};";
+    return "@override\nfinal ${this.type.typeRepr} ${this.name};";
   }
 
   String get factoryParam {
@@ -198,6 +198,7 @@ class DataClassGenerator extends GeneratorForAnnotation<DataClass> {
             ${clazz.constructorParams}
           ) ${clazz.constructorAsserts}
 
+          @override
           ${clazz.copyWithSignature} {
             return ${clazz.className}.make(
               ${clazz.copyWithArgs}

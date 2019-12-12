@@ -85,7 +85,7 @@ class FieldModel {
   String get iswitchIf {
     final funArg = this.type.isUnit ? '' : '__x\$.$internalName';
     return '''if (__x\$.$internalName != null) {
-      if ($name == null) throw ArgumentError.notNull('$name');
+      if ($name == null) { throw ArgumentError.notNull('$name'); }
       return $name($funArg);
     }
     ''';

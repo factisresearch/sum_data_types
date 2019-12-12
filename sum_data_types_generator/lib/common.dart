@@ -11,17 +11,17 @@ class CodegenException with Exception {
   final String message;
   CodegenException(this.message);
   String toString() {
-    var loc = "";
+    var loc = '';
     if (className != null && fieldName != null) {
       loc = " for mixin '$className' and field '$fieldName'";
     } else if (className != null) {
       loc = " for mixin '$className'";
     }
-    var genName = "";
+    var genName = '';
     if (generatorName != null) {
-      genName = " @$generatorName";
+      genName = ' @$generatorName';
     }
-    return "Error generating$genName code$loc: $message";
+    return 'Error generating$genName code$loc: $message';
   }
 }
 
@@ -30,31 +30,31 @@ bool isType(DartType ty, String name, String packageUri, ImportModel imports) {
   return ty.name == name && imports.importUri(tyLib) == packageUri;
 }
 
-const quiverPackageUri = "package:quiver/core.dart";
+const quiverPackageUri = 'package:quiver/core.dart';
 
 bool isQuiverOptional(DartType ty, ImportModel imports) {
-  return isType(ty, "Optional", quiverPackageUri, imports);
+  return isType(ty, 'Optional', quiverPackageUri, imports);
 }
 
 // Returns a potential qualified access string for the type, without type arguments
 String qualifyType(DartType ty, ImportModel imports) {
   final tyLib = ty.element.library;
   final prefixOrNull = imports.importPrefixOrNull(tyLib);
-  final prefix = (prefixOrNull != null) ? (prefixOrNull + ".") : "";
-  return "$prefix${ty.name}";
+  final prefix = (prefixOrNull != null) ? (prefixOrNull + '.') : '';
+  return '$prefix${ty.name}';
 }
 
 // Returns a textual representation of the given type, including generic types
 // and import prefixes.
 String computeTypeRepr(DartType ty, ImportModel imports) {
   if (ty is FunctionType) {
-    throw CodegenException("function types are not supported");
+    throw CodegenException('function types are not supported');
   } else if (ty.isDynamic) {
-    return "dynamic";
+    return 'dynamic';
   } else if (ty is ParameterizedType && ty.typeArguments.isNotEmpty) {
     final base = qualifyType(ty, imports);
     final args = ty.typeArguments.map((tyArg) => computeTypeRepr(tyArg, imports));
-    return "$base<${args.join(", ")}>";
+    return '$base<${args.join(', ')}>';
   } else {
     return qualifyType(ty, imports);
   }
@@ -102,9 +102,9 @@ class ImportModel {
     } else {
       final prefix = _moduleIdToPrefix[modId];
       if (prefix == null) {
-        return "Optional";
+        return 'Optional';
       } else {
-        return prefix + ".Optional";
+        return prefix + '.Optional';
       }
     }
   }
@@ -133,7 +133,7 @@ class CommonFieldModel<TypeModel> {
         case FieldNameConfig.Public:
           {
             if (field.name.startsWith('_')) {
-              throw CodegenException("fieldname must not start with an underscore");
+              throw CodegenException('fieldname must not start with an underscore');
             }
             name = field.name;
             internalName = '_' + name;
@@ -142,7 +142,7 @@ class CommonFieldModel<TypeModel> {
         case FieldNameConfig.Private:
           {
             if (!field.name.startsWith('_')) {
-              throw CodegenException("fieldname must start with an underscore");
+              throw CodegenException('fieldname must start with an underscore');
             }
             name = field.name.substring(1);
             internalName = field.name;
@@ -182,7 +182,7 @@ class CommonClassModel<FieldModel> {
   final CodgenConfig config;
 
   String get factoryName {
-    return mixinName + "Factory";
+    return mixinName + 'Factory';
   }
 
   CommonClassModel.mk({
@@ -209,17 +209,17 @@ class CommonClassModel<FieldModel> {
 
       final mixinName = clazz.name;
       final List<String> typeArgs = clazz.typeParameters.map((param) => param.name).toList();
-      final className = "_" + mixinName;
-      final baseName = className + "Base";
+      final className = '_' + mixinName;
+      final baseName = className + 'Base';
       final fields = <FieldModel>[];
 
       for (var field in clazz.fields) {
-        if (field.name != "hashCode") {
+        if (field.name != 'hashCode') {
           final msgPrefix = "Invalid getter '${field.name}' for data class '$mixinName'";
           if (field.getter == null && !field.isFinal) {
-            throw Exception("$msgPrefix: field must have a getter");
+            throw Exception('$msgPrefix: field must have a getter');
           } else if (field.setter != null) {
-            throw Exception("$msgPrefix: field must not have a setter");
+            throw Exception('$msgPrefix: field must not have a setter');
           } else {
             fields.add(mkField(field, imports));
           }
@@ -227,8 +227,8 @@ class CommonClassModel<FieldModel> {
       }
 
       // The fields are from the SumDataType class.
-      final genToString = reader.objectValue.getField("genToString").toBoolValue();
-      final genEqHashCode = reader.objectValue.getField("genEqHashCode").toBoolValue();
+      final genToString = reader.objectValue.getField('genToString').toBoolValue();
+      final genEqHashCode = reader.objectValue.getField('genEqHashCode').toBoolValue();
       final annotation = CodgenConfig(toString: genToString, eqHashCode: genEqHashCode);
       return CommonClassModel.mk(
         mixinName: mixinName,
@@ -250,7 +250,7 @@ class CommonClassModel<FieldModel> {
 
   String get typeArgsWithParens {
     if (this.typeArgs.isNotEmpty) {
-      return '<' + this.typeArgs.join(",") + '>';
+      return '<' + this.typeArgs.join(',') + '>';
     } else {
       return '';
     }
@@ -259,9 +259,9 @@ class CommonClassModel<FieldModel> {
 
 String eqImpl(String className, List<String> fieldNames) {
   const other = r'__other$';
-  var fieldsEq = "true";
+  var fieldsEq = 'true';
   if (fieldNames.isNotEmpty) {
-    fieldsEq = fieldNames.map((name) => 'this.$name == $other.$name').join(" && ");
+    fieldsEq = fieldNames.map((name) => 'this.$name == $other.$name').join(' && ');
   }
   return '''@override
     bool operator ==(Object $other) {
@@ -279,7 +279,7 @@ String hashCodeImpl(List<String> fieldNames) {
   }
   const result = r'__result$';
   final updates =
-      fieldNames.map((name) => "$result = 37 * $result + this.$name.hashCode;").join("\n");
+      fieldNames.map((name) => '$result = 37 * $result + this.$name.hashCode;').join('\n');
   return '''@override
     int get hashCode {
       var $result = 17;

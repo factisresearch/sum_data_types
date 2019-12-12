@@ -2,48 +2,48 @@ import 'package:sum_data_types/main.dart';
 import 'package:example/types.dart' as ty;
 import 'package:quiver/core.dart';
 import 'package:kt_dart/collection.dart';
-import "package:test/test.dart";
+import 'package:test/test.dart';
 
 part 'data_classes.g.dart';
 
 void main() {
   final userBob = UserFactory.make(
-    name: "Bob",
+    name: 'Bob',
     friends: KtList.empty(),
     address: ty.Address(),
     age: 31,
     friendsAddresses: KtList.empty(),
-    foo: EitherFactory.left("foo"),
+    foo: EitherFactory.left('foo'),
   );
   final userPaul = UserFactory.make(
-    name: "Paul",
+    name: 'Paul',
     friends: KtList.of(userBob),
     address: ty.Address(),
     friendsAddresses: KtList.empty(),
     foo: EitherFactory.right(42),
   );
-  final userSarah = userPaul.copyWith(name: "Sarah");
+  final userSarah = userPaul.copyWith(name: 'Sarah');
   final userSarah2 = UserFactory.make(
-    name: "Sarah",
+    name: 'Sarah',
     friends: KtList.of(userBob),
     address: ty.Address(),
     friendsAddresses: KtList.empty(),
     foo: EitherFactory.right(42),
   );
 
-  test("equals", () {
+  test('equals', () {
     expect(userSarah == null, isFalse);
     expect(userSarah == userPaul, isFalse);
     expect(userSarah, equals(userSarah));
     expect(userSarah == userSarah2, isTrue);
   });
 
-  test("hashCode", () {
+  test('hashCode', () {
     expect(userSarah.hashCode == userPaul.hashCode, isFalse);
     expect(userSarah.hashCode, equals(userSarah2.hashCode));
   });
 
-  test("toString", () {
+  test('toString', () {
     expect(userSarah.toString(), equals(userSarah2.toString()));
     expect(
         userSarah.toString(),
@@ -54,18 +54,18 @@ void main() {
             'foo: Either.right(42))'));
   });
 
-  test("container", () {
-    final c = ContainerFactory.make(payload: "foo", id: "blub");
-    expect(c.toString(), "Container(id: blub, payload: foo)");
+  test('container', () {
+    final c = ContainerFactory.make(payload: 'foo', id: 'blub');
+    expect(c.toString(), 'Container(id: blub, payload: foo)');
   });
 
-  test("customToString", () {
-    final c = CustomToStringFactory.make(bar: "1", foo: "2");
-    expect(c.toString(), equals("custom"));
+  test('customToString', () {
+    final c = CustomToStringFactory.make(bar: '1', foo: '2');
+    expect(c.toString(), equals('custom'));
   });
 
-  test("customEq", () {
-    final c = CustomEqFactory.make(bar: "1", foo: "2");
+  test('customEq', () {
+    final c = CustomEqFactory.make(bar: '1', foo: '2');
     expect(c == c, equals(false));
     expect(c.hashCode, equals(42));
   });
@@ -84,7 +84,7 @@ mixin Either<A, B> on _EitherBase<A, B> {
 }
 
 void foo(Either<String, int> x) {
-  x.iswitch(left: (s) => print("String: " + s), right: (i) => print("int: " + i.toString()));
+  x.iswitch(left: (s) => print('String: ' + s), right: (i) => print('int: ' + i.toString()));
 }
 
 @DataClass()
@@ -110,8 +110,9 @@ mixin CustomToString on _CustomToStringBase {
   String get foo;
   String get bar;
 
+  @override
   String toString() {
-    return "custom";
+    return 'custom';
   }
 }
 
@@ -125,6 +126,7 @@ mixin CustomEq on _CustomEqBase {
     return false;
   }
 
+  @override
   int get hashCode {
     return 42;
   }
@@ -229,7 +231,7 @@ class _User extends _UserBase with User {
   }
 
   String toString() {
-    return "User(name: ${this.name}, age: ${this.age}, friends: ${this.friends}, address: ${this.address}, workAddress: ${this.workAddress}, friendsAddresses: ${this.friendsAddresses})";
+    return 'User(name: ${this.name}, age: ${this.age}, friends: ${this.friends}, address: ${this.address}, workAddress: ${this.workAddress}, friendsAddresses: ${this.friendsAddresses})';
   }
 }
 
@@ -269,7 +271,7 @@ class _NullaryType extends _NullaryTypeBase with NullaryType {
   }
 
   String toString() {
-    return "NullaryType()";
+    return 'NullaryType()';
   }
 }
 // END generated code

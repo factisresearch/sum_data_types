@@ -11,7 +11,7 @@ part 'sum_types.g.dart';
 void main() {
   final nothing = SomethingFactory.nothing<String>();
   final userPaul = UserFactory.make(
-    name: "Paul",
+    name: 'Paul',
     friends: KtList.empty(),
     address: ty.Address(),
     friendsAddresses: KtList.empty(),
@@ -22,7 +22,7 @@ void main() {
   final address2 = SomethingFactory.address<String>(quiv.Optional.of(ty.Address()));
   final something = SomethingFactory.something<String>(user);
 
-  test("equals", () {
+  test('equals', () {
     expect(address == null, isFalse);
     expect(address == something, isFalse);
     expect(address, equals(address));
@@ -32,12 +32,12 @@ void main() {
     expect(nothing == something, isFalse);
   });
 
-  test("hashCode", () {
+  test('hashCode', () {
     expect(address.hashCode == something.hashCode, isFalse);
     expect(address.hashCode, equals(address2.hashCode));
   });
 
-  test("toString", () {
+  test('toString', () {
     expect(address.toString(), equals(address2.toString()));
     expect(nothing.toString(), equals('Something.nothing'));
     expect(
@@ -49,29 +49,29 @@ void main() {
     expect(something.toString(), equals('Something.something(${user.toString()})'));
   });
 
-  test("no strange error", () {
+  test('no strange error', () {
     final nothing = SomethingFactory.nothing<String>();
     // ignore: missing_required_param_with_details, missing_required_param
     expect(() => nothing.iswitcho<String>(), throwsA(TypeMatcher<ArgumentError>()));
   });
 
-  test("with unknown", () {
+  test('with unknown', () {
     final unknown = WithUnknownFactory.unknown(42);
-    expect(unknown.toString(), equals("WithUnknown.unknown(42)"));
+    expect(unknown.toString(), equals('WithUnknown.unknown(42)'));
     final s = unknown.iswitcho(
-      known: (s) => "known",
-      otherwise: () => "otherwise",
+      known: (s) => 'known',
+      otherwise: () => 'otherwise',
     );
-    expect(s, equals("otherwise"));
+    expect(s, equals('otherwise'));
   });
 
-  test("customToString", () {
-    final c = CustomToStringFactory.foo("1");
-    expect(c.toString(), equals("custom"));
+  test('customToString', () {
+    final c = CustomToStringFactory.foo('1');
+    expect(c.toString(), equals('custom'));
   });
 
-  test("customEq", () {
-    final c = CustomEqFactory.foo("1");
+  test('customEq', () {
+    final c = CustomEqFactory.foo('1');
     expect(c == c, equals(false));
     expect(c.hashCode, equals(42));
   });
@@ -96,8 +96,9 @@ mixin Something<T> implements _SomethingBase<T> {
 mixin CustomToString on _CustomToStringBase {
   String get _foo;
 
+  @override
   String toString() {
-    return "custom";
+    return 'custom';
   }
 }
 
@@ -110,6 +111,7 @@ mixin CustomEq on _CustomEqBase {
     return false;
   }
 
+  @override
   int get hashCode {
     return 42;
   }
@@ -217,34 +219,34 @@ class _Something<T> extends _SomethingBase<T> with Something<T> {
       if (nothing != null) {
         return nothing();
       } else {
-        throw ArgumentError.notNull("nothing");
+        throw ArgumentError.notNull('nothing');
       }
     } else if (this._user != null) {
       if (user != null) {
         return user(this._user);
       } else {
-        throw ArgumentError.notNull("user");
+        throw ArgumentError.notNull('user');
       }
     } else if (this._address != null) {
       if (address != null) {
         return address(this._address);
       } else {
-        throw ArgumentError.notNull("address");
+        throw ArgumentError.notNull('address');
       }
     } else if (this._something != null) {
       if (something != null) {
         return something(this._something);
       } else {
-        throw ArgumentError.notNull("something");
+        throw ArgumentError.notNull('something');
       }
     } else if (this._param != null) {
       if (param != null) {
         return param(this._param);
       } else {
-        throw ArgumentError.notNull("something");
+        throw ArgumentError.notNull('something');
       }
     } else {
-      throw StateError("an instance of Something has no case selected");
+      throw StateError('an instance of Something has no case selected');
     }
   }
 
@@ -292,13 +294,13 @@ class _Something<T> extends _SomethingBase<T> with Something<T> {
   @override
   String toString() {
     final ctor = iswitch(
-      nothing: () => "nothing",
-      user: (value) => "user($value)",
-      address: (value) => "address($value)",
-      something: (value) => "something($value)",
-      param: (value) => "param($value)",
+      nothing: () => 'nothing',
+      user: (value) => 'user($value)',
+      address: (value) => 'address($value)',
+      something: (value) => 'something($value)',
+      param: (value) => 'param($value)',
     );
-    return "Something.$ctor";
+    return 'Something.$ctor';
   }
 }
 */

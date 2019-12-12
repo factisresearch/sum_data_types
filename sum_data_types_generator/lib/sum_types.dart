@@ -21,7 +21,7 @@ class TypeModel {
     ImportModel imports,
   ) {
     final typeRepr = computeTypeRepr(ty, imports);
-    final isUnit = isType(ty, "Unit", 'package:sum_data_types/main.dart', imports);
+    final isUnit = isType(ty, 'Unit', 'package:sum_data_types/main.dart', imports);
     return TypeModel._(isUnit: isUnit, typeRepr: typeRepr);
   }
 }
@@ -71,11 +71,11 @@ class FieldModel {
 
   String get getterImpl {
     final optional = _imports.lookupOptionalType();
-    return "@override\n$getterDecl => $optional<${type.typeRepr}>.fromNullable(this.$internalName);";
+    return '@override\n$getterDecl => $optional<${type.typeRepr}>.fromNullable(this.$internalName);';
   }
 
   String get constructorParam {
-    return '${type.typeRepr} $name,';
+    return '${type.typeRepr} $name, // ignore: always_require_non_null_named_parameters';
   }
 
   String get constructorAssignment {
@@ -132,27 +132,27 @@ class ClassModel {
     return this
         .fields
         .map((field) => field.factoryMethod(resultType, this.typeArgsWithParens, this.className))
-        .join("\n");
+        .join('\n');
   }
 
   String get getterDecls {
-    return this.fields.map((field) => field.getterDecl + ";").join("\n");
+    return this.fields.map((field) => field.getterDecl + ';').join('\n');
   }
 
   String switchParams(String tyArg, SwitchMode mode) {
-    return this.fields.map((field) => field.switchParam(tyArg, mode)).join(",\n");
+    return this.fields.map((field) => field.switchParam(tyArg, mode)).join(',\n');
   }
 
   String get fieldDecls {
-    return this.fields.map((field) => field.fieldDecl).join("\n");
+    return this.fields.map((field) => field.fieldDecl).join('\n');
   }
 
   String get getterImpls {
-    return this.fields.map((field) => field.getterImpl).join("\n");
+    return this.fields.map((field) => field.getterImpl).join('\n');
   }
 
   String get constructorParams {
-    return this.fields.map((field) => field.constructorParam).join("\n");
+    return this.fields.map((field) => field.constructorParam).join('\n');
   }
 
   String get constructorInitializers {
@@ -172,7 +172,7 @@ class ClassModel {
       }
       preds.add('(' + innerPreds.join(' && ') + ')');
     }
-    final assertExpr = 'assert(${preds.join(" || ")})';
+    final assertExpr = 'assert(${preds.join(' || ')})';
     final assigns = this.fields.map((field) => field.constructorAssignment).join(',\n');
     return '$assertExpr, $assigns';
   }
@@ -187,11 +187,11 @@ class ClassModel {
   }
 
   String iswitchArgsFromOtherwise(String otherwise) {
-    return this.fields.map((field) => field.iswitchArgFromOtherwise(otherwise)).join("\n");
+    return this.fields.map((field) => field.iswitchArgFromOtherwise(otherwise)).join('\n');
   }
 
   String get toStringSwitch {
-    return this.fields.map((field) => field.toStringSwitch).join("\n");
+    return this.fields.map((field) => field.toStringSwitch).join('\n');
   }
 }
 
@@ -200,7 +200,7 @@ class SumTypeGenerator extends GeneratorForAnnotation<SumType> {
   FutureOr<String> generateForAnnotatedElement(
       Element element, ConstantReader annotation, BuildStep _) {
     if (element == null) {
-      throw Exception("@SumType() applied to something that is null");
+      throw Exception('@SumType() applied to something that is null');
     }
     if (!(element is ClassElement)) {
       throw Exception('Only annotate mixins with `@SumType()`.');
@@ -208,7 +208,7 @@ class SumTypeGenerator extends GeneratorForAnnotation<SumType> {
     try {
       final clazz = ClassModel(element as ClassElement, annotation);
       if (clazz.fields.isEmpty) {
-        throw CodegenException("no alternatives defined for ${clazz.mixinName}");
+        throw CodegenException('no alternatives defined for ${clazz.mixinName}');
       }
       const tyArg = r'__T$';
       final otherwise = clazz.fieldNames.contains('otherwise') ? r'otherwise__$' : 'otherwise';
@@ -264,17 +264,17 @@ class SumTypeGenerator extends GeneratorForAnnotation<SumType> {
             );
           }
 
-          ${clazz.config.genEqHashCode ? eqImpl(clazz.className, clazz.internalFieldNames) : ""}
+          ${clazz.config.genEqHashCode ? eqImpl(clazz.className, clazz.internalFieldNames) : ''}
 
-          ${clazz.config.genEqHashCode ? hashCodeImpl(clazz.internalFieldNames) : ""}
+          ${clazz.config.genEqHashCode ? hashCodeImpl(clazz.internalFieldNames) : ''}
 
-          ${clazz.config.genToString ? toStringMethod : ""}
+          ${clazz.config.genToString ? toStringMethod : ''}
         }
         ''';
       //print(code);
       return code;
     } on CodegenException catch (e) {
-      e.generatorName = "SumType";
+      e.generatorName = 'SumType';
       rethrow;
     }
   }

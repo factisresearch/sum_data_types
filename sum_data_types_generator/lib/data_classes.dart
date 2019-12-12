@@ -50,43 +50,43 @@ class FieldModel {
             CommonFieldModel(fld, (DartType ty) => TypeModel(ty, imports), FieldNameConfig.Public);
 
   String get declaration {
-    return "@override\nfinal ${this.type.typeRepr} ${this.name};";
+    return '@override\nfinal ${this.type.typeRepr} ${this.name};';
   }
 
   String get factoryParam {
-    final prefix = this.type.isOptional ? "" : "@required ";
-    return "$prefix${this.type.typeReprForFactory} $name";
+    final prefix = this.type.isOptional ? '' : '@required ';
+    return '$prefix${this.type.typeReprForFactory} $name';
   }
 
   // Parameter of the constructor
   String get constructorParam {
-    return "@required this.$name";
+    return '@required this.$name';
   }
 
   // Argument for calling the constructor from the factory
   String get constructorArgFromFactory {
     final optionalType = this.type.optionalType;
     if (optionalType != null) {
-      return "$name: $optionalType.fromNullable($name)";
+      return '$name: $optionalType.fromNullable($name)';
     } else {
-      return "$name: $name";
+      return '$name: $name';
     }
   }
 
   String get constructorArgFromCopyWith {
-    return "$name: $name ?? this.$name";
+    return '$name: $name ?? this.$name';
   }
 
   String get assertNotNull {
-    return "assert($name != null)";
+    return 'assert($name != null)';
   }
 
   String get toStringField {
-    return "${this.name}: " + r"${this." + name + "}";
+    return '${this.name}: ' + r'${this.' + name + '}';
   }
 
   String get copyWithParam {
-    return "${this.type.typeRepr} ${this.name},";
+    return '${this.type.typeRepr} ${this.name},';
   }
 }
 
@@ -112,9 +112,9 @@ class ClassModel {
 
   String get copyWithSignature {
     final params = (this.fields.isNotEmpty)
-        ? "{" + this.fields.map((field) => field.copyWithParam).join("") + "}"
-        : "";
-    return "${this.mixinType} copyWith($params)";
+        ? '{' + this.fields.map((field) => field.copyWithParam).join('') + '}'
+        : '';
+    return '${this.mixinType} copyWith($params)';
   }
 
   String get fieldDeclarations {
@@ -123,34 +123,34 @@ class ClassModel {
 
   String get factoryParams {
     return this.fields.isNotEmpty
-        ? "{" + this.fields.map((field) => field.factoryParam + ",").join() + "}"
-        : "";
+        ? '{' + this.fields.map((field) => field.factoryParam + ',').join() + '}'
+        : '';
   }
 
   String get constructorParams {
     return this.fields.isNotEmpty
-        ? "{" + this.fields.map((field) => field.constructorParam + ",").join() + "}"
-        : "";
+        ? '{' + this.fields.map((field) => field.constructorParam + ',').join() + '}'
+        : '';
   }
 
   String get constructorArgs {
-    return this.fields.map((field) => field.constructorArgFromFactory + ",").join();
+    return this.fields.map((field) => field.constructorArgFromFactory + ',').join();
   }
 
   String get constructorAsserts {
     if (this.fields.isEmpty) {
-      return ";";
+      return ';';
     } else {
-      return " : " + this.fields.map((field) => field.assertNotNull).join(", ") + ";";
+      return ' : ' + this.fields.map((field) => field.assertNotNull).join(', ') + ';';
     }
   }
 
   String get copyWithArgs {
-    return this.fields.map((field) => field.constructorArgFromCopyWith + ",").join();
+    return this.fields.map((field) => field.constructorArgFromCopyWith + ',').join();
   }
 
   String get toStringFields {
-    return this.fields.map((field) => field.toStringField).join(", ");
+    return this.fields.map((field) => field.toStringField).join(', ');
   }
 }
 
@@ -159,7 +159,7 @@ class DataClassGenerator extends GeneratorForAnnotation<DataClass> {
   FutureOr<String> generateForAnnotatedElement(
       Element element, ConstantReader annotation, BuildStep _) {
     if (element == null) {
-      throw Exception("@DataClass() applied to something that is null");
+      throw Exception('@DataClass() applied to something that is null');
     }
     if (!(element is ClassElement)) {
       throw Exception('Only annotate mixins with `@DataClass()`.');
@@ -169,7 +169,7 @@ class DataClassGenerator extends GeneratorForAnnotation<DataClass> {
       final toStringMethod = '''
         @override
         String toString() {
-          return "${clazz.mixinName}(${clazz.toStringFields})";
+          return '${clazz.mixinName}(${clazz.toStringFields})';
         }
       ''';
       final code = '''
@@ -205,16 +205,16 @@ class DataClassGenerator extends GeneratorForAnnotation<DataClass> {
             );
           }
 
-          ${clazz.config.genEqHashCode ? eqImpl(clazz.className, clazz.fieldNames) : ""}
+          ${clazz.config.genEqHashCode ? eqImpl(clazz.className, clazz.fieldNames) : ''}
 
-          ${clazz.config.genEqHashCode ? hashCodeImpl(clazz.fieldNames) : ""}
+          ${clazz.config.genEqHashCode ? hashCodeImpl(clazz.fieldNames) : ''}
 
-          ${clazz.config.genToString ? toStringMethod : ""}
+          ${clazz.config.genToString ? toStringMethod : ''}
         }''';
       // print(code);
       return code;
     } on CodegenException catch (e) {
-      e.generatorName = "DataClass";
+      e.generatorName = 'DataClass';
       rethrow;
     }
   }

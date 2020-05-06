@@ -1,7 +1,6 @@
 language: dart
 dart:
 - stable
-- 2.5.2
 - 2.7.0
 - 2.8.1
 script: ${TRAVIS_BUILD_DIR}/scripts/check-all --prepare

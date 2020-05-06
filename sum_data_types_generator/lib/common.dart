@@ -29,7 +29,7 @@ class CodegenException with Exception {
 
 bool isType(DartType ty, String name, String packageUri, ImportModel imports) {
   final tyLib = ty.element.library;
-  return ty.name == name && imports.importUri(tyLib) == packageUri;
+  return ty.element.name == name && imports.importUri(tyLib) == packageUri;
 }
 
 const quiverPackageUri = 'package:quiver/core.dart';
@@ -43,7 +43,7 @@ String qualifyType(DartType ty, ImportModel imports) {
   final tyLib = ty.element.library;
   final prefixOrNull = imports.importPrefixOrNull(tyLib);
   final prefix = (prefixOrNull != null) ? (prefixOrNull + '.') : '';
-  return '$prefix${ty.name}';
+  return '$prefix${ty.element.name}';
 }
 
 // Returns a textual representation of the given type, including generic types

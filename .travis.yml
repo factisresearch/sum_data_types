@@ -3,4 +3,6 @@ dart:
 - stable
 - 2.7.0
 - 2.8.1
+- 2.9.3
+- 2.10.0
 script: ${TRAVIS_BUILD_DIR}/scripts/check-all --prepare

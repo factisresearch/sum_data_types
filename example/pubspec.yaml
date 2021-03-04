@@ -5,17 +5,18 @@ author: Stefan Wehr (wehr@cp-med.com)
 homepage: https://github.com/factisresearch/sum_data_types
 
 environment:
-  sdk: ">=2.5.0 <3.0.0"
+  sdk: ">=2.12.0 <3.0.0"
 
+publish_to: none
 dependencies:
-  quiver: '>=2.0.0 <3.0.0'
+  quiver: ^3.0.0
   pedantic: ^1.8.0
-  kt_dart: ^0.7.0+1
+  kt_dart: ^0.9.0
   sum_data_types:
     git:
       url: https://github.com/factisresearch/sum_data_types
       path: sum_data_types
-      ref: 518fd7a037eaebd9442c5202faec7b81c72ce717
+      ref: 90e9646586490f61f0b917930f34261ea2006675
 
 dev_dependencies:
   build_runner: ^1.7.1

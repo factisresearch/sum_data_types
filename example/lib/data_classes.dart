@@ -32,6 +32,7 @@ void main() {
   );
 
   test('equals', () {
+    // ignore: unnecessary_null_comparison
     expect(userSarah == null, isFalse);
     expect(userSarah == userPaul, isFalse);
     expect(userSarah, equals(userSarah));
@@ -79,8 +80,8 @@ mixin Container<T> on _ContainerBase<T> {
 
 @SumType()
 mixin Either<A, B> on _EitherBase<A, B> {
-  A get _left;
-  B get _right;
+  A? get _left;
+  B? get _right;
 }
 
 void foo(Either<String, int> x) {

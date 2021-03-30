@@ -28,20 +28,22 @@ class CodegenException with Exception {
 }
 
 bool isType(DartType ty, String name, String packageUri, ImportModel imports) {
-  final tyLib = ty.element.library;
-  return ty.element.name == name && imports.importUri(tyLib) == packageUri;
+  final tyLib = ty.element.librarySource?.uri;
+  return ty.element.name == name && tyLib.toString() == packageUri;
 }
 
-const quiverPackageUri = 'package:quiver/core.dart';
+const quiverPackageUris = [
+  'package:quiver/src/core/optional.dart',
+  'package:quiver/core.dart',
+];
 
 bool isQuiverOptional(DartType ty, ImportModel imports) {
-  return isType(ty, 'Optional', quiverPackageUri, imports);
+  return quiverPackageUris.any((packageUri) => isType(ty, 'Optional', packageUri, imports));
 }
 
 // Returns a potential qualified access string for the type, without type arguments
 String qualifyType(DartType ty, ImportModel imports) {
-  final tyLib = ty.element.library;
-  final prefixOrNull = imports.importPrefixOrNull(tyLib);
+  final prefixOrNull = imports._fullNameToPrefix[fullName(ty.element)];
   final prefix = (prefixOrNull != null) ? (prefixOrNull + '.') : '';
   return '$prefix${ty.element.name}';
 }
@@ -62,26 +64,15 @@ String computeTypeRepr(DartType ty, ImportModel imports) {
   }
 }
 
+String fullName(Element element) {
+  return element.librarySource.uri.toString() + ':' + element.toString();
+}
+
 class ImportModel {
   final Map<String, String> _moduleIdToPrefix = {};
+  final Map<String, String> _fullNameToPrefix = {};
   final Map<String, String> _moduleIdToUri = {};
   final Map<String, String> _uriToModuleId = {};
-
-  String importPrefixOrNull(LibraryElement lib) {
-    if (lib == null) {
-      return null;
-    } else {
-      return _moduleIdToPrefix[lib.identifier];
-    }
-  }
-
-  String importUri(LibraryElement lib) {
-    if (lib == null) {
-      return null;
-    } else {
-      return _moduleIdToUri[lib.identifier];
-    }
-  }
 
   void addImportElement(ImportElement imp) {
     if (imp.importedLibrary == null) {
@@ -92,16 +83,21 @@ class ImportModel {
     this._uriToModuleId[imp.uri] = modId;
     if (imp.prefix != null) {
       this._moduleIdToPrefix[modId] = imp.prefix.name;
+      imp.namespace.definedNames.forEach((key, value) {
+        _fullNameToPrefix[fullName(value)] = imp.prefix.name;
+      });
     }
   }
 
   String lookupOptionalType() {
-    final modId = _uriToModuleId[quiverPackageUri];
-    if (modId == null) {
+    final modIdCandidates =
+        quiverPackageUris.where((packageUri) => _uriToModuleId[packageUri] != null);
+    if (modIdCandidates.isEmpty) {
       throw CodegenException(
-          "Cannot reference type 'Optional'. Please import the package '$quiverPackageUri', "
+          "Cannot reference type 'Optional'. Please import the package '${quiverPackageUris[0]}', "
           'either unqualified or qualified.');
     } else {
+      final modId = modIdCandidates.first;
       final prefix = _moduleIdToPrefix[modId];
       if (prefix == null) {
         return 'Optional';

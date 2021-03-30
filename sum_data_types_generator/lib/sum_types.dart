@@ -92,7 +92,7 @@ class FieldModel {
   }
 
   String iswitchArgFromOtherwise(String otherwise) {
-    final _otherwise = this.type.isUnit ? otherwise : '(Object _) => $otherwise()';
+    final _otherwise = this.type.isUnit ? otherwise : '(${this.type.typeRepr} _) => $otherwise()';
     return '$name: $name ?? $_otherwise,';
   }
 

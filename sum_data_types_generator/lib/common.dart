@@ -1,3 +1,4 @@
+import 'package:analyzer/dart/analysis/features.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:meta/meta.dart';
@@ -212,14 +213,16 @@ class CommonClassModel<FieldModel> {
       final fields = <FieldModel>[];
 
       for (var field in clazz.fields) {
-        if (field.name != 'hashCode') {
+        if (field.name != 'hashCode' && !field.isStatic) {
           final msgPrefix = "Invalid getter '${field.name}' for data class '$mixinName'";
-          if (field.getter == null && !field.isFinal) {
+          if (field.getter == null) {
             throw Exception('$msgPrefix: field must have a getter');
           } else if (field.setter != null) {
             throw Exception('$msgPrefix: field must not have a setter');
           } else {
-            fields.add(mkField(field, imports));
+            if (field.getter.isAbstract) {
+              fields.add(mkField(field, imports));
+            }
           }
         }
       }

@@ -235,6 +235,8 @@ class SumTypeGenerator extends GeneratorForAnnotation<SumType> {
             @required $tyArg Function() $otherwise,
           });
         }
+
+        @immutable
         class ${clazz.className}${clazz.typeArgsWithParens}
             extends ${clazz.baseClassName}${clazz.typeArgsWithParens}
             with ${clazz.mixinName}${clazz.typeArgsWithParens}
@@ -243,13 +245,13 @@ class SumTypeGenerator extends GeneratorForAnnotation<SumType> {
 
           ${clazz.getterImpls}
 
-          ${clazz.className}({
+          const ${clazz.className}({
             ${clazz.constructorParams}
           }) : ${clazz.constructorInitializers};
 
           @override
           $tyArg iswitch<$tyArg>({
-            ${clazz.switchParams(tyArg, SwitchMode.Required)}
+            ${clazz.switchParams(tyArg, SwitchMode.Required)},
           }) {
             ${clazz.iswitchBody}
           }

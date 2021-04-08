@@ -54,6 +54,10 @@ void main() {
             'foo: Either.right(42))'));
   });
 
+  test('extra getters', () {
+    expect(userSarah.fooDisplay, equals('42'));
+  });
+
   test('container', () {
     final c = ContainerFactory.make(payload: 'foo', id: 'blub');
     expect(c.toString(), 'Container(id: blub, payload: foo)');
@@ -100,6 +104,8 @@ mixin User on _UserBase {
   int numerOfFriends() {
     return this.friendsAddresses.size;
   }
+
+  String get fooDisplay => foo.iswitch(left: (x) => x, right: (x) => x.toString());
 }
 
 @DataClass()

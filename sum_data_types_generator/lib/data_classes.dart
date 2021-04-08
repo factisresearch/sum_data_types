@@ -184,6 +184,8 @@ class DataClassGenerator extends GeneratorForAnnotation<DataClass> {
           }
         }
         abstract class ${clazz.baseClassName}${clazz.typeArgsWithParens} {
+          const ${clazz.baseClassName}();
+
           ${clazz.copyWithSignature};
         }
         @immutable
@@ -193,8 +195,7 @@ class DataClassGenerator extends GeneratorForAnnotation<DataClass> {
         {
           ${clazz.fieldDeclarations}
 
-          // We cannot have a const constructor because of https://github.com/dart-lang/sdk/issues/37810
-          ${clazz.className}.make(
+          const ${clazz.className}.make(
             ${clazz.constructorParams}
           ) ${clazz.constructorAsserts}
 

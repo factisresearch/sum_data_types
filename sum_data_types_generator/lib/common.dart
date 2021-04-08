@@ -205,6 +205,9 @@ class CommonClassModel<FieldModel> {
       lib.imports.forEach((imp) {
         imports.addImportElement(imp);
       });
+      if (lib.featureSet.isEnabled(Feature.non_nullable)) {
+        throw Exception('NNBD is not supported yet');
+      }
 
       final mixinName = clazz.name;
       final List<String> typeArgs = clazz.typeParameters.map((param) => param.name).toList();

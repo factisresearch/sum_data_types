@@ -12,8 +12,8 @@ class TypeModel {
   final String typeRepr;
 
   TypeModel._({
-    @required this.typeRepr,
-    @required this.isUnit,
+    required this.typeRepr,
+    required this.isUnit,
   });
 
   factory TypeModel(
@@ -199,14 +199,11 @@ class SumTypeGenerator extends GeneratorForAnnotation<SumType> {
   @override
   FutureOr<String> generateForAnnotatedElement(
       Element element, ConstantReader annotation, BuildStep _) {
-    if (element == null) {
-      throw Exception('@SumType() applied to something that is null');
-    }
     if (!(element is ClassElement)) {
       throw Exception('Only annotate mixins with `@SumType()`.');
     }
     try {
-      final clazz = ClassModel(element as ClassElement, annotation);
+      final clazz = ClassModel(element, annotation);
       if (clazz.fields.isEmpty) {
         throw CodegenException('no alternatives defined for ${clazz.mixinName}');
       }

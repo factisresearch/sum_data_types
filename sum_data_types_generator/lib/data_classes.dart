@@ -13,15 +13,15 @@ Builder generateDataClass(BuilderOptions options) =>
 class TypeModel {
   final String typeRepr;
   final String typeReprForFactory;
-  final String optionalType;
+  final String? optionalType;
   bool get isOptional {
     return optionalType != null;
   }
 
   TypeModel._({
-    @required this.typeRepr,
-    @required this.typeReprForFactory,
-    @required this.optionalType,
+    required this.typeRepr,
+    required this.typeReprForFactory,
+    required this.optionalType,
   });
 
   factory TypeModel(
@@ -29,7 +29,7 @@ class TypeModel {
     ImportModel imports,
   ) {
     final typeRepr = computeTypeRepr(ty, imports);
-    String optionalType;
+    String? optionalType;
     var typeReprForFactory = typeRepr;
     if (ty is ParameterizedType && ty.typeArguments.length == 1 && isQuiverOptional(ty, imports)) {
       optionalType = qualifyType(ty, imports);
@@ -158,14 +158,11 @@ class DataClassGenerator extends GeneratorForAnnotation<DataClass> {
   @override
   FutureOr<String> generateForAnnotatedElement(
       Element element, ConstantReader annotation, BuildStep _) {
-    if (element == null) {
-      throw Exception('@DataClass() applied to something that is null');
-    }
     if (!(element is ClassElement)) {
       throw Exception('Only annotate mixins with `@DataClass()`.');
     }
     try {
-      final clazz = ClassModel(element as ClassElement, annotation);
+      final clazz = ClassModel(element, annotation);
       final toStringMethod = '''
         @override
         String toString() {

@@ -8,9 +8,9 @@ environment:
   sdk: ">=2.5.0 <3.0.0"
 
 dependencies:
-  quiver: '>=2.0.0 <3.0.0'
+  quiver: ^3.0.1
   pedantic: ^1.8.0
-  kt_dart: ^0.7.0+1
+  kt_dart: ^0.9.0
   sum_data_types:
     git:
       url: https://github.com/factisresearch/sum_data_types

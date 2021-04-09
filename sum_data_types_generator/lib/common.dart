@@ -160,15 +160,19 @@ class CommonFieldModel<TypeModel> {
   }
 }
 
-typedef MkField<T> = T Function(FieldElement f, ImportModel imports);
+typedef MkField<T> = T Function(FieldElement f, ImportModel imports, CodgenConfig cfg);
 
 @immutable
 class CodgenConfig {
   final bool genToString;
   final bool genEqHashCode;
+  final bool nnbd;
 
-  const CodgenConfig({bool? toString, bool? eqHashCode})
-      : genToString = toString ?? true,
+  const CodgenConfig({
+    bool? toString,
+    bool? eqHashCode,
+    required this.nnbd,
+  })   : genToString = toString ?? true,
         genEqHashCode = eqHashCode ?? true;
 }
 
@@ -205,9 +209,15 @@ class CommonClassModel<FieldModel> {
       lib.imports.forEach((imp) {
         imports.addImportElement(imp);
       });
-      if (lib.featureSet.isEnabled(Feature.non_nullable)) {
-        throw Exception('NNBD is not supported yet');
-      }
+
+      // The fields are from the SumDataType class.
+      final genToString = reader.objectValue.getField('genToString')!.toBoolValue();
+      final genEqHashCode = reader.objectValue.getField('genEqHashCode')!.toBoolValue();
+      final annotation = CodgenConfig(
+        toString: genToString,
+        eqHashCode: genEqHashCode,
+        nnbd: lib.featureSet.isEnabled(Feature.non_nullable),
+      );
 
       final mixinName = clazz.name;
       final List<String> typeArgs = clazz.typeParameters.map((param) => param.name).toList();
@@ -224,16 +234,12 @@ class CommonClassModel<FieldModel> {
             throw Exception('$msgPrefix: field must not have a setter');
           } else {
             if (field.getter!.isAbstract) {
-              fields.add(mkField(field, imports));
+              fields.add(mkField(field, imports, annotation));
             }
           }
         }
       }
 
-      // The fields are from the SumDataType class.
-      final genToString = reader.objectValue.getField('genToString')!.toBoolValue();
-      final genEqHashCode = reader.objectValue.getField('genEqHashCode')!.toBoolValue();
-      final annotation = CodgenConfig(toString: genToString, eqHashCode: genEqHashCode);
       return CommonClassModel.mk(
         mixinName: mixinName,
         baseClassName: baseName,

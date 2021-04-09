@@ -1,4 +1,5 @@
 import 'package:sum_data_types/main.dart';
+import 'package:example/nnbd.dart';
 import 'package:example/types.dart' as ty;
 import 'package:quiver/core.dart';
 import 'package:kt_dart/collection.dart';
@@ -73,22 +74,6 @@ void main() {
     expect(c == c, equals(false));
     expect(c.hashCode, equals(42));
   });
-}
-
-@DataClass()
-mixin Container<T> on _ContainerBase<T> {
-  String get id;
-  T get payload;
-}
-
-@SumType()
-mixin Either<A, B> on _EitherBase<A, B> {
-  A get _left;
-  B get _right;
-}
-
-void foo(Either<String, int> x) {
-  x.iswitch(left: (s) => print('String: ' + s), right: (i) => print('int: ' + i.toString()));
 }
 
 @DataClass()

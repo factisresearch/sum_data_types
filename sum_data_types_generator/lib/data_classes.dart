@@ -42,10 +42,11 @@ class TypeModel {
 
 class FieldModel {
   final CommonFieldModel<TypeModel> _commonModel;
+  final CodgenConfig cfg;
   TypeModel get type => _commonModel.type;
   String get name => _commonModel.name;
 
-  FieldModel(FieldElement fld, ImportModel imports)
+  FieldModel(FieldElement fld, ImportModel imports, this.cfg)
       : this._commonModel =
             CommonFieldModel(fld, (DartType ty) => TypeModel(ty, imports), FieldNameConfig.Public);
 
@@ -54,13 +55,23 @@ class FieldModel {
   }
 
   String get factoryParam {
-    final prefix = this.type.isOptional ? '' : '@required ';
-    return '$prefix${this.type.typeReprForFactory} $name';
+    if (cfg.nnbd) {
+      final prefix = this.type.isOptional ? '' : 'required ';
+      final typeModifier = this.type.isOptional ? '?' : '';
+      return '$prefix${this.type.typeReprForFactory}$typeModifier $name';
+    } else {
+      final prefix = this.type.isOptional ? '' : '@required ';
+      return '$prefix${this.type.typeReprForFactory} $name';
+    }
   }
 
   // Parameter of the constructor
   String get constructorParam {
-    return '@required this.$name';
+    if (cfg.nnbd) {
+      return 'required this.$name';
+    } else {
+      return '@required this.$name';
+    }
   }
 
   // Argument for calling the constructor from the factory
@@ -86,7 +97,11 @@ class FieldModel {
   }
 
   String get copyWithParam {
-    return '${this.type.typeRepr} ${this.name},';
+    if (cfg.nnbd) {
+      return '${this.type.typeRepr}? ${this.name},';
+    } else {
+      return '${this.type.typeRepr} ${this.name},';
+    }
   }
 }
 
@@ -106,7 +121,7 @@ class ClassModel {
   ClassModel(ClassElement clazz, ConstantReader reader)
       : this._commonModel = CommonClassModel(
           clazz,
-          (FieldElement fld, ImportModel imports) => FieldModel(fld, imports),
+          (FieldElement fld, ImportModel imports, cfg) => FieldModel(fld, imports, cfg),
           reader,
         );
 
@@ -138,7 +153,7 @@ class ClassModel {
   }
 
   String get constructorAsserts {
-    if (this.fields.isEmpty) {
+    if (this.fields.isEmpty || this._commonModel.config.nnbd) {
       return ';';
     } else {
       return ' : ' + this.fields.map((field) => field.assertNotNull).join(', ') + ';';

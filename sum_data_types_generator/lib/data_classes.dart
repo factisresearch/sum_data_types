@@ -13,15 +13,15 @@ Builder generateDataClass(BuilderOptions options) =>
 class TypeModel {
   final String typeRepr;
   final String typeReprForFactory;
-  final String optionalType;
+  final String? optionalType;
   bool get isOptional {
     return optionalType != null;
   }
 
   TypeModel._({
-    @required this.typeRepr,
-    @required this.typeReprForFactory,
-    @required this.optionalType,
+    required this.typeRepr,
+    required this.typeReprForFactory,
+    required this.optionalType,
   });
 
   factory TypeModel(
@@ -29,7 +29,7 @@ class TypeModel {
     ImportModel imports,
   ) {
     final typeRepr = computeTypeRepr(ty, imports);
-    String optionalType;
+    String? optionalType;
     var typeReprForFactory = typeRepr;
     if (ty is ParameterizedType && ty.typeArguments.length == 1 && isQuiverOptional(ty, imports)) {
       optionalType = qualifyType(ty, imports);
@@ -42,10 +42,11 @@ class TypeModel {
 
 class FieldModel {
   final CommonFieldModel<TypeModel> _commonModel;
+  final CodgenConfig cfg;
   TypeModel get type => _commonModel.type;
   String get name => _commonModel.name;
 
-  FieldModel(FieldElement fld, ImportModel imports)
+  FieldModel(FieldElement fld, ImportModel imports, this.cfg)
       : this._commonModel =
             CommonFieldModel(fld, (DartType ty) => TypeModel(ty, imports), FieldNameConfig.Public);
 
@@ -54,13 +55,23 @@ class FieldModel {
   }
 
   String get factoryParam {
-    final prefix = this.type.isOptional ? '' : '@required ';
-    return '$prefix${this.type.typeReprForFactory} $name';
+    if (cfg.nnbd) {
+      final prefix = this.type.isOptional ? '' : 'required ';
+      final typeModifier = this.type.isOptional ? '?' : '';
+      return '$prefix${this.type.typeReprForFactory}$typeModifier $name';
+    } else {
+      final prefix = this.type.isOptional ? '' : '@required ';
+      return '$prefix${this.type.typeReprForFactory} $name';
+    }
   }
 
   // Parameter of the constructor
   String get constructorParam {
-    return '@required this.$name';
+    if (cfg.nnbd) {
+      return 'required this.$name';
+    } else {
+      return '@required this.$name';
+    }
   }
 
   // Argument for calling the constructor from the factory
@@ -86,7 +97,11 @@ class FieldModel {
   }
 
   String get copyWithParam {
-    return '${this.type.typeRepr} ${this.name},';
+    if (cfg.nnbd) {
+      return '${this.type.typeRepr}? ${this.name},';
+    } else {
+      return '${this.type.typeRepr} ${this.name},';
+    }
   }
 }
 
@@ -106,7 +121,7 @@ class ClassModel {
   ClassModel(ClassElement clazz, ConstantReader reader)
       : this._commonModel = CommonClassModel(
           clazz,
-          (FieldElement fld, ImportModel imports) => FieldModel(fld, imports),
+          (FieldElement fld, ImportModel imports, cfg) => FieldModel(fld, imports, cfg),
           reader,
         );
 
@@ -138,7 +153,7 @@ class ClassModel {
   }
 
   String get constructorAsserts {
-    if (this.fields.isEmpty) {
+    if (this.fields.isEmpty || this._commonModel.config.nnbd) {
       return ';';
     } else {
       return ' : ' + this.fields.map((field) => field.assertNotNull).join(', ') + ';';
@@ -158,14 +173,11 @@ class DataClassGenerator extends GeneratorForAnnotation<DataClass> {
   @override
   FutureOr<String> generateForAnnotatedElement(
       Element element, ConstantReader annotation, BuildStep _) {
-    if (element == null) {
-      throw Exception('@DataClass() applied to something that is null');
-    }
     if (!(element is ClassElement)) {
       throw Exception('Only annotate mixins with `@DataClass()`.');
     }
     try {
-      final clazz = ClassModel(element as ClassElement, annotation);
+      final clazz = ClassModel(element, annotation);
       final toStringMethod = '''
         @override
         String toString() {
@@ -184,6 +196,8 @@ class DataClassGenerator extends GeneratorForAnnotation<DataClass> {
           }
         }
         abstract class ${clazz.baseClassName}${clazz.typeArgsWithParens} {
+          const ${clazz.baseClassName}();
+
           ${clazz.copyWithSignature};
         }
         @immutable
@@ -193,8 +207,7 @@ class DataClassGenerator extends GeneratorForAnnotation<DataClass> {
         {
           ${clazz.fieldDeclarations}
 
-          // We cannot have a const constructor because of https://github.com/dart-lang/sdk/issues/37810
-          ${clazz.className}.make(
+          const ${clazz.className}.make(
             ${clazz.constructorParams}
           ) ${clazz.constructorAsserts}
 

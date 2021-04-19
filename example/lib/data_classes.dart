@@ -1,4 +1,5 @@
 import 'package:sum_data_types/main.dart';
+import 'package:example/nnbd.dart';
 import 'package:example/types.dart' as ty;
 import 'package:quiver/core.dart';
 import 'package:kt_dart/collection.dart';
@@ -54,6 +55,10 @@ void main() {
             'foo: Either.right(42))'));
   });
 
+  test('extra getters', () {
+    expect(userSarah.fooDisplay, equals('42'));
+  });
+
   test('container', () {
     final c = ContainerFactory.make(payload: 'foo', id: 'blub');
     expect(c.toString(), 'Container(id: blub, payload: foo)');
@@ -72,22 +77,6 @@ void main() {
 }
 
 @DataClass()
-mixin Container<T> on _ContainerBase<T> {
-  String get id;
-  T get payload;
-}
-
-@SumType()
-mixin Either<A, B> on _EitherBase<A, B> {
-  A get _left;
-  B get _right;
-}
-
-void foo(Either<String, int> x) {
-  x.iswitch(left: (s) => print('String: ' + s), right: (i) => print('int: ' + i.toString()));
-}
-
-@DataClass()
 mixin User on _UserBase {
   String get name;
   Optional<int> get age;
@@ -100,6 +89,8 @@ mixin User on _UserBase {
   int numerOfFriends() {
     return this.friendsAddresses.size;
   }
+
+  String get fooDisplay => foo.iswitch(left: (x) => x, right: (x) => x.toString());
 }
 
 @DataClass()

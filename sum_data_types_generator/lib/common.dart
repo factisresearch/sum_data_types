@@ -1,3 +1,4 @@
+import 'package:analyzer/dart/analysis/features.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:meta/meta.dart';
@@ -5,9 +6,9 @@ import 'package:source_gen/source_gen.dart';
 import 'package:sum_data_types/main.dart';
 
 class CodegenException with Exception {
-  String className;
-  String fieldName;
-  String generatorName;
+  String? className;
+  String? fieldName;
+  String? generatorName;
   final String message;
   CodegenException(this.message);
 
@@ -28,22 +29,24 @@ class CodegenException with Exception {
 }
 
 bool isType(DartType ty, String name, String packageUri, ImportModel imports) {
-  final tyLib = ty.element.library;
-  return ty.element.name == name && imports.importUri(tyLib) == packageUri;
+  final tyLib = ty.element!.librarySource?.uri;
+  return ty.element!.name == name && tyLib.toString() == packageUri;
 }
 
-const quiverPackageUri = 'package:quiver/core.dart';
+const quiverPackageUris = [
+  'package:quiver/src/core/optional.dart',
+  'package:quiver/core.dart',
+];
 
 bool isQuiverOptional(DartType ty, ImportModel imports) {
-  return isType(ty, 'Optional', quiverPackageUri, imports);
+  return quiverPackageUris.any((packageUri) => isType(ty, 'Optional', packageUri, imports));
 }
 
 // Returns a potential qualified access string for the type, without type arguments
 String qualifyType(DartType ty, ImportModel imports) {
-  final tyLib = ty.element.library;
-  final prefixOrNull = imports.importPrefixOrNull(tyLib);
+  final prefixOrNull = imports._fullNameToPrefix[fullName(ty.element!)];
   final prefix = (prefixOrNull != null) ? (prefixOrNull + '.') : '';
-  return '$prefix${ty.element.name}';
+  return '$prefix${ty.element!.name}';
 }
 
 // Returns a textual representation of the given type, including generic types
@@ -62,46 +65,40 @@ String computeTypeRepr(DartType ty, ImportModel imports) {
   }
 }
 
+String fullName(Element element) {
+  return element.librarySource!.uri.toString() + ':' + element.toString();
+}
+
 class ImportModel {
   final Map<String, String> _moduleIdToPrefix = {};
-  final Map<String, String> _moduleIdToUri = {};
+  final Map<String, String> _fullNameToPrefix = {};
+  final Map<String, String?> _moduleIdToUri = {};
   final Map<String, String> _uriToModuleId = {};
-
-  String importPrefixOrNull(LibraryElement lib) {
-    if (lib == null) {
-      return null;
-    } else {
-      return _moduleIdToPrefix[lib.identifier];
-    }
-  }
-
-  String importUri(LibraryElement lib) {
-    if (lib == null) {
-      return null;
-    } else {
-      return _moduleIdToUri[lib.identifier];
-    }
-  }
 
   void addImportElement(ImportElement imp) {
     if (imp.importedLibrary == null) {
       return;
     }
-    final modId = imp.importedLibrary.identifier;
+    final modId = imp.importedLibrary!.identifier;
     this._moduleIdToUri[modId] = imp.uri;
-    this._uriToModuleId[imp.uri] = modId;
+    this._uriToModuleId[imp.uri!] = modId;
     if (imp.prefix != null) {
-      this._moduleIdToPrefix[modId] = imp.prefix.name;
+      this._moduleIdToPrefix[modId] = imp.prefix!.name;
+      imp.namespace.definedNames.forEach((key, value) {
+        _fullNameToPrefix[fullName(value)] = imp.prefix!.name;
+      });
     }
   }
 
   String lookupOptionalType() {
-    final modId = _uriToModuleId[quiverPackageUri];
-    if (modId == null) {
+    final modIdCandidates =
+        quiverPackageUris.where((packageUri) => _uriToModuleId[packageUri] != null);
+    if (modIdCandidates.isEmpty) {
       throw CodegenException(
-          "Cannot reference type 'Optional'. Please import the package '$quiverPackageUri', "
+          "Cannot reference type 'Optional'. Please import the package '${quiverPackageUris[0]}', "
           'either unqualified or qualified.');
     } else {
+      final modId = modIdCandidates.first;
       final prefix = _moduleIdToPrefix[modId];
       if (prefix == null) {
         return 'Optional';
@@ -122,9 +119,9 @@ class CommonFieldModel<TypeModel> {
   final TypeModel type;
 
   CommonFieldModel._({
-    @required this.name,
-    @required this.type,
-    @required this.internalName,
+    required this.name,
+    required this.type,
+    required this.internalName,
   });
 
   factory CommonFieldModel(FieldElement field, MkType<TypeModel> mkType, FieldNameConfig fieldCfg) {
@@ -163,15 +160,19 @@ class CommonFieldModel<TypeModel> {
   }
 }
 
-typedef MkField<T> = T Function(FieldElement f, ImportModel imports);
+typedef MkField<T> = T Function(FieldElement f, ImportModel imports, CodgenConfig cfg);
 
 @immutable
 class CodgenConfig {
   final bool genToString;
   final bool genEqHashCode;
+  final bool nnbd;
 
-  const CodgenConfig({bool toString, bool eqHashCode})
-      : genToString = toString ?? true,
+  const CodgenConfig({
+    bool? toString,
+    bool? eqHashCode,
+    required this.nnbd,
+  })   : genToString = toString ?? true,
         genEqHashCode = eqHashCode ?? true;
 }
 
@@ -188,12 +189,12 @@ class CommonClassModel<FieldModel> {
   }
 
   CommonClassModel.mk({
-    @required this.mixinName,
-    @required this.className,
-    @required this.baseClassName,
-    @required this.fields,
-    @required this.typeArgs,
-    @required this.config,
+    required this.mixinName,
+    required this.className,
+    required this.baseClassName,
+    required this.fields,
+    required this.typeArgs,
+    required this.config,
   });
 
   factory CommonClassModel(
@@ -209,6 +210,15 @@ class CommonClassModel<FieldModel> {
         imports.addImportElement(imp);
       });
 
+      // The fields are from the SumDataType class.
+      final genToString = reader.objectValue.getField('genToString')!.toBoolValue();
+      final genEqHashCode = reader.objectValue.getField('genEqHashCode')!.toBoolValue();
+      final annotation = CodgenConfig(
+        toString: genToString,
+        eqHashCode: genEqHashCode,
+        nnbd: lib.featureSet.isEnabled(Feature.non_nullable),
+      );
+
       final mixinName = clazz.name;
       final List<String> typeArgs = clazz.typeParameters.map((param) => param.name).toList();
       final className = '_' + mixinName;
@@ -216,22 +226,20 @@ class CommonClassModel<FieldModel> {
       final fields = <FieldModel>[];
 
       for (var field in clazz.fields) {
-        if (field.name != 'hashCode') {
+        if (field.name != 'hashCode' && !field.isStatic) {
           final msgPrefix = "Invalid getter '${field.name}' for data class '$mixinName'";
-          if (field.getter == null && !field.isFinal) {
+          if (field.getter == null) {
             throw Exception('$msgPrefix: field must have a getter');
           } else if (field.setter != null) {
             throw Exception('$msgPrefix: field must not have a setter');
           } else {
-            fields.add(mkField(field, imports));
+            if (field.getter!.isAbstract) {
+              fields.add(mkField(field, imports, annotation));
+            }
           }
         }
       }
 
-      // The fields are from the SumDataType class.
-      final genToString = reader.objectValue.getField('genToString').toBoolValue();
-      final genEqHashCode = reader.objectValue.getField('genEqHashCode').toBoolValue();
-      final annotation = CodgenConfig(toString: genToString, eqHashCode: genEqHashCode);
       return CommonClassModel.mk(
         mixinName: mixinName,
         baseClassName: baseName,

@@ -1,6 +1,7 @@
 import 'package:sum_data_types/main.dart';
 import 'package:example/types.dart' as ty;
 import 'package:example/data_classes.dart';
+import 'package:example/nnbd.dart';
 // Import quiver qualified to test wether the generated code uses the right prefix
 import 'package:quiver/core.dart' as quiv;
 import 'package:kt_dart/collection.dart';

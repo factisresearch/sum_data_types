@@ -9,11 +9,13 @@ import './common.dart';
 
 class TypeModel {
   final bool isUnit;
+  final bool isDynamic;
   final String typeRepr;
 
   TypeModel._({
     required this.typeRepr,
     required this.isUnit,
+    required this.isDynamic,
   });
 
   factory TypeModel(
@@ -22,7 +24,7 @@ class TypeModel {
   ) {
     final typeRepr = computeTypeRepr(ty, imports);
     final isUnit = isType(ty, 'Unit', 'package:sum_data_types/main.dart', imports);
-    return TypeModel._(isUnit: isUnit, typeRepr: typeRepr);
+    return TypeModel._(isUnit: isUnit, isDynamic: ty.isDynamic, typeRepr: typeRepr);
   }
 }
 
@@ -73,7 +75,7 @@ class FieldModel {
   }
 
   String get fieldDecl {
-    if (cfg.nnbd) {
+    if (cfg.nnbd && !type.isDynamic) {
       return '@override\nfinal ${type.typeRepr}? $internalName;';
     } else {
       return '@override\nfinal ${type.typeRepr} $internalName;';
@@ -87,7 +89,7 @@ class FieldModel {
 
   String get constructorParam {
     if (cfg.nnbd) {
-      return '${type.typeRepr}? $name,';
+      return '${type.typeRepr}${type.isDynamic ? '' : '?'} $name,';
     } else {
       return '${type.typeRepr} $name, // ignore: always_require_non_null_named_parameters';
     }
@@ -101,16 +103,16 @@ class FieldModel {
     if (cfg.nnbd) {
       final funArg = this.type.isUnit ? '' : '__x\$.$internalName!';
       return '''if (__x\$.$internalName != null) {
-      return $name($funArg);
-    }
-    ''';
+        return $name($funArg);
+      }
+      ''';
     } else {
       final funArg = this.type.isUnit ? '' : '__x\$.$internalName';
       return '''if (__x\$.$internalName != null) {
-      if ($name == null) { throw ArgumentError.notNull('$name'); }
-      return $name($funArg);
-    }
-    ''';
+        if ($name == null) { throw ArgumentError.notNull('$name'); }
+        return $name($funArg);
+      }
+      ''';
     }
   }
 

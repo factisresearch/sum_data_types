@@ -18,6 +18,13 @@ mixin Either<A, B> on _EitherBase<A, B> {
   B? get _right;
 }
 
+@SumType()
+mixin Something on _SomethingBase {
+  String? get _string;
+  // dynamic is already nullable
+  dynamic get _unknown;
+}
+
 void foo(Either<String, int> x) {
   x.iswitch(left: (s) => print('String: ' + s), right: (i) => print('int: ' + i.toString()));
 }

@@ -1,11 +1,6 @@
-import 'package:meta/meta.dart';
-
 export 'package:meta/meta.dart' show immutable, required;
 
-//
-// Data classes
-//
-@immutable
+/// Annotation to use to generate a data-class
 class DataClass {
   final bool genToString;
   final bool genEqHashCode;
@@ -15,10 +10,7 @@ class DataClass {
         genEqHashCode = eqHashCode ?? true;
 }
 
-//
-// Sum types
-//
-@immutable
+/// Annotation to use to generate a sum-type
 class SumType {
   final bool genToString;
   final bool genEqHashCode;
@@ -28,7 +20,7 @@ class SumType {
         genEqHashCode = eqHashCode ?? true;
 }
 
-@immutable
+/// Used for alternatives in sum-types that don't take a parameter.
 class Unit {
   const Unit();
 

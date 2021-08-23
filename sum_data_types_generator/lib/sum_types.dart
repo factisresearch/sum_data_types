@@ -4,7 +4,7 @@ import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:build/build.dart';
 import 'package:source_gen/source_gen.dart';
-import 'package:sum_data_types/main.dart';
+import 'package:sum_data_types/sum_data_types.dart';
 import './common.dart';
 
 class TypeModel {
@@ -23,7 +23,7 @@ class TypeModel {
     ImportModel imports,
   ) {
     final typeRepr = computeTypeRepr(ty, imports);
-    final isUnit = isType(ty, 'Unit', 'package:sum_data_types/main.dart', imports);
+    final isUnit = isType(ty, 'Unit', 'package:sum_data_types/sum_data_types.dart', imports);
     return TypeModel._(isUnit: isUnit, isDynamic: ty.isDynamic, typeRepr: typeRepr);
   }
 }

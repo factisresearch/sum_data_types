@@ -1,5 +1,5 @@
 // @dart=2.12
-import 'package:sum_data_types/main.dart';
+import 'package:sum_data_types/sum_data_types.dart';
 import 'package:quiver/core.dart';
 
 part 'nnbd.g.dart';

@@ -3,7 +3,7 @@ import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:meta/meta.dart';
 import 'package:source_gen/source_gen.dart';
-import 'package:sum_data_types/main.dart';
+import 'package:sum_data_types/sum_data_types.dart';
 
 class CodegenException with Exception {
   String? className;

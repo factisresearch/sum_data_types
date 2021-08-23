@@ -1,4 +1,4 @@
-import 'package:sum_data_types/main.dart';
+import 'package:sum_data_types/sum_data_types.dart';
 import 'package:example/types.dart' as ty;
 import 'package:example/data_classes.dart';
 import 'package:example/nnbd.dart';

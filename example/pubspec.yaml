@@ -11,10 +11,7 @@ dependencies:
   pedantic: ^1.8.0
   kt_dart: ^0.9.0
   sum_data_types:
-    git:
-      url: https://github.com/factisresearch/sum_data_types
-      path: sum_data_types
-      ref: 075e8808ccbe96ccba93c4e0df03c4aa5ad23084
+    path: ..
 
 dev_dependencies:
   build_runner: ^1.7.1

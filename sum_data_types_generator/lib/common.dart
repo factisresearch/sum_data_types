@@ -2,6 +2,7 @@ import 'package:analyzer/dart/analysis/features.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:meta/meta.dart';
+import 'package:pub_semver/pub_semver.dart';
 import 'package:source_gen/source_gen.dart';
 import 'package:sum_data_types/sum_data_types.dart';
 
@@ -167,11 +168,13 @@ class CodgenConfig {
   final bool genToString;
   final bool genEqHashCode;
   final bool nnbd;
+  final bool hashCodeImpl;
 
   const CodgenConfig({
     bool? toString,
     bool? eqHashCode,
     required this.nnbd,
+    required this.hashCodeImpl,
   })   : genToString = toString ?? true,
         genEqHashCode = eqHashCode ?? true;
 }
@@ -217,6 +220,7 @@ class CommonClassModel<FieldModel> {
         toString: genToString,
         eqHashCode: genEqHashCode,
         nnbd: lib.featureSet.isEnabled(Feature.non_nullable),
+        hashCodeImpl: lib.languageVersion.effective >= Version(2, 14,0),
       );
 
       final mixinName = clazz.name;
@@ -281,19 +285,26 @@ String eqImpl(String className, List<String> fieldNames) {
     }''';
 }
 
-String hashCodeImpl(List<String> fieldNames) {
-  if (fieldNames.isEmpty) {
+String hashCodeImpl(CodgenConfig config, List<String> fieldNames) {
+  if (config.hashCodeImpl) {
+      final updates = fieldNames.map((name) => 'this.$name,').join();
+      return '''@override
+        int get hashCode => Object.hashAll([$updates]);
+      ''';
+  } else {
+    if (fieldNames.isEmpty) {
+      return '''@override
+        int get hashCode => 0;
+      ''';
+    }
+    const result = r'__result$';
+    final updates =
+        fieldNames.map((name) => '$result = 37 * $result + this.$name.hashCode;').join('\n');
     return '''@override
-      int get hashCode => 0;
-    ''';
+      int get hashCode {
+        var $result = 17;
+        $updates
+        return $result;
+      }''';
   }
-  const result = r'__result$';
-  final updates =
-      fieldNames.map((name) => '$result = 37 * $result + this.$name.hashCode;').join('\n');
-  return '''@override
-    int get hashCode {
-      var $result = 17;
-      $updates
-      return $result;
-    }''';
 }

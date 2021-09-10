@@ -220,7 +220,7 @@ class DataClassGenerator extends GeneratorForAnnotation<DataClass> {
 
           ${clazz.config.genEqHashCode ? eqImpl(clazz.className, clazz.fieldNames) : ''}
 
-          ${clazz.config.genEqHashCode ? hashCodeImpl(clazz.fieldNames) : ''}
+          ${clazz.config.genEqHashCode ? hashCodeImpl(clazz.config, clazz.fieldNames) : ''}
 
           ${clazz.config.genToString ? toStringMethod : ''}
         }''';

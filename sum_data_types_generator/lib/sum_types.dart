@@ -290,7 +290,7 @@ class SumTypeGenerator extends GeneratorForAnnotation<SumType> {
 
           ${clazz.config.genEqHashCode ? eqImpl(clazz.className, clazz.internalFieldNames) : ''}
 
-          ${clazz.config.genEqHashCode ? hashCodeImpl(clazz.internalFieldNames) : ''}
+          ${clazz.config.genEqHashCode ? hashCodeImpl(clazz.config, clazz.internalFieldNames) : ''}
 
           ${clazz.config.genToString ? toStringMethod : ''}
         }

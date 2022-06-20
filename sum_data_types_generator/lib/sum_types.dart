@@ -99,16 +99,19 @@ class FieldModel {
     return 'this.$internalName = $name';
   }
 
+  String get iswitchAssignment {
+    return 'final ${type.typeRepr}? $internalName = this.$internalName;';
+  }
+
   String get iswitchIf {
+    final funArg = this.type.isUnit ? '' : '$internalName';
     if (cfg.nnbd) {
-      final funArg = this.type.isUnit ? '' : '__x\$.$internalName!';
-      return '''if (__x\$.$internalName != null) {
+      return '''if ($internalName != null) {
         return $name($funArg);
       }
       ''';
     } else {
-      final funArg = this.type.isUnit ? '' : '__x\$.$internalName';
-      return '''if (__x\$.$internalName != null) {
+      return '''if ($internalName != null) {
         if ($name == null) { throw ArgumentError.notNull('$name'); }
         return $name($funArg);
       }
@@ -203,9 +206,10 @@ class ClassModel {
   }
 
   String get iswitchBody {
+    final iswitchAssignments = this.fields.map((field) => field.iswitchAssignment).join('\n');
     final ifElse = this.fields.map((field) => field.iswitchIf).join(' else ');
     return '''
-      final $mixinName$typeArgsWithParens __x\$ = this;
+      $iswitchAssignments
       $ifElse else {
       throw StateError('an instance of $mixinName has no case selected');
     }''';

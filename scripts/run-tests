@@ -13,7 +13,10 @@ if [ "${1-}" == "-h" -o "${1-}" == "--help" ]; then
 fi
 
 if [ "${1-}" != "--skip-codegen" ]; then
-    dart run build_runner build || exit 1
+    dart run build_runner build
 fi
 
-dart run test lib/data_classes.dart lib/sum_types.dart || exit 1
+echo
+echo -n "==> Running 'dart test' in "
+pwd
+dart test lib/data_classes.dart lib/sum_types.dart

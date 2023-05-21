@@ -11,7 +11,7 @@ for d in . sum_data_types_generator example; do
     (
         cd "$d"
         echo
-        echo -n "Running 'dart analyze' in "
+        echo -n "==> Running 'dart analyze' in "
         pwd
         if [ "$d" == "example" ]; then
             dart run build_runner build

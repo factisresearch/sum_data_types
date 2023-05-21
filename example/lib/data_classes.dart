@@ -1,8 +1,10 @@
-import 'package:sum_data_types/sum_data_types.dart';
+// ignore_for_file: library_private_types_in_public_api
+
 import 'package:example/nnbd.dart';
 import 'package:example/types.dart' as ty;
-import 'package:quiver/core.dart';
 import 'package:kt_dart/collection.dart';
+import 'package:quiver/core.dart';
+import 'package:sum_data_types/sum_data_types.dart';
 import 'package:test/test.dart';
 
 part 'data_classes.g.dart';
@@ -10,17 +12,17 @@ part 'data_classes.g.dart';
 void main() {
   final userBob = UserFactory.make(
     name: 'Bob',
-    friends: KtList.empty(),
+    friends: const KtList.empty(),
     address: ty.Address(),
     age: 31,
-    friendsAddresses: KtList.empty(),
+    friendsAddresses: const KtList.empty(),
     foo: EitherFactory.left('foo'),
   );
   final userPaul = UserFactory.make(
     name: 'Paul',
     friends: KtList.of(userBob),
     address: ty.Address(),
-    friendsAddresses: KtList.empty(),
+    friendsAddresses: const KtList.empty(),
     foo: EitherFactory.right(42),
   );
   final userSarah = userPaul.copyWith(name: 'Sarah');
@@ -28,12 +30,11 @@ void main() {
     name: 'Sarah',
     friends: KtList.of(userBob),
     address: ty.Address(),
-    friendsAddresses: KtList.empty(),
+    friendsAddresses: const KtList.empty(),
     foo: EitherFactory.right(42),
   );
 
   test('equals', () {
-    expect(userSarah == null, isFalse);
     expect(userSarah == userPaul, isFalse);
     expect(userSarah, equals(userSarah));
     expect(userSarah == userSarah2, isTrue);

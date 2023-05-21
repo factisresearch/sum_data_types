@@ -54,7 +54,7 @@ String qualifyType(DartType ty, ImportModel imports) {
 String computeTypeRepr(DartType ty, ImportModel imports) {
   if (ty is FunctionType) {
     throw CodegenException('function types are not supported');
-  } else if (ty.isDynamic) {
+  } else if (ty is DynamicType) {
     return 'dynamic';
   } else if (ty is ParameterizedType && ty.typeArguments.isNotEmpty) {
     final base = qualifyType(ty, imports);
@@ -66,7 +66,7 @@ String computeTypeRepr(DartType ty, ImportModel imports) {
 }
 
 String fullName(Element element) {
-  return element.librarySource!.uri.toString() + ':' + element.toString();
+  return "${element.librarySource!.uri}:$element";
 }
 
 class ImportModel {
@@ -115,7 +115,7 @@ class ImportModel {
 
 typedef MkType<T> = T Function(DartType ty);
 
-enum FieldNameConfig { Public, Private }
+enum FieldNameConfig { public, private }
 
 class CommonFieldModel<TypeModel> {
   final String name;
@@ -133,16 +133,16 @@ class CommonFieldModel<TypeModel> {
       final ty = mkType(field.type);
       String name, internalName;
       switch (fieldCfg) {
-        case FieldNameConfig.Public:
+        case FieldNameConfig.public:
           {
             if (field.name.startsWith('_')) {
               throw CodegenException('fieldname must not start with an underscore');
             }
             name = field.name;
-            internalName = '_' + name;
+            internalName = '_$name';
             break;
           }
-        case FieldNameConfig.Private:
+        case FieldNameConfig.private:
           {
             if (!field.name.startsWith('_')) {
               throw CodegenException('fieldname must start with an underscore');
@@ -189,7 +189,7 @@ class CommonClassModel<FieldModel> {
   final CodgenConfig config;
 
   String get factoryName {
-    return mixinName + 'Factory';
+    return '${mixinName}Factory';
   }
 
   CommonClassModel.mk({
@@ -225,8 +225,8 @@ class CommonClassModel<FieldModel> {
 
       final mixinName = clazz.name;
       final List<String> typeArgs = clazz.typeParameters.map((param) => param.name).toList();
-      final className = '_' + mixinName;
-      final baseName = className + 'Base';
+      final className = '_$mixinName';
+      final baseName = '${className}Base';
       final fields = <FieldModel>[];
 
       for (var field in clazz.fields) {
@@ -264,7 +264,7 @@ class CommonClassModel<FieldModel> {
 
   String get typeArgsWithParens {
     if (this.typeArgs.isNotEmpty) {
-      return '<' + this.typeArgs.join(',') + '>';
+      return '<${this.typeArgs.join(',')}>';
     } else {
       return '';
     }

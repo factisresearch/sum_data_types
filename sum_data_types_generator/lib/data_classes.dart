@@ -48,7 +48,7 @@ class FieldModel {
 
   FieldModel(FieldElement fld, ImportModel imports, this.cfg)
       : this._commonModel =
-            CommonFieldModel(fld, (DartType ty) => TypeModel(ty, imports), FieldNameConfig.Public);
+            CommonFieldModel(fld, (DartType ty) => TypeModel(ty, imports), FieldNameConfig.public);
 
   String get declaration {
     return '@override\nfinal ${this.type.typeRepr} ${this.name};';
@@ -127,7 +127,7 @@ class ClassModel {
 
   String get copyWithSignature {
     final params = (this.fields.isNotEmpty)
-        ? '{' + this.fields.map((field) => field.copyWithParam).join('') + '}'
+        ? '{${this.fields.map((field) => field.copyWithParam).join('')}}'
         : '';
     return '${this.mixinType} copyWith($params)';
   }
@@ -138,30 +138,30 @@ class ClassModel {
 
   String get factoryParams {
     return this.fields.isNotEmpty
-        ? '{' + this.fields.map((field) => field.factoryParam + ',').join() + '}'
+        ? '{${this.fields.map((field) => '${field.factoryParam},').join()}}'
         : '';
   }
 
   String get constructorParams {
     return this.fields.isNotEmpty
-        ? '{' + this.fields.map((field) => field.constructorParam + ',').join() + '}'
+        ? '{${this.fields.map((field) => '${field.constructorParam},').join()}}'
         : '';
   }
 
   String get constructorArgs {
-    return this.fields.map((field) => field.constructorArgFromFactory + ',').join();
+    return this.fields.map((field) => '${field.constructorArgFromFactory},').join();
   }
 
   String get constructorAsserts {
     if (this.fields.isEmpty || this._commonModel.config.nnbd) {
       return ';';
     } else {
-      return ' : ' + this.fields.map((field) => field.assertNotNull).join(', ') + ';';
+      return ' : ${this.fields.map((field) => field.assertNotNull).join(', ')};';
     }
   }
 
   String get copyWithArgs {
-    return this.fields.map((field) => field.constructorArgFromCopyWith + ',').join();
+    return this.fields.map((field) => '${field.constructorArgFromCopyWith},').join();
   }
 
   String get toStringFields {
@@ -172,7 +172,7 @@ class ClassModel {
 class DataClassGenerator extends GeneratorForAnnotation<DataClass> {
   @override
   FutureOr<String> generateForAnnotatedElement(
-      Element element, ConstantReader annotation, BuildStep _) {
+      Element element, ConstantReader annotation, BuildStep buildStep) {
     if (element is! MixinElement) {
       throw Exception('Only annotate mixins with `@DataClass()`.');
     }

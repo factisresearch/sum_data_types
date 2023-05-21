@@ -1,10 +1,12 @@
-import 'package:sum_data_types/sum_data_types.dart';
-import 'package:example/types.dart' as ty;
+// ignore_for_file: library_private_types_in_public_api, unused_element
+
 import 'package:example/data_classes.dart';
 import 'package:example/nnbd.dart';
+import 'package:example/types.dart' as ty;
+import 'package:kt_dart/collection.dart';
 // Import quiver qualified to test wether the generated code uses the right prefix
 import 'package:quiver/core.dart' as quiv;
-import 'package:kt_dart/collection.dart';
+import 'package:sum_data_types/sum_data_types.dart';
 import 'package:test/test.dart';
 
 part 'sum_types.g.dart';

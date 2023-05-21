@@ -24,11 +24,11 @@ class TypeModel {
   ) {
     final typeRepr = computeTypeRepr(ty, imports);
     final isUnit = isType(ty, 'Unit', 'package:sum_data_types/sum_data_types.dart', imports);
-    return TypeModel._(isUnit: isUnit, isDynamic: ty.isDynamic, typeRepr: typeRepr);
+    return TypeModel._(isUnit: isUnit, isDynamic: ty is DynamicType, typeRepr: typeRepr);
   }
 }
 
-enum SwitchMode { Required, Optional }
+enum SwitchMode { required, optional }
 
 class FieldModel {
   final CommonFieldModel<TypeModel> _commonModel;
@@ -40,7 +40,7 @@ class FieldModel {
 
   FieldModel(FieldElement fld, ImportModel imports, this.cfg)
       : this._commonModel =
-            CommonFieldModel(fld, (DartType ty) => TypeModel(ty, imports), FieldNameConfig.Private),
+            CommonFieldModel(fld, (DartType ty) => TypeModel(ty, imports), FieldNameConfig.private),
         this._imports = imports;
 
   String factoryMethod(String resultType, String tyArgs, String constructor) {
@@ -65,11 +65,11 @@ class FieldModel {
   String switchParam(String tyArg, SwitchMode mode) {
     final switchArg = this.type.isUnit ? '' : this.type.typeRepr;
     if (cfg.nnbd) {
-      final prefix = (mode == SwitchMode.Required) ? 'required ' : '';
-      final typeModifier = (mode == SwitchMode.Optional) ? '?' : '';
+      final prefix = (mode == SwitchMode.required) ? 'required ' : '';
+      final typeModifier = (mode == SwitchMode.optional) ? '?' : '';
       return '$prefix$tyArg Function($switchArg)$typeModifier $name';
     } else {
-      final prefix = (mode == SwitchMode.Required) ? '@required ' : '';
+      final prefix = (mode == SwitchMode.required) ? '@required ' : '';
       return '$prefix$tyArg Function($switchArg) $name';
     }
   }
@@ -104,7 +104,7 @@ class FieldModel {
   }
 
   String get iswitchIf {
-    final funArg = this.type.isUnit ? '' : '$internalName';
+    final funArg = this.type.isUnit ? '' : internalName;
     if (cfg.nnbd) {
       return '''if ($internalName != null) {
         return $name($funArg);
@@ -120,8 +120,8 @@ class FieldModel {
   }
 
   String iswitchArgFromOtherwise(String otherwise) {
-    final _otherwise = this.type.isUnit ? otherwise : '(${this.type.typeRepr} _) => $otherwise()';
-    return '$name: $name ?? $_otherwise,';
+    final otherwiseVal = this.type.isUnit ? otherwise : '(${this.type.typeRepr} _) => $otherwise()';
+    return '$name: $name ?? $otherwiseVal,';
   }
 
   String get toStringSwitch {
@@ -164,7 +164,7 @@ class ClassModel {
   }
 
   String get getterDecls {
-    return this.fields.map((field) => field.getterDecl + ';').join('\n');
+    return this.fields.map((field) => '${field.getterDecl};').join('\n');
   }
 
   String switchParams(String tyArg, SwitchMode mode) {
@@ -198,7 +198,7 @@ class ClassModel {
           innerPreds.add('$inner == null');
         }
       }
-      preds.add('(' + innerPreds.join(' && ') + ')');
+      preds.add('(${innerPreds.join(' && ')})');
     }
     final assertExpr = 'assert(${preds.join(' || ')})';
     final assigns = this.fields.map((field) => field.constructorAssignment).join(',\n');
@@ -227,7 +227,7 @@ class ClassModel {
 class SumTypeGenerator extends GeneratorForAnnotation<SumType> {
   @override
   FutureOr<String> generateForAnnotatedElement(
-      Element element, ConstantReader annotation, BuildStep _) {
+      Element element, ConstantReader annotation, BuildStep buildStep) {
     if (element is! MixinElement) {
       throw Exception('Only annotate mixins with `@SumType()`.');
     }
@@ -254,10 +254,10 @@ class SumTypeGenerator extends GeneratorForAnnotation<SumType> {
           const ${clazz.baseClassName}();
           ${clazz.getterDecls}
           $tyArg iswitch<$tyArg>({
-            ${clazz.switchParams(tyArg, SwitchMode.Required)}
+            ${clazz.switchParams(tyArg, SwitchMode.required)}
           });
           $tyArg iswitcho<$tyArg>({
-            ${clazz.switchParams(tyArg, SwitchMode.Optional)},
+            ${clazz.switchParams(tyArg, SwitchMode.optional)},
             ${clazz.config.nnbd ? 'required' : '@required'} $tyArg Function() $otherwise,
           });
         }
@@ -277,14 +277,14 @@ class SumTypeGenerator extends GeneratorForAnnotation<SumType> {
 
           @override
           $tyArg iswitch<$tyArg>({
-            ${clazz.switchParams(tyArg, SwitchMode.Required)},
+            ${clazz.switchParams(tyArg, SwitchMode.required)},
           }) {
             ${clazz.iswitchBody}
           }
 
           @override
           $tyArg iswitcho<$tyArg>({
-            ${clazz.switchParams(tyArg, SwitchMode.Optional)},
+            ${clazz.switchParams(tyArg, SwitchMode.optional)},
             ${clazz.config.nnbd ? 'required' : '@required'} $tyArg Function() $otherwise,
           }) {
             return iswitch(
@@ -299,7 +299,6 @@ class SumTypeGenerator extends GeneratorForAnnotation<SumType> {
           ${clazz.config.genToString ? toStringMethod : ''}
         }
         ''';
-      //print(code);
       return code;
     } on CodegenException catch (e) {
       e.generatorName = 'SumType';

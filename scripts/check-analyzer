@@ -1,26 +1,21 @@
-#!/bin/bash
-
-HERE=$(cd $(dirname ${BASH_SOURCE[0]}) > /dev/null && pwd -P)
-cd $HERE/..
+#!/usr/bin/env bash
 
 set -o errexit
 set -o pipefail
 set -o nounset
 
-function doCheck()
-{
-    d="$1"
-    echo
-    echo "Running dartanalyzer in $d ..."
-    if [ "$d" == "example" ]; then
-        pub run build_runner build || exit 1
-    fi
-    dartanalyzer --fatal-infos --fatal-warnings lib || exit 1
-    echo "Finished running dartanalyzer in $d"
-}
+HERE=$(cd $(dirname ${BASH_SOURCE[0]}) > /dev/null && pwd -P)
+cd $HERE/..
 
-for d in sum_data_types sum_data_types_generator example; do
-    pushd "$d" > /dev/null
-    doCheck "$d" || exit 1
-    popd > /dev/null
+for d in . sum_data_types_generator example; do
+    (
+        cd "$d"
+        echo
+        echo -n "Running 'dart analyze' in "
+        pwd
+        if [ "$d" == "example" ]; then
+            dart run build_runner build
+        fi
+        dart analyze --fatal-infos --fatal-warnings lib
+    )
 done

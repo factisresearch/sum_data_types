@@ -20,7 +20,7 @@ dependencies:
   sum_data_types: [insert newest version here]
 
 dev_dependencies:
-  build_runner: ^1.7.0
+  build_runner: ^2.4.4
   sum_data_types_generator: [insert newest version here]
 ```
 

@@ -4,10 +4,10 @@ version: 0.1.0
 homepage: https://github.com/factisresearch/sum_data_types
 
 environment:
-  sdk: '>=2.12.0 <3.0.0'
+  sdk: ">=3.0.0 <4.0.0"
 
 dependencies:
-  analyzer: ^3.0.0
+  analyzer: ^5.13.0
   build: ^2.0.0
   meta: ^1.1.7
   sum_data_types: ^0.1.1

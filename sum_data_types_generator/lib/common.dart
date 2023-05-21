@@ -120,12 +120,14 @@ enum FieldNameConfig { public, private }
 class CommonFieldModel<TypeModel> {
   final String name;
   final String internalName;
+  final String localName;
   final TypeModel type;
 
   CommonFieldModel._({
     required this.name,
     required this.type,
     required this.internalName,
+    required this.localName,
   });
 
   factory CommonFieldModel(FieldElement field, MkType<TypeModel> mkType, FieldNameConfig fieldCfg) {
@@ -154,6 +156,7 @@ class CommonFieldModel<TypeModel> {
       }
       return CommonFieldModel._(
         name: name,
+        localName: '$name\$',
         internalName: internalName,
         type: ty,
       );
@@ -272,7 +275,7 @@ class CommonClassModel<FieldModel> {
 }
 
 String eqImpl(String className, List<String> fieldNames) {
-  const other = r'__other$';
+  const other = 'other';
   var fieldsEq = 'true';
   if (fieldNames.isNotEmpty) {
     fieldsEq = fieldNames.map((name) => 'this.$name == $other.$name').join(' && ');
@@ -291,7 +294,7 @@ String hashCodeImpl(List<String> fieldNames) {
       int get hashCode => 0;
     ''';
   }
-  const result = r'__result$';
+  const result = 'result';
   final updates =
       fieldNames.map((name) => '$result = 37 * $result + this.$name.hashCode;').join('\n');
   return '''@override

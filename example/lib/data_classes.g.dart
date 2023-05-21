@@ -92,30 +92,30 @@ class _User extends _UserBase with User {
   }
 
   @override
-  bool operator ==(Object __other$) {
-    if (identical(this, __other$)) return true;
-    if (this.runtimeType != __other$.runtimeType) return false;
-    return __other$ is _User &&
-        this.name == __other$.name &&
-        this.age == __other$.age &&
-        this.friends == __other$.friends &&
-        this.address == __other$.address &&
-        this.workAddress == __other$.workAddress &&
-        this.friendsAddresses == __other$.friendsAddresses &&
-        this.foo == __other$.foo;
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (this.runtimeType != other.runtimeType) return false;
+    return other is _User &&
+        this.name == other.name &&
+        this.age == other.age &&
+        this.friends == other.friends &&
+        this.address == other.address &&
+        this.workAddress == other.workAddress &&
+        this.friendsAddresses == other.friendsAddresses &&
+        this.foo == other.foo;
   }
 
   @override
   int get hashCode {
-    var __result$ = 17;
-    __result$ = 37 * __result$ + this.name.hashCode;
-    __result$ = 37 * __result$ + this.age.hashCode;
-    __result$ = 37 * __result$ + this.friends.hashCode;
-    __result$ = 37 * __result$ + this.address.hashCode;
-    __result$ = 37 * __result$ + this.workAddress.hashCode;
-    __result$ = 37 * __result$ + this.friendsAddresses.hashCode;
-    __result$ = 37 * __result$ + this.foo.hashCode;
-    return __result$;
+    var result = 17;
+    result = 37 * result + this.name.hashCode;
+    result = 37 * result + this.age.hashCode;
+    result = 37 * result + this.friends.hashCode;
+    result = 37 * result + this.address.hashCode;
+    result = 37 * result + this.workAddress.hashCode;
+    result = 37 * result + this.friendsAddresses.hashCode;
+    result = 37 * result + this.foo.hashCode;
+    return result;
   }
 
   @override
@@ -147,10 +147,10 @@ class _NullaryType extends _NullaryTypeBase with NullaryType {
   }
 
   @override
-  bool operator ==(Object __other$) {
-    if (identical(this, __other$)) return true;
-    if (this.runtimeType != __other$.runtimeType) return false;
-    return __other$ is _NullaryType && true;
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (this.runtimeType != other.runtimeType) return false;
+    return other is _NullaryType && true;
   }
 
   @override
@@ -208,20 +208,20 @@ class _CustomToString extends _CustomToStringBase with CustomToString {
   }
 
   @override
-  bool operator ==(Object __other$) {
-    if (identical(this, __other$)) return true;
-    if (this.runtimeType != __other$.runtimeType) return false;
-    return __other$ is _CustomToString &&
-        this.foo == __other$.foo &&
-        this.bar == __other$.bar;
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (this.runtimeType != other.runtimeType) return false;
+    return other is _CustomToString &&
+        this.foo == other.foo &&
+        this.bar == other.bar;
   }
 
   @override
   int get hashCode {
-    var __result$ = 17;
-    __result$ = 37 * __result$ + this.foo.hashCode;
-    __result$ = 37 * __result$ + this.bar.hashCode;
-    return __result$;
+    var result = 17;
+    result = 37 * result + this.foo.hashCode;
+    result = 37 * result + this.bar.hashCode;
+    return result;
   }
 }
 

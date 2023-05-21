@@ -9,8 +9,8 @@ part of 'nnbd.dart';
 
 /// This data class has been generated from Either
 abstract class EitherFactory {
-  static Either<A, B> left<A, B>(A __x$) => _Either(left: __x$);
-  static Either<A, B> right<A, B>(B __x$) => _Either(right: __x$);
+  static Either<A, B> left<A, B>(A x$) => _Either(left: x$);
+  static Either<A, B> right<A, B>(B x$) => _Either(right: x$);
 }
 
 abstract class _EitherBase<A, B> {
@@ -51,12 +51,12 @@ class _Either<A, B> extends _EitherBase<A, B> with Either<A, B> {
     required __T$ Function(A) left,
     required __T$ Function(B) right,
   }) {
-    final A? _left = this._left;
-    final B? _right = this._right;
-    if (_left != null) {
-      return left(_left);
-    } else if (_right != null) {
-      return right(_right);
+    final left$ = this._left;
+    final right$ = this._right;
+    if (left$ != null) {
+      return left(left$);
+    } else if (right$ != null) {
+      return right(right$);
     } else {
       throw StateError('an instance of Either has no case selected');
     }
@@ -75,36 +75,36 @@ class _Either<A, B> extends _EitherBase<A, B> with Either<A, B> {
   }
 
   @override
-  bool operator ==(Object __other$) {
-    if (identical(this, __other$)) return true;
-    if (this.runtimeType != __other$.runtimeType) return false;
-    return __other$ is _Either &&
-        this._left == __other$._left &&
-        this._right == __other$._right;
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (this.runtimeType != other.runtimeType) return false;
+    return other is _Either &&
+        this._left == other._left &&
+        this._right == other._right;
   }
 
   @override
   int get hashCode {
-    var __result$ = 17;
-    __result$ = 37 * __result$ + this._left.hashCode;
-    __result$ = 37 * __result$ + this._right.hashCode;
-    return __result$;
+    var result = 17;
+    result = 37 * result + this._left.hashCode;
+    result = 37 * result + this._right.hashCode;
+    return result;
   }
 
   @override
   String toString() {
-    final __x$ = iswitch(
-      left: (A __value$) => 'left(${__value$})',
-      right: (B __value$) => 'right(${__value$})',
+    final x$ = iswitch(
+      left: (A x$) => 'left(${x$})',
+      right: (B x$) => 'right(${x$})',
     );
-    return 'Either.${__x$}';
+    return 'Either.${x$}';
   }
 }
 
 /// This data class has been generated from Something
 abstract class SomethingFactory {
-  static Something string(String __x$) => _Something(string: __x$);
-  static Something unknown(dynamic __x$) => _Something(unknown: __x$);
+  static Something string(String x$) => _Something(string: x$);
+  static Something unknown(dynamic x$) => _Something(unknown: x$);
 }
 
 abstract class _SomethingBase {
@@ -147,12 +147,12 @@ class _Something extends _SomethingBase with Something {
     required __T$ Function(String) string,
     required __T$ Function(dynamic) unknown,
   }) {
-    final String? _string = this._string;
-    final dynamic? _unknown = this._unknown;
-    if (_string != null) {
-      return string(_string);
-    } else if (_unknown != null) {
-      return unknown(_unknown);
+    final string$ = this._string;
+    final unknown$ = this._unknown;
+    if (string$ != null) {
+      return string(string$);
+    } else if (unknown$ != null) {
+      return unknown(unknown$);
     } else {
       throw StateError('an instance of Something has no case selected');
     }
@@ -171,29 +171,29 @@ class _Something extends _SomethingBase with Something {
   }
 
   @override
-  bool operator ==(Object __other$) {
-    if (identical(this, __other$)) return true;
-    if (this.runtimeType != __other$.runtimeType) return false;
-    return __other$ is _Something &&
-        this._string == __other$._string &&
-        this._unknown == __other$._unknown;
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (this.runtimeType != other.runtimeType) return false;
+    return other is _Something &&
+        this._string == other._string &&
+        this._unknown == other._unknown;
   }
 
   @override
   int get hashCode {
-    var __result$ = 17;
-    __result$ = 37 * __result$ + this._string.hashCode;
-    __result$ = 37 * __result$ + this._unknown.hashCode;
-    return __result$;
+    var result = 17;
+    result = 37 * result + this._string.hashCode;
+    result = 37 * result + this._unknown.hashCode;
+    return result;
   }
 
   @override
   String toString() {
-    final __x$ = iswitch(
-      string: (String __value$) => 'string(${__value$})',
-      unknown: (dynamic __value$) => 'unknown(${__value$})',
+    final x$ = iswitch(
+      string: (String x$) => 'string(${x$})',
+      unknown: (dynamic x$) => 'unknown(${x$})',
     );
-    return 'Something.${__x$}';
+    return 'Something.${x$}';
   }
 }
 
@@ -247,20 +247,20 @@ class _Container<T> extends _ContainerBase<T> with Container<T> {
   }
 
   @override
-  bool operator ==(Object __other$) {
-    if (identical(this, __other$)) return true;
-    if (this.runtimeType != __other$.runtimeType) return false;
-    return __other$ is _Container &&
-        this.id == __other$.id &&
-        this.payload == __other$.payload;
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (this.runtimeType != other.runtimeType) return false;
+    return other is _Container &&
+        this.id == other.id &&
+        this.payload == other.payload;
   }
 
   @override
   int get hashCode {
-    var __result$ = 17;
-    __result$ = 37 * __result$ + this.id.hashCode;
-    __result$ = 37 * __result$ + this.payload.hashCode;
-    return __result$;
+    var result = 17;
+    result = 37 * result + this.id.hashCode;
+    result = 37 * result + this.payload.hashCode;
+    return result;
   }
 
   @override

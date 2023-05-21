@@ -8,8 +8,8 @@ part of 'sum_types.dart';
 
 /// This data class has been generated from WithUnknown
 abstract class WithUnknownFactory {
-  static WithUnknown known(String __x$) => _WithUnknown(known: __x$);
-  static WithUnknown unknown(dynamic __x$) => _WithUnknown(unknown: __x$);
+  static WithUnknown known(String x$) => _WithUnknown(known: x$);
+  static WithUnknown unknown(dynamic x$) => _WithUnknown(unknown: x$);
 }
 
 abstract class _WithUnknownBase {
@@ -53,12 +53,12 @@ class _WithUnknown extends _WithUnknownBase with WithUnknown {
     required __T$ Function(String) known,
     required __T$ Function(dynamic) unknown,
   }) {
-    final String? _known = this._known;
-    final dynamic? _unknown = this._unknown;
-    if (_known != null) {
-      return known(_known);
-    } else if (_unknown != null) {
-      return unknown(_unknown);
+    final known$ = this._known;
+    final unknown$ = this._unknown;
+    if (known$ != null) {
+      return known(known$);
+    } else if (unknown$ != null) {
+      return unknown(unknown$);
     } else {
       throw StateError('an instance of WithUnknown has no case selected');
     }
@@ -77,41 +77,41 @@ class _WithUnknown extends _WithUnknownBase with WithUnknown {
   }
 
   @override
-  bool operator ==(Object __other$) {
-    if (identical(this, __other$)) return true;
-    if (this.runtimeType != __other$.runtimeType) return false;
-    return __other$ is _WithUnknown &&
-        this._known == __other$._known &&
-        this._unknown == __other$._unknown;
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (this.runtimeType != other.runtimeType) return false;
+    return other is _WithUnknown &&
+        this._known == other._known &&
+        this._unknown == other._unknown;
   }
 
   @override
   int get hashCode {
-    var __result$ = 17;
-    __result$ = 37 * __result$ + this._known.hashCode;
-    __result$ = 37 * __result$ + this._unknown.hashCode;
-    return __result$;
+    var result = 17;
+    result = 37 * result + this._known.hashCode;
+    result = 37 * result + this._unknown.hashCode;
+    return result;
   }
 
   @override
   String toString() {
-    final __x$ = iswitch(
-      known: (String __value$) => 'known(${__value$})',
-      unknown: (dynamic __value$) => 'unknown(${__value$})',
+    final x$ = iswitch(
+      known: (String x$) => 'known(${x$})',
+      unknown: (dynamic x$) => 'unknown(${x$})',
     );
-    return 'WithUnknown.${__x$}';
+    return 'WithUnknown.${x$}';
   }
 }
 
 /// This data class has been generated from Something
 abstract class SomethingFactory {
   static Something<T> nothing<T>() => _Something(nothing: const Unit());
-  static Something<T> user<T>(User __x$) => _Something(user: __x$);
-  static Something<T> address<T>(quiv.Optional<ty.Address> __x$) =>
-      _Something(address: __x$);
-  static Something<T> something<T>(Something<T> __x$) =>
-      _Something(something: __x$);
-  static Something<T> param<T>(T __x$) => _Something(param: __x$);
+  static Something<T> user<T>(User x$) => _Something(user: x$);
+  static Something<T> address<T>(quiv.Optional<ty.Address> x$) =>
+      _Something(address: x$);
+  static Something<T> something<T>(Something<T> x$) =>
+      _Something(something: x$);
+  static Something<T> param<T>(T x$) => _Something(param: x$);
 }
 
 abstract class _SomethingBase<T> {
@@ -209,21 +209,21 @@ class _Something<T> extends _SomethingBase<T> with Something<T> {
     required __T$ Function(Something<T>) something,
     required __T$ Function(T) param,
   }) {
-    final Unit? _nothing = this._nothing;
-    final User? _user = this._user;
-    final quiv.Optional<ty.Address>? _address = this._address;
-    final Something<T>? _something = this._something;
-    final T? _param = this._param;
-    if (_nothing != null) {
+    final nothing$ = this._nothing;
+    final user$ = this._user;
+    final address$ = this._address;
+    final something$ = this._something;
+    final param$ = this._param;
+    if (nothing$ != null) {
       return nothing();
-    } else if (_user != null) {
-      return user(_user);
-    } else if (_address != null) {
-      return address(_address);
-    } else if (_something != null) {
-      return something(_something);
-    } else if (_param != null) {
-      return param(_param);
+    } else if (user$ != null) {
+      return user(user$);
+    } else if (address$ != null) {
+      return address(address$);
+    } else if (something$ != null) {
+      return something(something$);
+    } else if (param$ != null) {
+      return param(param$);
     } else {
       throw StateError('an instance of Something has no case selected');
     }
@@ -248,44 +248,44 @@ class _Something<T> extends _SomethingBase<T> with Something<T> {
   }
 
   @override
-  bool operator ==(Object __other$) {
-    if (identical(this, __other$)) return true;
-    if (this.runtimeType != __other$.runtimeType) return false;
-    return __other$ is _Something &&
-        this._nothing == __other$._nothing &&
-        this._user == __other$._user &&
-        this._address == __other$._address &&
-        this._something == __other$._something &&
-        this._param == __other$._param;
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (this.runtimeType != other.runtimeType) return false;
+    return other is _Something &&
+        this._nothing == other._nothing &&
+        this._user == other._user &&
+        this._address == other._address &&
+        this._something == other._something &&
+        this._param == other._param;
   }
 
   @override
   int get hashCode {
-    var __result$ = 17;
-    __result$ = 37 * __result$ + this._nothing.hashCode;
-    __result$ = 37 * __result$ + this._user.hashCode;
-    __result$ = 37 * __result$ + this._address.hashCode;
-    __result$ = 37 * __result$ + this._something.hashCode;
-    __result$ = 37 * __result$ + this._param.hashCode;
-    return __result$;
+    var result = 17;
+    result = 37 * result + this._nothing.hashCode;
+    result = 37 * result + this._user.hashCode;
+    result = 37 * result + this._address.hashCode;
+    result = 37 * result + this._something.hashCode;
+    result = 37 * result + this._param.hashCode;
+    return result;
   }
 
   @override
   String toString() {
-    final __x$ = iswitch(
+    final x$ = iswitch(
       nothing: () => 'nothing',
-      user: (User __value$) => 'user(${__value$})',
-      address: (quiv.Optional<ty.Address> __value$) => 'address(${__value$})',
-      something: (Something<T> __value$) => 'something(${__value$})',
-      param: (T __value$) => 'param(${__value$})',
+      user: (User x$) => 'user(${x$})',
+      address: (quiv.Optional<ty.Address> x$) => 'address(${x$})',
+      something: (Something<T> x$) => 'something(${x$})',
+      param: (T x$) => 'param(${x$})',
     );
-    return 'Something.${__x$}';
+    return 'Something.${x$}';
   }
 }
 
 /// This data class has been generated from CustomToString
 abstract class CustomToStringFactory {
-  static CustomToString foo(String __x$) => _CustomToString(foo: __x$);
+  static CustomToString foo(String x$) => _CustomToString(foo: x$);
 }
 
 abstract class _CustomToStringBase {
@@ -316,9 +316,9 @@ class _CustomToString extends _CustomToStringBase with CustomToString {
   __T$ iswitch<__T$>({
     required __T$ Function(String) foo,
   }) {
-    final String? _foo = this._foo;
-    if (_foo != null) {
-      return foo(_foo);
+    final foo$ = this._foo;
+    if (foo$ != null) {
+      return foo(foo$);
     } else {
       throw StateError('an instance of CustomToString has no case selected');
     }
@@ -335,23 +335,23 @@ class _CustomToString extends _CustomToStringBase with CustomToString {
   }
 
   @override
-  bool operator ==(Object __other$) {
-    if (identical(this, __other$)) return true;
-    if (this.runtimeType != __other$.runtimeType) return false;
-    return __other$ is _CustomToString && this._foo == __other$._foo;
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (this.runtimeType != other.runtimeType) return false;
+    return other is _CustomToString && this._foo == other._foo;
   }
 
   @override
   int get hashCode {
-    var __result$ = 17;
-    __result$ = 37 * __result$ + this._foo.hashCode;
-    return __result$;
+    var result = 17;
+    result = 37 * result + this._foo.hashCode;
+    return result;
   }
 }
 
 /// This data class has been generated from CustomEq
 abstract class CustomEqFactory {
-  static CustomEq foo(String __x$) => _CustomEq(foo: __x$);
+  static CustomEq foo(String x$) => _CustomEq(foo: x$);
 }
 
 abstract class _CustomEqBase {
@@ -382,9 +382,9 @@ class _CustomEq extends _CustomEqBase with CustomEq {
   __T$ iswitch<__T$>({
     required __T$ Function(String) foo,
   }) {
-    final String? _foo = this._foo;
-    if (_foo != null) {
-      return foo(_foo);
+    final foo$ = this._foo;
+    if (foo$ != null) {
+      return foo(foo$);
     } else {
       throw StateError('an instance of CustomEq has no case selected');
     }
@@ -402,9 +402,9 @@ class _CustomEq extends _CustomEqBase with CustomEq {
 
   @override
   String toString() {
-    final __x$ = iswitch(
-      foo: (String __value$) => 'foo(${__value$})',
+    final x$ = iswitch(
+      foo: (String x$) => 'foo(${x$})',
     );
-    return 'CustomEq.${__x$}';
+    return 'CustomEq.${x$}';
   }
 }

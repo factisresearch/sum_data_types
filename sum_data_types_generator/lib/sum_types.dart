@@ -37,6 +37,7 @@ class FieldModel {
   TypeModel get type => _commonModel.type;
   String get name => _commonModel.name;
   String get internalName => _commonModel.internalName;
+  String get localName => _commonModel.localName;
 
   FieldModel(FieldElement fld, ImportModel imports, this.cfg)
       : this._commonModel =
@@ -52,7 +53,7 @@ class FieldModel {
     if (this.type.isUnit) {
       return mkFun('', 'const ${type.typeRepr}()');
     } else {
-      const x = r'__x$';
+      const x = 'x\$';
       return mkFun('${type.typeRepr} $x', x);
     }
   }
@@ -100,18 +101,18 @@ class FieldModel {
   }
 
   String get iswitchAssignment {
-    return 'final ${type.typeRepr}? $internalName = this.$internalName;';
+    return 'final $localName = this.$internalName;';
   }
 
   String get iswitchIf {
-    final funArg = this.type.isUnit ? '' : internalName;
+    final funArg = this.type.isUnit ? '' : localName;
     if (cfg.nnbd) {
-      return '''if ($internalName != null) {
+      return '''if ($localName != null) {
         return $name($funArg);
       }
       ''';
     } else {
-      return '''if ($internalName != null) {
+      return '''if ($localName != null) {
         if ($name == null) { throw ArgumentError.notNull('$name'); }
         return $name($funArg);
       }
@@ -128,7 +129,7 @@ class FieldModel {
     if (type.isUnit) {
       return '$name: () => \'$name\',';
     } else {
-      return '$name: (${type.typeRepr} __value\$) => \'$name(\${__value\$})\',';
+      return '$name: (${type.typeRepr} x\$) => \'$name(\${x\$})\',';
     }
   }
 }
@@ -241,8 +242,8 @@ class SumTypeGenerator extends GeneratorForAnnotation<SumType> {
       final toStringMethod = '''
         @override
         String toString() {
-          final __x\$ = iswitch(${clazz.toStringSwitch});
-          return '${clazz.mixinName}.\${__x\$}';
+          final x\$ = iswitch(${clazz.toStringSwitch});
+          return '${clazz.mixinName}.\${x\$}';
         }
       ''';
       final code = '''

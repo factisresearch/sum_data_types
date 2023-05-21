@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'sum_types.dart';
+part of 'sum_types_test.dart';
 
 // **************************************************************************
 // SumTypeGenerator

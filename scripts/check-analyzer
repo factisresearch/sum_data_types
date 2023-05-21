@@ -15,7 +15,9 @@ for d in . sum_data_types_generator example; do
         pwd
         if [ "$d" == "example" ]; then
             dart run build_runner build
+            dart analyze --fatal-infos --fatal-warnings test
+        else
+            dart analyze --fatal-infos --fatal-warnings lib
         fi
-        dart analyze --fatal-infos --fatal-warnings lib
     )
 done

@@ -19,4 +19,4 @@ fi
 echo
 echo -n "==> Running 'dart test' in "
 pwd
-dart test lib/data_classes.dart lib/sum_types.dart
+dart test --reporter expanded

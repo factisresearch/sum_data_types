@@ -1,13 +1,14 @@
 // ignore_for_file: library_private_types_in_public_api
 
-import 'package:example/nnbd.dart';
-import 'package:example/types.dart' as ty;
 import 'package:kt_dart/collection.dart';
 import 'package:quiver/core.dart';
 import 'package:sum_data_types/sum_data_types.dart';
 import 'package:test/test.dart';
 
-part 'data_classes.g.dart';
+import 'nnbd.dart';
+import 'types.dart' as ty;
+
+part 'data_classes_test.g.dart';
 
 void main() {
   final userBob = UserFactory.make(

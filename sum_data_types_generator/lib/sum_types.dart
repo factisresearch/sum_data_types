@@ -136,7 +136,7 @@ class FieldModel {
 class ClassModel {
   final CommonClassModel<FieldModel> _commonModel;
 
-  ClassModel(ClassElement clazz, ConstantReader reader)
+  ClassModel(MixinElement clazz, ConstantReader reader)
       : this._commonModel = CommonClassModel(
           clazz,
           (FieldElement fld, ImportModel imports, cfg) => FieldModel(fld, imports, cfg),
@@ -228,7 +228,7 @@ class SumTypeGenerator extends GeneratorForAnnotation<SumType> {
   @override
   FutureOr<String> generateForAnnotatedElement(
       Element element, ConstantReader annotation, BuildStep _) {
-    if (!(element is ClassElement)) {
+    if (element is! MixinElement) {
       throw Exception('Only annotate mixins with `@SumType()`.');
     }
     try {

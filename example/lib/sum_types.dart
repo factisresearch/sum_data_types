@@ -24,7 +24,6 @@ void main() {
   final something = SomethingFactory.something<String>(user);
 
   test('equals', () {
-    expect(address == null, isFalse);
     expect(address == something, isFalse);
     expect(address, equals(address));
     expect(address == address2, isTrue);
@@ -48,12 +47,6 @@ void main() {
             'foo: Either.right(42)))'));
     expect(address.toString(), equals('Something.address(Optional { value: SomeAddress })'));
     expect(something.toString(), equals('Something.something(${user.toString()})'));
-  });
-
-  test('no strange error', () {
-    final nothing = SomethingFactory.nothing<String>();
-    // ignore: missing_required_param_with_details, missing_required_param
-    expect(() => nothing.iswitcho<String>(), throwsA(TypeMatcher<ArgumentError>()));
   });
 
   test('with unknown', () {
@@ -80,22 +73,23 @@ void main() {
 
 @SumType()
 mixin WithUnknown on _WithUnknownBase {
-  String get _known;
+  String? get _known;
+  // dynamic is already nullable
   dynamic get _unknown;
 }
 
 @SumType()
 mixin Something<T> implements _SomethingBase<T> {
-  Unit get _nothing;
-  User get _user;
-  quiv.Optional<ty.Address> get _address;
-  Something get _something;
-  T get _param;
+  Unit? get _nothing;
+  User? get _user;
+  quiv.Optional<ty.Address>? get _address;
+  Something<T>? get _something;
+  T? get _param;
 }
 
 @SumType(toString: false)
 mixin CustomToString on _CustomToStringBase {
-  String get _foo;
+  String? get _foo;
 
   @override
   String toString() {
@@ -105,7 +99,7 @@ mixin CustomToString on _CustomToStringBase {
 
 @SumType(eqHashCode: false)
 mixin CustomEq on _CustomEqBase {
-  String get _foo;
+  String? get _foo;
 
   @override
   bool operator ==(Object other) {

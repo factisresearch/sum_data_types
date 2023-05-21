@@ -118,7 +118,7 @@ class ClassModel {
   String get typeArgsWithParens => _commonModel.typeArgsWithParens;
   CodgenConfig get config => _commonModel.config;
 
-  ClassModel(ClassElement clazz, ConstantReader reader)
+  ClassModel(MixinElement clazz, ConstantReader reader)
       : this._commonModel = CommonClassModel(
           clazz,
           (FieldElement fld, ImportModel imports, cfg) => FieldModel(fld, imports, cfg),
@@ -173,7 +173,7 @@ class DataClassGenerator extends GeneratorForAnnotation<DataClass> {
   @override
   FutureOr<String> generateForAnnotatedElement(
       Element element, ConstantReader annotation, BuildStep _) {
-    if (!(element is ClassElement)) {
+    if (element is! MixinElement) {
       throw Exception('Only annotate mixins with `@DataClass()`.');
     }
     try {

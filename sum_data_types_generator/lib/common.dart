@@ -5,7 +5,7 @@ import 'package:meta/meta.dart';
 import 'package:source_gen/source_gen.dart';
 import 'package:sum_data_types/sum_data_types.dart';
 
-class CodegenException with Exception {
+class CodegenException implements Exception {
   String? className;
   String? fieldName;
   String? generatorName;
@@ -45,7 +45,7 @@ bool isQuiverOptional(DartType ty, ImportModel imports) {
 // Returns a potential qualified access string for the type, without type arguments
 String qualifyType(DartType ty, ImportModel imports) {
   final prefixOrNull = imports._fullNameToPrefix[fullName(ty.element!)];
-  final prefix = (prefixOrNull != null) ? (prefixOrNull + '.') : '';
+  final prefix = (prefixOrNull != null) ? ('${prefixOrNull.element.name}.') : '';
   return '$prefix${ty.element!.name}';
 }
 
@@ -70,40 +70,44 @@ String fullName(Element element) {
 }
 
 class ImportModel {
-  final Map<String, String> _moduleIdToPrefix = {};
-  final Map<String, String> _fullNameToPrefix = {};
-  final Map<String, String?> _moduleIdToUri = {};
+  final Map<String, ImportElementPrefix> _moduleIdToPrefix = {};
+  final Map<String, ImportElementPrefix> _fullNameToPrefix = {};
+  final Map<String, String> _moduleIdToUri = {};
   final Map<String, String> _uriToModuleId = {};
 
-  void addImportElement(ImportElement imp) {
-    if (imp.importedLibrary == null) {
+  void addImportElement(LibraryImportElement imp) {
+    final uri = imp.uri;
+    if (uri is! DirectiveUriWithLibrary) {
       return;
     }
-    final modId = imp.importedLibrary!.identifier;
-    this._moduleIdToUri[modId] = imp.uri;
-    this._uriToModuleId[imp.uri!] = modId;
-    if (imp.prefix != null) {
-      this._moduleIdToPrefix[modId] = imp.prefix!.name;
+
+    final moduleId = uri.library.identifier;
+    this._moduleIdToUri[moduleId] = uri.relativeUriString;
+    this._uriToModuleId[uri.relativeUriString] = moduleId;
+
+    final prefix = imp.prefix;
+    if (prefix != null) {
+      this._moduleIdToPrefix[moduleId] = prefix;
       imp.namespace.definedNames.forEach((key, value) {
-        _fullNameToPrefix[fullName(value)] = imp.prefix!.name;
+        this._fullNameToPrefix[fullName(value)] = prefix;
       });
     }
   }
 
   String lookupOptionalType() {
     final modIdCandidates =
-        quiverPackageUris.where((packageUri) => _uriToModuleId[packageUri] != null);
+        quiverPackageUris.where((packageUri) => this._uriToModuleId[packageUri] != null);
     if (modIdCandidates.isEmpty) {
       throw CodegenException(
           "Cannot reference type 'Optional'. Please import the package '${quiverPackageUris[0]}', "
           'either unqualified or qualified.');
     } else {
       final modId = modIdCandidates.first;
-      final prefix = _moduleIdToPrefix[modId];
+      final prefix = this._moduleIdToPrefix[modId];
       if (prefix == null) {
         return 'Optional';
       } else {
-        return prefix + '.Optional';
+        return '${prefix.element.name}.Optional';
       }
     }
   }
@@ -198,7 +202,7 @@ class CommonClassModel<FieldModel> {
   });
 
   factory CommonClassModel(
-    ClassElement clazz,
+    MixinElement clazz,
     MkField<FieldModel> mkField,
     ConstantReader reader,
   ) {
@@ -206,9 +210,9 @@ class CommonClassModel<FieldModel> {
       // build a map of the qualified imports, mapping module identifiers to import prefixes
       final lib = clazz.library;
       final imports = ImportModel();
-      lib.imports.forEach((imp) {
+      for (final imp in lib.libraryImports) {
         imports.addImportElement(imp);
-      });
+      }
 
       // The fields are from the SumDataType class.
       final genToString = reader.objectValue.getField('genToString')!.toBoolValue();

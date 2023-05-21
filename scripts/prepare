@@ -1,11 +1,18 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-pub get || exit 1
+set -o errexit
+set -o pipefail
+set -o nounset
 
-pushd sum_data_types_generator
-pub get || exit 1
-popd
+HERE=$(cd $(dirname ${BASH_SOURCE[0]}) > /dev/null && pwd -P)
+cd $HERE/..
 
-pushd example
-pub get || exit 1
-popd
+for d in . sum_data_types_generator example; do
+    (
+        cd "$d"
+        echo
+        echo -n "==> from "
+        pwd
+        dart pub get
+    )
+done

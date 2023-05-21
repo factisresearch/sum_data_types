@@ -5,10 +5,12 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Dart",
-            "program": "bin/main.dart",
+            "name": "example: build_runner",
+            "cwd": "example",
             "request": "launch",
-            "type": "dart"
+            "program": ".dart_tool/build/entrypoint/build.dart",
+            "type": "dart",
+            "args": ["build"]
         }
     ]
 }

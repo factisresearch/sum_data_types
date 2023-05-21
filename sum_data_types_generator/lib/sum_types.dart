@@ -5,6 +5,7 @@ import 'package:analyzer/dart/element/type.dart';
 import 'package:build/build.dart';
 import 'package:source_gen/source_gen.dart';
 import 'package:sum_data_types/sum_data_types.dart';
+
 import './common.dart';
 
 class TypeModel {
@@ -34,14 +35,21 @@ class FieldModel {
   final CommonFieldModel<TypeModel> _commonModel;
   final ImportModel _imports;
   final CodgenConfig cfg;
+
   TypeModel get type => _commonModel.type;
   String get name => _commonModel.name;
   String get internalName => _commonModel.internalName;
   String get localName => _commonModel.localName;
 
-  FieldModel(FieldElement fld, ImportModel imports, this.cfg)
-      : this._commonModel =
-            CommonFieldModel(fld, (DartType ty) => TypeModel(ty, imports), FieldNameConfig.private),
+  FieldModel(
+    FieldElement fld,
+    ImportModel imports,
+    this.cfg,
+  )   : this._commonModel = CommonFieldModel(
+          fld,
+          (DartType ty) => TypeModel(ty, imports),
+          FieldNameConfig.private,
+        ),
         this._imports = imports;
 
   String factoryMethod(String resultType, String tyArgs, String constructor) {
@@ -137,8 +145,10 @@ class FieldModel {
 class ClassModel {
   final CommonClassModel<FieldModel> _commonModel;
 
-  ClassModel(MixinElement clazz, ConstantReader reader)
-      : this._commonModel = CommonClassModel(
+  ClassModel(
+    MixinElement clazz,
+    ConstantReader reader,
+  ) : this._commonModel = CommonClassModel(
           clazz,
           (FieldElement fld, ImportModel imports, cfg) => FieldModel(fld, imports, cfg),
           reader,
@@ -228,7 +238,10 @@ class ClassModel {
 class SumTypeGenerator extends GeneratorForAnnotation<SumType> {
   @override
   FutureOr<String> generateForAnnotatedElement(
-      Element element, ConstantReader annotation, BuildStep buildStep) {
+    Element element,
+    ConstantReader annotation,
+    BuildStep buildStep,
+  ) {
     if (element is! MixinElement) {
       throw Exception('Only annotate mixins with `@SumType()`.');
     }

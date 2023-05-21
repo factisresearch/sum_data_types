@@ -40,25 +40,43 @@ void main() {
   });
 
   test('toString', () {
-    expect(address.toString(), equals(address2.toString()));
-    expect(nothing.toString(), equals('Something.nothing'));
     expect(
-        user.toString(),
-        equals('Something.user(User(name: Paul, age: Optional { absent }, friends: [], '
-            'address: SomeAddress, workAddress: Optional { absent }, friendsAddresses: [], '
-            'foo: Either.right(42)))'));
-    expect(address.toString(), equals('Something.address(Optional { value: SomeAddress })'));
-    expect(something.toString(), equals('Something.something(${user.toString()})'));
+      address.toString(),
+      equals(address2.toString()),
+    );
+    expect(
+      nothing.toString(),
+      equals('Something.nothing'),
+    );
+    expect(
+      user.toString(),
+      equals('Something.user(User(name: Paul, age: Optional { absent }, friends: [], '
+          'address: SomeAddress, workAddress: Optional { absent }, friendsAddresses: [], '
+          'foo: Either.right(42)))'),
+    );
+    expect(
+      address.toString(),
+      equals('Something.address(Optional { value: SomeAddress })'),
+    );
+    expect(
+      something.toString(),
+      equals('Something.something(${user.toString()})'),
+    );
   });
 
   test('with unknown', () {
     final unknown = WithUnknownFactory.unknown(42);
-    expect(unknown.toString(), equals('WithUnknown.unknown(42)'));
-    final s = unknown.iswitcho(
-      known: (s) => 'known',
-      otherwise: () => 'otherwise',
+    expect(
+      unknown.toString(),
+      equals('WithUnknown.unknown(42)'),
     );
-    expect(s, equals('otherwise'));
+    expect(
+      unknown.iswitcho(
+        known: (s) => 'known',
+        otherwise: () => 'otherwise',
+      ),
+      equals('otherwise'),
+    );
   });
 
   test('customToString', () {

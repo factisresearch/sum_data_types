@@ -28,5 +28,8 @@ mixin Something on _SomethingBase {
 }
 
 void foo(Either<String, int> x) {
-  x.iswitch(left: (s) => print('String: $s'), right: (i) => print('int: $i'));
+  x.iswitch(
+    left: (s) => print('String: $s'),
+    right: (i) => print('int: $i'),
+  );
 }

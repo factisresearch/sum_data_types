@@ -91,7 +91,10 @@ mixin User on _UserBase {
     return this.friendsAddresses.size;
   }
 
-  String get fooDisplay => foo.iswitch(left: (x) => x, right: (x) => x.toString());
+  String get fooDisplay => foo.iswitch(
+        left: (x) => x,
+        right: (x) => x.toString(),
+      );
 }
 
 @DataClass()

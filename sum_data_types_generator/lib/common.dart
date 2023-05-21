@@ -179,7 +179,7 @@ class CodgenConfig {
     bool? toString,
     bool? eqHashCode,
     required this.nnbd,
-  })   : genToString = toString ?? true,
+  })  : genToString = toString ?? true,
         genEqHashCode = eqHashCode ?? true;
 }
 

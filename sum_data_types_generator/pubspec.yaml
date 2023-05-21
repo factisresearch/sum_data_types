@@ -1,6 +1,6 @@
 name: sum_data_types_generator
 description: Automatically generates immutable data classes based on a "blueprint" mixin.
-version: 0.1.0
+version: 0.2.0
 homepage: https://github.com/factisresearch/sum_data_types
 
 environment:

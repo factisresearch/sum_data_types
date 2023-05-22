@@ -14,7 +14,7 @@ for d in . sum_data_types_generator example; do
         echo -n "==> Running 'dart analyze' in "
         pwd
         if [ "$d" == "example" ]; then
-            dart run build_runner build
+            dart run build_runner build --delete-conflicting-outputs
             dart analyze --fatal-infos --fatal-warnings test
         else
             dart analyze --fatal-infos --fatal-warnings lib

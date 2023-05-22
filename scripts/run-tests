@@ -1,21 +1,22 @@
-#!/bin/bash
-
-HERE=$(cd $(dirname ${BASH_SOURCE[0]}) > /dev/null && pwd -P)
-cd $HERE/..
+#!/usr/bin/env bash
 
 set -o errexit
 set -o pipefail
 set -o nounset
+
+HERE=$(cd $(dirname ${BASH_SOURCE[0]}) > /dev/null && pwd -P)
+cd $HERE/../example
 
 if [ "${1-}" == "-h" -o "${1-}" == "--help" ]; then
     echo "USAGE: $0 [--skip-codegen]"
     exit 0
 fi
 
-pushd example > /dev/null
-
 if [ "${1-}" != "--skip-codegen" ]; then
-    pub run build_runner build || exit 1
+    dart run build_runner build --delete-conflicting-outputs
 fi
 
-pub run test lib/data_classes.dart lib/sum_types.dart || exit 1
+echo
+echo -n "==> Running 'dart test' in "
+pwd
+dart test --reporter expanded

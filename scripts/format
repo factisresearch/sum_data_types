@@ -1,27 +1,25 @@
-#!/bin/bash
-
-HERE=$(cd $(dirname ${BASH_SOURCE[0]}) > /dev/null && pwd -P)
-cd $HERE/..
+#!/usr/bin/env bash
 
 set -o errexit
 set -o pipefail
 set -o nounset
 
-function usage()
+HERE=$(cd $(dirname ${BASH_SOURCE[0]}) > /dev/null && pwd -P)
+cd $HERE/..
+
+usage()
 {
     echo "$0 [--check]"
     exit 1
 }
 
-opt="--overwrite"
+opts=()
 if [ "${1-}" == "--help" ]; then
     usage
 elif [ "${1-}" == "--check" ]; then
-    opt="--dry-run"
+    opts+=("--set-exit-if-changed" "--output" "none")
 elif [ ! -z "${1-}" ]; then
     usage
 fi
 
-find sum_data_types/lib sum_data_types_generator/lib example/lib \
-    -name '*.dart' -not -name '*.g.dart' \
-    -exec dartfmt $opt --fix-optional-new --line-length 100 \{\} \;
+find lib sum_data_types_generator/lib example/test -name '*.dart' -not -name '*.g.dart' | xargs dart format ${opts[*]} --line-length 100

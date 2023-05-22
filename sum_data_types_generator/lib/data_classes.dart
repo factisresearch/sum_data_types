@@ -5,10 +5,13 @@ import 'package:analyzer/dart/element/type.dart';
 import 'package:build/build.dart';
 import 'package:source_gen/source_gen.dart';
 import 'package:sum_data_types/sum_data_types.dart';
+
 import './common.dart';
 
-Builder generateDataClass(BuilderOptions options) =>
-    SharedPartBuilder([DataClassGenerator()], 'sum_data_types');
+Builder generateDataClass(BuilderOptions options) => SharedPartBuilder(
+      [DataClassGenerator()],
+      'sum_data_types',
+    );
 
 class TypeModel {
   final String typeRepr;
@@ -36,7 +39,10 @@ class TypeModel {
       typeReprForFactory = computeTypeRepr(ty.typeArguments[0], imports);
     }
     return TypeModel._(
-        typeRepr: typeRepr, typeReprForFactory: typeReprForFactory, optionalType: optionalType);
+      typeRepr: typeRepr,
+      typeReprForFactory: typeReprForFactory,
+      optionalType: optionalType,
+    );
   }
 }
 
@@ -46,9 +52,15 @@ class FieldModel {
   TypeModel get type => _commonModel.type;
   String get name => _commonModel.name;
 
-  FieldModel(FieldElement fld, ImportModel imports, this.cfg)
-      : this._commonModel =
-            CommonFieldModel(fld, (DartType ty) => TypeModel(ty, imports), FieldNameConfig.Public);
+  FieldModel(
+    FieldElement fld,
+    ImportModel imports,
+    this.cfg,
+  ) : this._commonModel = CommonFieldModel(
+          fld,
+          (DartType ty) => TypeModel(ty, imports),
+          FieldNameConfig.public,
+        );
 
   String get declaration {
     return '@override\nfinal ${this.type.typeRepr} ${this.name};';
@@ -118,8 +130,10 @@ class ClassModel {
   String get typeArgsWithParens => _commonModel.typeArgsWithParens;
   CodgenConfig get config => _commonModel.config;
 
-  ClassModel(ClassElement clazz, ConstantReader reader)
-      : this._commonModel = CommonClassModel(
+  ClassModel(
+    MixinElement clazz,
+    ConstantReader reader,
+  ) : this._commonModel = CommonClassModel(
           clazz,
           (FieldElement fld, ImportModel imports, cfg) => FieldModel(fld, imports, cfg),
           reader,
@@ -127,7 +141,7 @@ class ClassModel {
 
   String get copyWithSignature {
     final params = (this.fields.isNotEmpty)
-        ? '{' + this.fields.map((field) => field.copyWithParam).join('') + '}'
+        ? '{${this.fields.map((field) => field.copyWithParam).join('')}}'
         : '';
     return '${this.mixinType} copyWith($params)';
   }
@@ -138,30 +152,30 @@ class ClassModel {
 
   String get factoryParams {
     return this.fields.isNotEmpty
-        ? '{' + this.fields.map((field) => field.factoryParam + ',').join() + '}'
+        ? '{${this.fields.map((field) => '${field.factoryParam},').join()}}'
         : '';
   }
 
   String get constructorParams {
     return this.fields.isNotEmpty
-        ? '{' + this.fields.map((field) => field.constructorParam + ',').join() + '}'
+        ? '{${this.fields.map((field) => '${field.constructorParam},').join()}}'
         : '';
   }
 
   String get constructorArgs {
-    return this.fields.map((field) => field.constructorArgFromFactory + ',').join();
+    return this.fields.map((field) => '${field.constructorArgFromFactory},').join();
   }
 
   String get constructorAsserts {
     if (this.fields.isEmpty || this._commonModel.config.nnbd) {
       return ';';
     } else {
-      return ' : ' + this.fields.map((field) => field.assertNotNull).join(', ') + ';';
+      return ' : ${this.fields.map((field) => field.assertNotNull).join(', ')};';
     }
   }
 
   String get copyWithArgs {
-    return this.fields.map((field) => field.constructorArgFromCopyWith + ',').join();
+    return this.fields.map((field) => '${field.constructorArgFromCopyWith},').join();
   }
 
   String get toStringFields {
@@ -172,8 +186,11 @@ class ClassModel {
 class DataClassGenerator extends GeneratorForAnnotation<DataClass> {
   @override
   FutureOr<String> generateForAnnotatedElement(
-      Element element, ConstantReader annotation, BuildStep _) {
-    if (!(element is ClassElement)) {
+    Element element,
+    ConstantReader annotation,
+    BuildStep buildStep,
+  ) {
+    if (element is! MixinElement) {
       throw Exception('Only annotate mixins with `@DataClass()`.');
     }
     try {
@@ -224,7 +241,6 @@ class DataClassGenerator extends GeneratorForAnnotation<DataClass> {
 
           ${clazz.config.genToString ? toStringMethod : ''}
         }''';
-      // print(code);
       return code;
     } on CodegenException catch (e) {
       e.generatorName = 'DataClass';

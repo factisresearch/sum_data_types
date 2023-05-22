@@ -1,6 +1,6 @@
 # Sum Types and Data Classes for Dart
 
-[![Build Status](https://travis-ci.com/factisresearch/sum_data_types.svg?branch=master)](https://travis-ci.com/factisresearch/sum_data_types)
+[![Build Status](https://github.com/factisresearch/sum_data_types/actions/workflows/dart.yml/badge.svg)](https://github.com/factisresearch/sum_data_types/actions/workflows/dart.yml)
 
 This dart library generates immutable data classes and classes for sum types from
 a blueprint mixin. The generated class define structural equality and `hashCode`. They
@@ -20,7 +20,7 @@ dependencies:
   sum_data_types: [insert newest version here]
 
 dev_dependencies:
-  build_runner: ^1.7.0
+  build_runner: ^2.4.4
   sum_data_types_generator: [insert newest version here]
 ```
 

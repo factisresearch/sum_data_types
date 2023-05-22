@@ -1,27 +1,18 @@
-#!/bin/bash
-
-HERE=$(cd $(dirname ${BASH_SOURCE[0]}) > /dev/null && pwd -P)
-cd $HERE/..
+#!/usr/bin/env bash
 
 set -o errexit
 set -o pipefail
 set -o nounset
 
-ok=yes
+HERE=$(cd $(dirname ${BASH_SOURCE[0]}) > /dev/null && pwd -P)
+cd $HERE
 
-echo "Checking if code formatting is ok ..."
-
-IFS='
-'
-for x in `scripts/format --check`; do
-    ok=no
-    echo "Error: $x"
-done
-
-if [ "$ok" == "yes" ]; then
-    echo "Code formatting is ok."
-    exit 0
-elif [ "$ok" == "no" ]; then
-    echo "Detected code formatting errors!"
-    exit 1
+echo
+echo "==> Checking code formatting..."
+if ./format --check; then
+    code=$?
+    echo No issues found!
+else
+    code=$?
 fi
+exit $code

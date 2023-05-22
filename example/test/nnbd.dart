@@ -1,6 +1,8 @@
 // @dart=2.12
-import 'package:sum_data_types/sum_data_types.dart';
+// ignore_for_file: library_private_types_in_public_api, unused_element
+
 import 'package:quiver/core.dart';
+import 'package:sum_data_types/sum_data_types.dart';
 
 part 'nnbd.g.dart';
 
@@ -26,5 +28,8 @@ mixin Something on _SomethingBase {
 }
 
 void foo(Either<String, int> x) {
-  x.iswitch(left: (s) => print('String: ' + s), right: (i) => print('int: ' + i.toString()));
+  x.iswitch(
+    left: (s) => print('String: $s'),
+    right: (i) => print('int: $i'),
+  );
 }

@@ -5,7 +5,7 @@ import 'package:meta/meta.dart';
 import 'package:source_gen/source_gen.dart';
 import 'package:sum_data_types/sum_data_types.dart';
 
-class CodegenException with Exception {
+class CodegenException implements Exception {
   String? className;
   String? fieldName;
   String? generatorName;
@@ -45,7 +45,7 @@ bool isQuiverOptional(DartType ty, ImportModel imports) {
 // Returns a potential qualified access string for the type, without type arguments
 String qualifyType(DartType ty, ImportModel imports) {
   final prefixOrNull = imports._fullNameToPrefix[fullName(ty.element!)];
-  final prefix = (prefixOrNull != null) ? (prefixOrNull + '.') : '';
+  final prefix = (prefixOrNull != null) ? ('${prefixOrNull.element.name}.') : '';
   return '$prefix${ty.element!.name}';
 }
 
@@ -54,7 +54,7 @@ String qualifyType(DartType ty, ImportModel imports) {
 String computeTypeRepr(DartType ty, ImportModel imports) {
   if (ty is FunctionType) {
     throw CodegenException('function types are not supported');
-  } else if (ty.isDynamic) {
+  } else if (ty is DynamicType) {
     return 'dynamic';
   } else if (ty is ParameterizedType && ty.typeArguments.isNotEmpty) {
     final base = qualifyType(ty, imports);
@@ -66,44 +66,48 @@ String computeTypeRepr(DartType ty, ImportModel imports) {
 }
 
 String fullName(Element element) {
-  return element.librarySource!.uri.toString() + ':' + element.toString();
+  return "${element.librarySource!.uri}:$element";
 }
 
 class ImportModel {
-  final Map<String, String> _moduleIdToPrefix = {};
-  final Map<String, String> _fullNameToPrefix = {};
-  final Map<String, String?> _moduleIdToUri = {};
+  final Map<String, ImportElementPrefix> _moduleIdToPrefix = {};
+  final Map<String, ImportElementPrefix> _fullNameToPrefix = {};
+  final Map<String, String> _moduleIdToUri = {};
   final Map<String, String> _uriToModuleId = {};
 
-  void addImportElement(ImportElement imp) {
-    if (imp.importedLibrary == null) {
+  void addImportElement(LibraryImportElement imp) {
+    final uri = imp.uri;
+    if (uri is! DirectiveUriWithLibrary) {
       return;
     }
-    final modId = imp.importedLibrary!.identifier;
-    this._moduleIdToUri[modId] = imp.uri;
-    this._uriToModuleId[imp.uri!] = modId;
-    if (imp.prefix != null) {
-      this._moduleIdToPrefix[modId] = imp.prefix!.name;
+
+    final moduleId = uri.library.identifier;
+    this._moduleIdToUri[moduleId] = uri.relativeUriString;
+    this._uriToModuleId[uri.relativeUriString] = moduleId;
+
+    final prefix = imp.prefix;
+    if (prefix != null) {
+      this._moduleIdToPrefix[moduleId] = prefix;
       imp.namespace.definedNames.forEach((key, value) {
-        _fullNameToPrefix[fullName(value)] = imp.prefix!.name;
+        this._fullNameToPrefix[fullName(value)] = prefix;
       });
     }
   }
 
   String lookupOptionalType() {
     final modIdCandidates =
-        quiverPackageUris.where((packageUri) => _uriToModuleId[packageUri] != null);
+        quiverPackageUris.where((packageUri) => this._uriToModuleId[packageUri] != null);
     if (modIdCandidates.isEmpty) {
       throw CodegenException(
           "Cannot reference type 'Optional'. Please import the package '${quiverPackageUris[0]}', "
           'either unqualified or qualified.');
     } else {
       final modId = modIdCandidates.first;
-      final prefix = _moduleIdToPrefix[modId];
+      final prefix = this._moduleIdToPrefix[modId];
       if (prefix == null) {
         return 'Optional';
       } else {
-        return prefix + '.Optional';
+        return '${prefix.element.name}.Optional';
       }
     }
   }
@@ -111,17 +115,19 @@ class ImportModel {
 
 typedef MkType<T> = T Function(DartType ty);
 
-enum FieldNameConfig { Public, Private }
+enum FieldNameConfig { public, private }
 
 class CommonFieldModel<TypeModel> {
   final String name;
   final String internalName;
+  final String localName;
   final TypeModel type;
 
   CommonFieldModel._({
     required this.name,
     required this.type,
     required this.internalName,
+    required this.localName,
   });
 
   factory CommonFieldModel(FieldElement field, MkType<TypeModel> mkType, FieldNameConfig fieldCfg) {
@@ -129,16 +135,16 @@ class CommonFieldModel<TypeModel> {
       final ty = mkType(field.type);
       String name, internalName;
       switch (fieldCfg) {
-        case FieldNameConfig.Public:
+        case FieldNameConfig.public:
           {
             if (field.name.startsWith('_')) {
               throw CodegenException('fieldname must not start with an underscore');
             }
             name = field.name;
-            internalName = '_' + name;
+            internalName = '_$name';
             break;
           }
-        case FieldNameConfig.Private:
+        case FieldNameConfig.private:
           {
             if (!field.name.startsWith('_')) {
               throw CodegenException('fieldname must start with an underscore');
@@ -150,6 +156,7 @@ class CommonFieldModel<TypeModel> {
       }
       return CommonFieldModel._(
         name: name,
+        localName: '$name\$',
         internalName: internalName,
         type: ty,
       );
@@ -172,7 +179,7 @@ class CodgenConfig {
     bool? toString,
     bool? eqHashCode,
     required this.nnbd,
-  })   : genToString = toString ?? true,
+  })  : genToString = toString ?? true,
         genEqHashCode = eqHashCode ?? true;
 }
 
@@ -185,7 +192,7 @@ class CommonClassModel<FieldModel> {
   final CodgenConfig config;
 
   String get factoryName {
-    return mixinName + 'Factory';
+    return '${mixinName}Factory';
   }
 
   CommonClassModel.mk({
@@ -198,7 +205,7 @@ class CommonClassModel<FieldModel> {
   });
 
   factory CommonClassModel(
-    ClassElement clazz,
+    MixinElement clazz,
     MkField<FieldModel> mkField,
     ConstantReader reader,
   ) {
@@ -206,9 +213,9 @@ class CommonClassModel<FieldModel> {
       // build a map of the qualified imports, mapping module identifiers to import prefixes
       final lib = clazz.library;
       final imports = ImportModel();
-      lib.imports.forEach((imp) {
+      for (final imp in lib.libraryImports) {
         imports.addImportElement(imp);
-      });
+      }
 
       // The fields are from the SumDataType class.
       final genToString = reader.objectValue.getField('genToString')!.toBoolValue();
@@ -221,8 +228,8 @@ class CommonClassModel<FieldModel> {
 
       final mixinName = clazz.name;
       final List<String> typeArgs = clazz.typeParameters.map((param) => param.name).toList();
-      final className = '_' + mixinName;
-      final baseName = className + 'Base';
+      final className = '_$mixinName';
+      final baseName = '${className}Base';
       final fields = <FieldModel>[];
 
       for (var field in clazz.fields) {
@@ -260,7 +267,7 @@ class CommonClassModel<FieldModel> {
 
   String get typeArgsWithParens {
     if (this.typeArgs.isNotEmpty) {
-      return '<' + this.typeArgs.join(',') + '>';
+      return '<${this.typeArgs.join(',')}>';
     } else {
       return '';
     }
@@ -268,7 +275,7 @@ class CommonClassModel<FieldModel> {
 }
 
 String eqImpl(String className, List<String> fieldNames) {
-  const other = r'__other$';
+  const other = 'other';
   var fieldsEq = 'true';
   if (fieldNames.isNotEmpty) {
     fieldsEq = fieldNames.map((name) => 'this.$name == $other.$name').join(' && ');
@@ -287,7 +294,7 @@ String hashCodeImpl(List<String> fieldNames) {
       int get hashCode => 0;
     ''';
   }
-  const result = r'__result$';
+  const result = 'result';
   final updates =
       fieldNames.map((name) => '$result = 37 * $result + this.$name.hashCode;').join('\n');
   return '''@override

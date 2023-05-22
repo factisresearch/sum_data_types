@@ -1,0 +1,35 @@
+name: dart
+
+on:
+  pull_request:
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: dart-lang/setup-dart@v1
+        with:
+          sdk: 3.0.1
+      - run: ./scripts/prepare
+      - run: ./scripts/check-format
+
+  analyze:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: dart-lang/setup-dart@v1
+        with:
+          sdk: 3.0.1
+      - run: scripts/prepare
+      - run: scripts/check-analyzer
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: dart-lang/setup-dart@v1
+        with:
+          sdk: 3.0.1
+      - run: ./scripts/prepare
+      - run: ./scripts/run-tests

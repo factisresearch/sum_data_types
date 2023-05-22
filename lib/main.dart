@@ -1,1 +1,1 @@
-export 'package:sum_data_types/sum_data_types.dart';
+export './sum_data_types.dart';

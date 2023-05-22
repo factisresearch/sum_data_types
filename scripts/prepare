@@ -7,7 +7,7 @@ set -o nounset
 HERE=$(cd $(dirname ${BASH_SOURCE[0]}) > /dev/null && pwd -P)
 cd $HERE/..
 
-for d in . sum_data_types_generator example; do
+for d in . sum_data_types_generator; do
     (
         cd "$d"
         echo

@@ -5,7 +5,7 @@ set -o pipefail
 set -o nounset
 
 HERE=$(cd $(dirname ${BASH_SOURCE[0]}) > /dev/null && pwd -P)
-cd $HERE/../example
+cd $HERE/../sum_data_types_generator
 
 if [ "${1-}" == "-h" -o "${1-}" == "--help" ]; then
     echo "USAGE: $0 [--skip-codegen]"

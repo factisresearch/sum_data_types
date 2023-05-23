@@ -98,7 +98,7 @@ Fields are optional if their type is `Optional<...>`, where `Optional` comes fro
 the [quiver.core](https://api.flutter.dev/flutter/quiver.core/Optional-class.html) library.
 It is recommended to use immutable collections, for example from the
 [kt.dart](https://github.com/passsy/kt.dart) package. You can also use the builtin collections
-such as `List``, but their equality is based on pointer-equality and not on structural equality.
+such as `List`, but their equality is based on pointer-equality and not on structural equality.
 
 # Sum Types
 

@@ -5,12 +5,12 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "example: build_runner",
-            "cwd": "example",
+            "name": "build_runner build",
+            "cwd": "sum_data_types_generator",
             "request": "launch",
             "program": ".dart_tool/build/entrypoint/build.dart",
             "type": "dart",
-            "args": ["build"]
+            "args": ["build", "--delete-conflicting-outputs"]
         }
     ]
 }

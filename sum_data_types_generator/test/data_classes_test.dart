@@ -5,8 +5,8 @@ import 'package:quiver/core.dart';
 import 'package:sum_data_types/sum_data_types.dart';
 import 'package:test/test.dart';
 
-import 'nnbd.dart';
-import 'types.dart' as ty;
+import './nnbd.dart';
+import './types.dart' as ty;
 
 part 'data_classes_test.g.dart';
 

@@ -22,4 +22,4 @@ elif [ ! -z "${1-}" ]; then
     usage
 fi
 
-find lib sum_data_types_generator/lib example/test -name '*.dart' -not -name '*.g.dart' | xargs dart format ${opts[*]} --line-length 100
+find lib sum_data_types_generator/lib sum_data_types_generator/test -name '*.dart' -not -name '*.g.dart' | xargs dart format ${opts[*]} --line-length 100

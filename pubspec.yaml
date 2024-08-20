@@ -4,10 +4,10 @@ version: 0.2.0
 repository: https://github.com/factisresearch/sum_data_types/tree/master
 
 environment:
-  sdk: ">=2.19.0 <4.0.0"
+  sdk: ">=3.4.0 <4.0.0"
 
 dependencies:
   meta: ^1.1.7
 
 dev_dependencies:
-  lints: ^2.1.0
+  lints: ^4.0.0

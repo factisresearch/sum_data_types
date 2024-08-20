@@ -19,9 +19,7 @@ linter:
     empty_statements: true
     hash_and_equals: true
     implementation_imports: true
-    iterable_contains_unrelated_type: true
     library_names: true
-    list_remove_unrelated_type: true
     non_constant_identifier_names: true
     only_throw_errors: true
     package_api_docs: true

@@ -4,7 +4,7 @@ version: 0.3.0
 repository: https://github.com/factisresearch/sum_data_types/tree/master/sum_data_types_generator
 
 environment:
-  sdk: ">=3.4.0 <4.0.0"
+  sdk: ">=3.6.0 <4.0.0"
 
 dependencies:
   analyzer: ^7.2.0

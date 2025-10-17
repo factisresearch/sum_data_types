@@ -1,3 +1,8 @@
+## 0.3.1
+
+ * Bump analyzer to last version before breaking changes in `7.4.x`
+   (See https://github.com/dart-lang/sdk/blob/main/pkg/analyzer/doc/element_model_migration_guide.md)
+
 ## 0.3.0
 
  * Various dependency updates

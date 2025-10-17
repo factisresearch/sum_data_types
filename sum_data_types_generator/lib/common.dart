@@ -33,10 +33,7 @@ bool isType(DartType ty, String name, String packageUri, ImportModel imports) {
   return ty.element!.name == name && tyLib.toString() == packageUri;
 }
 
-const quiverPackageUris = [
-  'package:quiver/src/core/optional.dart',
-  'package:quiver/core.dart',
-];
+const quiverPackageUris = ['package:quiver/src/core/optional.dart', 'package:quiver/core.dart'];
 
 bool isQuiverOptional(DartType ty, ImportModel imports) {
   return quiverPackageUris.any((packageUri) => isType(ty, 'Optional', packageUri, imports));
@@ -95,12 +92,14 @@ class ImportModel {
   }
 
   String lookupOptionalType() {
-    final modIdCandidates =
-        quiverPackageUris.where((packageUri) => this._uriToModuleId[packageUri] != null);
+    final modIdCandidates = quiverPackageUris.where(
+      (packageUri) => this._uriToModuleId[packageUri] != null,
+    );
     if (modIdCandidates.isEmpty) {
       throw CodegenException(
-          "Cannot reference type 'Optional'. Please import the package '${quiverPackageUris[0]}', "
-          'either unqualified or qualified.');
+        "Cannot reference type 'Optional'. Please import the package '${quiverPackageUris[0]}', "
+        'either unqualified or qualified.',
+      );
     } else {
       final modId = modIdCandidates.first;
       final prefix = this._moduleIdToPrefix[modId];
@@ -175,11 +174,8 @@ class CodgenConfig {
   final bool genEqHashCode;
   final bool nnbd;
 
-  const CodgenConfig({
-    bool? toString,
-    bool? eqHashCode,
-    required this.nnbd,
-  })  : genToString = toString ?? true,
+  const CodgenConfig({bool? toString, bool? eqHashCode, required this.nnbd})
+      : genToString = toString ?? true,
         genEqHashCode = eqHashCode ?? true;
 }
 
@@ -204,16 +200,12 @@ class CommonClassModel<FieldModel> {
     required this.config,
   });
 
-  factory CommonClassModel(
-    MixinElement clazz,
-    MkField<FieldModel> mkField,
-    ConstantReader reader,
-  ) {
+  factory CommonClassModel(MixinElement clazz, MkField<FieldModel> mkField, ConstantReader reader) {
     try {
       // build a map of the qualified imports, mapping module identifiers to import prefixes
       final lib = clazz.library;
       final imports = ImportModel();
-      for (final imp in lib.libraryImports) {
+      for (final imp in lib.definingCompilationUnit.libraryImports) {
         imports.addImportElement(imp);
       }
 

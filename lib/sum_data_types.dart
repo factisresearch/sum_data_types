@@ -1,4 +1,4 @@
-export 'package:meta/meta.dart' show immutable, required;
+export 'package:meta/meta.dart' show immutable;
 
 /// Annotation to use to generate a data-class
 class DataClass {

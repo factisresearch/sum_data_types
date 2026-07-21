@@ -1,3 +1,9 @@
+## 0.3.2
+
+ * Bump analyser to a recent version
+ * Bump minimal Dart version to `3.9.0` due to dependencies
+ * Support record-types and extension-types
+
 ## 0.3.1
 
  * Bump analyzer to last version before breaking changes in `7.4.x`

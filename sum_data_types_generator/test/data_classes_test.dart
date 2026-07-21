@@ -76,6 +76,22 @@ void main() {
     expect(c == c, equals(false));
     expect(c.hashCode, equals(42));
   });
+
+  test('extension type support', () {
+    final val1 = MyExtensionType('foo');
+    final val2 = MyExtensionType('foo');
+    final obj1 = ClassWithExtensionTypeFactory.make(value: val1);
+    final obj2 = ClassWithExtensionTypeFactory.make(value: val2);
+    expect(obj1 == obj2, isTrue);
+    expect(obj1.toString(), equals('ClassWithExtensionType(value: foo)'));
+  });
+
+  test('record type support', () {
+    final obj1 = ClassWithRecordTypeFactory.make(record: ('hello', 123));
+    final obj2 = ClassWithRecordTypeFactory.make(record: ('hello', 123));
+    expect(obj1 == obj2, isTrue);
+    expect(obj1.toString(), equals('ClassWithRecordType(record: (hello, 123))'));
+  });
 }
 
 @DataClass()
@@ -126,4 +142,16 @@ mixin CustomEq on _CustomEqBase {
   int get hashCode {
     return 42;
   }
+}
+
+extension type MyExtensionType(String value) {}
+
+@DataClass()
+mixin ClassWithExtensionType on _ClassWithExtensionTypeBase {
+  MyExtensionType get value;
+}
+
+@DataClass()
+mixin ClassWithRecordType on _ClassWithRecordTypeBase {
+  (String, int) get record;
 }

@@ -46,9 +46,19 @@ bool isQuiverOptional(DartType ty, ImportModel imports) {
 
 // Returns a potential qualified access string for the type, without type arguments
 String qualifyType(DartType ty, ImportModel imports) {
-  final prefixOrNull = imports._fullNameToPrefix[fullName(ty.element!)];
+  final element = ty.element;
+  if (element == null) {
+    return ty.getDisplayString();
+  }
+
+  final name = element.name;
+  if (name == null) {
+    return ty.getDisplayString();
+  }
+
+  final prefixOrNull = imports._fullNameToPrefix[fullName(element)];
   final prefix = (prefixOrNull != null) ? ('${prefixOrNull.element.name}.') : '';
-  return '$prefix${ty.element!.name}';
+  return '$prefix$name';
 }
 
 // Returns a textual representation of the given type, including generic types
@@ -58,6 +68,23 @@ String computeTypeRepr(DartType ty, ImportModel imports) {
     throw CodegenException('function types are not supported');
   } else if (ty is DynamicType) {
     return 'dynamic';
+  } else if (ty is RecordType) {
+    final positional = ty.positionalFields.map((f) => computeTypeRepr(f.type, imports)).join(', ');
+    final named =
+        ty.namedFields.map((f) => '${computeTypeRepr(f.type, imports)} ${f.name}').join(', ');
+    if (named.isNotEmpty) {
+      if (positional.isNotEmpty) {
+        return '($positional, {$named})';
+      } else {
+        return '({$named})';
+      }
+    } else {
+      if (ty.positionalFields.length == 1) {
+        return '($positional,)';
+      } else {
+        return '($positional)';
+      }
+    }
   } else if (ty is ParameterizedType && ty.typeArguments.isNotEmpty) {
     final base = qualifyType(ty, imports);
     final args = ty.typeArguments.map((tyArg) => computeTypeRepr(tyArg, imports));

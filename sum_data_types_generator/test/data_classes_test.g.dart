@@ -275,3 +275,119 @@ class _CustomEq extends _CustomEqBase with CustomEq {
     return 'CustomEq(foo: ${this.foo}, bar: ${this.bar})';
   }
 }
+
+/// This data class has been generated from ClassWithExtensionType
+abstract class ClassWithExtensionTypeFactory {
+  static ClassWithExtensionType make({
+    required MyExtensionType value,
+  }) {
+    return _ClassWithExtensionType.make(
+      value: value,
+    );
+  }
+}
+
+abstract class _ClassWithExtensionTypeBase {
+  const _ClassWithExtensionTypeBase();
+
+  ClassWithExtensionType copyWith({
+    MyExtensionType? value,
+  });
+}
+
+@immutable
+class _ClassWithExtensionType extends _ClassWithExtensionTypeBase
+    with ClassWithExtensionType {
+  @override
+  final MyExtensionType value;
+
+  const _ClassWithExtensionType.make({
+    required this.value,
+  });
+
+  @override
+  ClassWithExtensionType copyWith({
+    MyExtensionType? value,
+  }) {
+    return _ClassWithExtensionType.make(
+      value: value ?? this.value,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (this.runtimeType != other.runtimeType) return false;
+    return other is _ClassWithExtensionType && this.value == other.value;
+  }
+
+  @override
+  int get hashCode {
+    var result = 17;
+    result = 37 * result + this.value.hashCode;
+    return result;
+  }
+
+  @override
+  String toString() {
+    return 'ClassWithExtensionType(value: ${this.value})';
+  }
+}
+
+/// This data class has been generated from ClassWithRecordType
+abstract class ClassWithRecordTypeFactory {
+  static ClassWithRecordType make({
+    required (String, int) record,
+  }) {
+    return _ClassWithRecordType.make(
+      record: record,
+    );
+  }
+}
+
+abstract class _ClassWithRecordTypeBase {
+  const _ClassWithRecordTypeBase();
+
+  ClassWithRecordType copyWith({
+    (String, int)? record,
+  });
+}
+
+@immutable
+class _ClassWithRecordType extends _ClassWithRecordTypeBase
+    with ClassWithRecordType {
+  @override
+  final (String, int) record;
+
+  const _ClassWithRecordType.make({
+    required this.record,
+  });
+
+  @override
+  ClassWithRecordType copyWith({
+    (String, int)? record,
+  }) {
+    return _ClassWithRecordType.make(
+      record: record ?? this.record,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (this.runtimeType != other.runtimeType) return false;
+    return other is _ClassWithRecordType && this.record == other.record;
+  }
+
+  @override
+  int get hashCode {
+    var result = 17;
+    result = 37 * result + this.record.hashCode;
+    return result;
+  }
+
+  @override
+  String toString() {
+    return 'ClassWithRecordType(record: ${this.record})';
+  }
+}

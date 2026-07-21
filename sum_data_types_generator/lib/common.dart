@@ -29,8 +29,13 @@ class CodegenException implements Exception {
 }
 
 bool isType(DartType ty, String name, String packageUri, ImportModel imports) {
-  final tyLib = ty.element!.librarySource?.uri;
-  return ty.element!.name == name && tyLib.toString() == packageUri;
+  final element = ty.element;
+  if (element == null) {
+    return false;
+  }
+
+  final tyLib = element.library?.uri;
+  return element.name == name && tyLib.toString() == packageUri;
 }
 
 const quiverPackageUris = ['package:quiver/src/core/optional.dart', 'package:quiver/core.dart'];
@@ -63,16 +68,17 @@ String computeTypeRepr(DartType ty, ImportModel imports) {
 }
 
 String fullName(Element element) {
-  return "${element.librarySource!.uri}:$element";
+  final uri = element.library?.uri;
+  return "$uri:$element";
 }
 
 class ImportModel {
-  final Map<String, ImportElementPrefix> _moduleIdToPrefix = {};
-  final Map<String, ImportElementPrefix> _fullNameToPrefix = {};
+  final Map<String, PrefixFragment> _moduleIdToPrefix = {};
+  final Map<String, PrefixFragment> _fullNameToPrefix = {};
   final Map<String, String> _moduleIdToUri = {};
   final Map<String, String> _uriToModuleId = {};
 
-  void addImportElement(LibraryImportElement imp) {
+  void addImportElement(LibraryImport imp) {
     final uri = imp.uri;
     if (uri is! DirectiveUriWithLibrary) {
       return;
@@ -85,9 +91,9 @@ class ImportModel {
     final prefix = imp.prefix;
     if (prefix != null) {
       this._moduleIdToPrefix[moduleId] = prefix;
-      imp.namespace.definedNames.forEach((key, value) {
-        this._fullNameToPrefix[fullName(value)] = prefix;
-      });
+      for (final entry in imp.namespace.definedNames2.entries) {
+        this._fullNameToPrefix[fullName(entry.value)] = prefix;
+      }
     }
   }
 
@@ -132,24 +138,29 @@ class CommonFieldModel<TypeModel> {
   factory CommonFieldModel(FieldElement field, MkType<TypeModel> mkType, FieldNameConfig fieldCfg) {
     try {
       final ty = mkType(field.type);
+      final fieldName = field.name;
+      if (fieldName == null) {
+        throw CodegenException('fieldname must not be null');
+      }
+
       String name, internalName;
       switch (fieldCfg) {
         case FieldNameConfig.public:
           {
-            if (field.name.startsWith('_')) {
+            if (fieldName.startsWith('_')) {
               throw CodegenException('fieldname must not start with an underscore');
             }
-            name = field.name;
+            name = fieldName;
             internalName = '_$name';
             break;
           }
         case FieldNameConfig.private:
           {
-            if (!field.name.startsWith('_')) {
+            if (!fieldName.startsWith('_')) {
               throw CodegenException('fieldname must start with an underscore');
             }
-            name = field.name.substring(1);
-            internalName = field.name;
+            name = fieldName.substring(1);
+            internalName = fieldName;
             break;
           }
       }
@@ -205,7 +216,7 @@ class CommonClassModel<FieldModel> {
       // build a map of the qualified imports, mapping module identifiers to import prefixes
       final lib = clazz.library;
       final imports = ImportModel();
-      for (final imp in lib.definingCompilationUnit.libraryImports) {
+      for (final imp in lib.firstFragment.libraryImports) {
         imports.addImportElement(imp);
       }
 
@@ -219,14 +230,23 @@ class CommonClassModel<FieldModel> {
       );
 
       final mixinName = clazz.name;
-      final List<String> typeArgs = clazz.typeParameters.map((param) => param.name).toList();
+      if (mixinName == null) {
+        throw CodegenException('mixin name must not be null');
+      }
+
+      final List<String> typeArgs = clazz.typeParameters.map((param) => param.name!).toList();
       final className = '_$mixinName';
       final baseName = '${className}Base';
       final fields = <FieldModel>[];
 
       for (var field in clazz.fields) {
-        if (field.name != 'hashCode' && !field.isStatic) {
-          final msgPrefix = "Invalid getter '${field.name}' for data class '$mixinName'";
+        final fieldName = field.name;
+        if (fieldName == null) {
+          continue;
+        }
+
+        if (fieldName != 'hashCode' && !field.isStatic) {
+          final msgPrefix = "Invalid getter '$fieldName' for data class '$mixinName'";
           if (field.getter == null) {
             throw Exception('$msgPrefix: field must have a getter');
           } else if (field.setter != null) {

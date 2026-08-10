@@ -51,9 +51,11 @@ void main() {
     );
     expect(
       user.toString(),
-      equals('Something.user(User(name: Paul, age: Optional { absent }, friends: [], '
-          'address: SomeAddress, workAddress: Optional { absent }, friendsAddresses: [], '
-          'foo: Either.right(42)))'),
+      equals(
+        'Something.user(User(name: Paul, age: Optional { absent }, friends: [], '
+        'address: SomeAddress, workAddress: Optional { absent }, friendsAddresses: [], '
+        'foo: Either.right(42)))',
+      ),
     );
     expect(
       address.toString(),

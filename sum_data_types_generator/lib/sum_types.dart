@@ -45,12 +45,12 @@ class FieldModel {
     FieldElement fld,
     ImportModel imports,
     this.cfg,
-  )   : this._commonModel = CommonFieldModel(
-          fld,
-          (DartType ty) => TypeModel(ty, imports),
-          FieldNameConfig.private,
-        ),
-        this._imports = imports;
+  ) : this._commonModel = CommonFieldModel(
+        fld,
+        (DartType ty) => TypeModel(ty, imports),
+        FieldNameConfig.private,
+      ),
+      this._imports = imports;
 
   String factoryMethod(String resultType, String tyArgs, String constructor) {
     String mkFun(String arg, String result) {
@@ -149,10 +149,10 @@ class ClassModel {
     MixinElement clazz,
     ConstantReader reader,
   ) : this._commonModel = CommonClassModel(
-          clazz,
-          (FieldElement fld, ImportModel imports, cfg) => FieldModel(fld, imports, cfg),
-          reader,
-        );
+        clazz,
+        (FieldElement fld, ImportModel imports, cfg) => FieldModel(fld, imports, cfg),
+        reader,
+      );
 
   List<FieldModel> get fields => _commonModel.fields;
   String get className => _commonModel.className;
@@ -168,8 +168,7 @@ class ClassModel {
 
   String get factoryMethods {
     final resultType = this.mixinType;
-    return this
-        .fields
+    return this.fields
         .map((field) => field.factoryMethod(resultType, this.typeArgsWithParens, this.className))
         .join('\n');
   }
@@ -252,14 +251,16 @@ class SumTypeGenerator extends GeneratorForAnnotation<SumType> {
       }
       const tyArg = r'__T$';
       final otherwise = clazz.fieldNames.contains('otherwise') ? r'otherwise__$' : 'otherwise';
-      final toStringMethod = '''
+      final toStringMethod =
+          '''
         @override
         String toString() {
           final x\$ = iswitch(${clazz.toStringSwitch});
           return '${clazz.mixinName}.\${x\$}';
         }
       ''';
-      final code = '''
+      final code =
+          '''
         /// This data class has been generated from ${clazz.mixinName}
         abstract class ${clazz.factoryName} {
           ${clazz.factoryMethods}

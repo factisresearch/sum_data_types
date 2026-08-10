@@ -22,7 +22,6 @@ linter:
     library_names: true
     non_constant_identifier_names: true
     only_throw_errors: true
-    package_api_docs: true
     package_names: true
     package_prefixed_library_names: true
     prefer_const_constructors_in_immutables: true
@@ -43,3 +42,7 @@ analyzer:
   language:
     strict-casts: true
     strict-raw-types: true
+
+formatter:
+  page_width: 100
+  trailing_commas: preserve

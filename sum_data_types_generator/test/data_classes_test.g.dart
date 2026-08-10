@@ -164,24 +164,15 @@ class _NullaryType extends _NullaryTypeBase with NullaryType {
 
 /// This data class has been generated from CustomToString
 abstract class CustomToStringFactory {
-  static CustomToString make({
-    required String foo,
-    required String bar,
-  }) {
-    return _CustomToString.make(
-      foo: foo,
-      bar: bar,
-    );
+  static CustomToString make({required String foo, required String bar}) {
+    return _CustomToString.make(foo: foo, bar: bar);
   }
 }
 
 abstract class _CustomToStringBase {
   const _CustomToStringBase();
 
-  CustomToString copyWith({
-    String? foo,
-    String? bar,
-  });
+  CustomToString copyWith({String? foo, String? bar});
 }
 
 @immutable
@@ -191,20 +182,11 @@ class _CustomToString extends _CustomToStringBase with CustomToString {
   @override
   final String bar;
 
-  const _CustomToString.make({
-    required this.foo,
-    required this.bar,
-  });
+  const _CustomToString.make({required this.foo, required this.bar});
 
   @override
-  CustomToString copyWith({
-    String? foo,
-    String? bar,
-  }) {
-    return _CustomToString.make(
-      foo: foo ?? this.foo,
-      bar: bar ?? this.bar,
-    );
+  CustomToString copyWith({String? foo, String? bar}) {
+    return _CustomToString.make(foo: foo ?? this.foo, bar: bar ?? this.bar);
   }
 
   @override
@@ -227,24 +209,15 @@ class _CustomToString extends _CustomToStringBase with CustomToString {
 
 /// This data class has been generated from CustomEq
 abstract class CustomEqFactory {
-  static CustomEq make({
-    required String foo,
-    required String bar,
-  }) {
-    return _CustomEq.make(
-      foo: foo,
-      bar: bar,
-    );
+  static CustomEq make({required String foo, required String bar}) {
+    return _CustomEq.make(foo: foo, bar: bar);
   }
 }
 
 abstract class _CustomEqBase {
   const _CustomEqBase();
 
-  CustomEq copyWith({
-    String? foo,
-    String? bar,
-  });
+  CustomEq copyWith({String? foo, String? bar});
 }
 
 @immutable
@@ -254,20 +227,11 @@ class _CustomEq extends _CustomEqBase with CustomEq {
   @override
   final String bar;
 
-  const _CustomEq.make({
-    required this.foo,
-    required this.bar,
-  });
+  const _CustomEq.make({required this.foo, required this.bar});
 
   @override
-  CustomEq copyWith({
-    String? foo,
-    String? bar,
-  }) {
-    return _CustomEq.make(
-      foo: foo ?? this.foo,
-      bar: bar ?? this.bar,
-    );
+  CustomEq copyWith({String? foo, String? bar}) {
+    return _CustomEq.make(foo: foo ?? this.foo, bar: bar ?? this.bar);
   }
 
   @override
@@ -278,21 +242,15 @@ class _CustomEq extends _CustomEqBase with CustomEq {
 
 /// This data class has been generated from ClassWithExtensionType
 abstract class ClassWithExtensionTypeFactory {
-  static ClassWithExtensionType make({
-    required MyExtensionType value,
-  }) {
-    return _ClassWithExtensionType.make(
-      value: value,
-    );
+  static ClassWithExtensionType make({required MyExtensionType value}) {
+    return _ClassWithExtensionType.make(value: value);
   }
 }
 
 abstract class _ClassWithExtensionTypeBase {
   const _ClassWithExtensionTypeBase();
 
-  ClassWithExtensionType copyWith({
-    MyExtensionType? value,
-  });
+  ClassWithExtensionType copyWith({MyExtensionType? value});
 }
 
 @immutable
@@ -301,17 +259,11 @@ class _ClassWithExtensionType extends _ClassWithExtensionTypeBase
   @override
   final MyExtensionType value;
 
-  const _ClassWithExtensionType.make({
-    required this.value,
-  });
+  const _ClassWithExtensionType.make({required this.value});
 
   @override
-  ClassWithExtensionType copyWith({
-    MyExtensionType? value,
-  }) {
-    return _ClassWithExtensionType.make(
-      value: value ?? this.value,
-    );
+  ClassWithExtensionType copyWith({MyExtensionType? value}) {
+    return _ClassWithExtensionType.make(value: value ?? this.value);
   }
 
   @override
@@ -336,21 +288,15 @@ class _ClassWithExtensionType extends _ClassWithExtensionTypeBase
 
 /// This data class has been generated from ClassWithRecordType
 abstract class ClassWithRecordTypeFactory {
-  static ClassWithRecordType make({
-    required (String, int) record,
-  }) {
-    return _ClassWithRecordType.make(
-      record: record,
-    );
+  static ClassWithRecordType make({required (String, int) record}) {
+    return _ClassWithRecordType.make(record: record);
   }
 }
 
 abstract class _ClassWithRecordTypeBase {
   const _ClassWithRecordTypeBase();
 
-  ClassWithRecordType copyWith({
-    (String, int)? record,
-  });
+  ClassWithRecordType copyWith({(String, int)? record});
 }
 
 @immutable
@@ -359,17 +305,11 @@ class _ClassWithRecordType extends _ClassWithRecordTypeBase
   @override
   final (String, int) record;
 
-  const _ClassWithRecordType.make({
-    required this.record,
-  });
+  const _ClassWithRecordType.make({required this.record});
 
   @override
-  ClassWithRecordType copyWith({
-    (String, int)? record,
-  }) {
-    return _ClassWithRecordType.make(
-      record: record ?? this.record,
-    );
+  ClassWithRecordType copyWith({(String, int)? record}) {
+    return _ClassWithRecordType.make(record: record ?? this.record);
   }
 
   @override

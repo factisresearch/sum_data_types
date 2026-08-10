@@ -70,8 +70,9 @@ String computeTypeRepr(DartType ty, ImportModel imports) {
     return 'dynamic';
   } else if (ty is RecordType) {
     final positional = ty.positionalFields.map((f) => computeTypeRepr(f.type, imports)).join(', ');
-    final named =
-        ty.namedFields.map((f) => '${computeTypeRepr(f.type, imports)} ${f.name}').join(', ');
+    final named = ty.namedFields
+        .map((f) => '${computeTypeRepr(f.type, imports)} ${f.name}')
+        .join(', ');
     if (named.isNotEmpty) {
       if (positional.isNotEmpty) {
         return '($positional, {$named})';
@@ -87,7 +88,9 @@ String computeTypeRepr(DartType ty, ImportModel imports) {
     }
   } else if (ty is ParameterizedType && ty.typeArguments.isNotEmpty) {
     final base = qualifyType(ty, imports);
-    final args = ty.typeArguments.map((tyArg) => computeTypeRepr(tyArg, imports));
+    final args = ty.typeArguments.map(
+      (tyArg) => computeTypeRepr(tyArg, imports),
+    );
     return '$base<${args.join(', ')}>';
   } else {
     return qualifyType(ty, imports);
@@ -213,8 +216,8 @@ class CodgenConfig {
   final bool nnbd;
 
   const CodgenConfig({bool? toString, bool? eqHashCode, required this.nnbd})
-      : genToString = toString ?? true,
-        genEqHashCode = eqHashCode ?? true;
+    : genToString = toString ?? true,
+      genEqHashCode = eqHashCode ?? true;
 }
 
 class CommonClassModel<FieldModel> {
@@ -334,8 +337,9 @@ String hashCodeImpl(List<String> fieldNames) {
     ''';
   }
   const result = 'result';
-  final updates =
-      fieldNames.map((name) => '$result = 37 * $result + this.$name.hashCode;').join('\n');
+  final updates = fieldNames
+      .map((name) => '$result = 37 * $result + this.$name.hashCode;')
+      .join('\n');
   return '''@override
     int get hashCode {
       var $result = 17;

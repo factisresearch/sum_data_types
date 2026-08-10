@@ -23,7 +23,7 @@ class TypeModel {
     DartType ty,
     ImportModel imports,
   ) {
-    final typeRepr = computeTypeRepr(ty, imports);
+    final typeRepr = computeTypeRepr(ty, imports, stripTopLevelNullability: true);
     final isUnit = isType(ty, 'Unit', 'package:sum_data_types/sum_data_types.dart', imports);
     return TypeModel._(isUnit: isUnit, isDynamic: ty is DynamicType, typeRepr: typeRepr);
   }

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:analyzer/dart/element/element.dart';
+import 'package:analyzer/dart/element/nullability_suffix.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:build/build.dart';
 import 'package:source_gen/source_gen.dart';
@@ -31,6 +32,11 @@ class TypeModel {
     DartType ty,
     ImportModel imports,
   ) {
+    if (ty.nullabilitySuffix != NullabilitySuffix.none && ty is! DynamicType) {
+      throw CodegenException(
+        'nullable fields are not supported for DataClass. Use Optional<T> instead.',
+      );
+    }
     final typeRepr = computeTypeRepr(ty, imports);
     String? optionalType;
     var typeReprForFactory = typeRepr;

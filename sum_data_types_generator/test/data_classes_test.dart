@@ -95,6 +95,13 @@ void main() {
     expect(obj1 == obj2, isTrue);
     expect(obj1.toString(), equals('ClassWithRecordType(record: (hello, 123))'));
   });
+
+  test('record type with nullable member support', () {
+    final obj1 = ClassWithNullableRecordTypeFactory.make(record: (null, 123));
+    final obj2 = ClassWithNullableRecordTypeFactory.make(record: (null, 123));
+    expect(obj1 == obj2, isTrue);
+    expect(obj1.toString(), equals('ClassWithNullableRecordType(record: (null, 123))'));
+  });
 }
 
 @DataClass()
@@ -157,4 +164,9 @@ mixin ClassWithExtensionType on _ClassWithExtensionTypeBase {
 @DataClass()
 mixin ClassWithRecordType on _ClassWithRecordTypeBase {
   (String, int) get record;
+}
+
+@DataClass()
+mixin ClassWithNullableRecordType on _ClassWithNullableRecordTypeBase {
+  (String?, int) get record;
 }

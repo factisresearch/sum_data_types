@@ -331,3 +331,49 @@ class _ClassWithRecordType extends _ClassWithRecordTypeBase
     return 'ClassWithRecordType(record: ${this.record})';
   }
 }
+
+/// This data class has been generated from ClassWithNullableRecordType
+abstract class ClassWithNullableRecordTypeFactory {
+  static ClassWithNullableRecordType make({required (String?, int) record}) {
+    return _ClassWithNullableRecordType.make(record: record);
+  }
+}
+
+abstract class _ClassWithNullableRecordTypeBase {
+  const _ClassWithNullableRecordTypeBase();
+
+  ClassWithNullableRecordType copyWith({(String?, int)? record});
+}
+
+@immutable
+class _ClassWithNullableRecordType extends _ClassWithNullableRecordTypeBase
+    with ClassWithNullableRecordType {
+  @override
+  final (String?, int) record;
+
+  const _ClassWithNullableRecordType.make({required this.record});
+
+  @override
+  ClassWithNullableRecordType copyWith({(String?, int)? record}) {
+    return _ClassWithNullableRecordType.make(record: record ?? this.record);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (this.runtimeType != other.runtimeType) return false;
+    return other is _ClassWithNullableRecordType && this.record == other.record;
+  }
+
+  @override
+  int get hashCode {
+    var result = 17;
+    result = 37 * result + this.record.hashCode;
+    return result;
+  }
+
+  @override
+  String toString() {
+    return 'ClassWithNullableRecordType(record: ${this.record})';
+  }
+}

@@ -1,5 +1,6 @@
 import 'package:analyzer/dart/analysis/features.dart';
 import 'package:analyzer/dart/element/element.dart';
+import 'package:analyzer/dart/element/nullability_suffix.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:meta/meta.dart';
 import 'package:source_gen/source_gen.dart';
@@ -61,9 +62,23 @@ String qualifyType(DartType ty, ImportModel imports) {
   return '$prefix$name';
 }
 
+String _nullabilitySuffix(DartType ty, {required bool stripTopLevelNullability}) {
+  if (stripTopLevelNullability) {
+    return '';
+  }
+  switch (ty.nullabilitySuffix) {
+    case NullabilitySuffix.none:
+      return '';
+    case NullabilitySuffix.question:
+      return '?';
+    case NullabilitySuffix.star:
+      return '*';
+  }
+}
+
 // Returns a textual representation of the given type, including generic types
 // and import prefixes.
-String computeTypeRepr(DartType ty, ImportModel imports) {
+String computeTypeRepr(DartType ty, ImportModel imports, {bool stripTopLevelNullability = false}) {
   if (ty is FunctionType) {
     throw CodegenException('function types are not supported');
   } else if (ty is DynamicType) {
@@ -73,27 +88,30 @@ String computeTypeRepr(DartType ty, ImportModel imports) {
     final named = ty.namedFields
         .map((f) => '${computeTypeRepr(f.type, imports)} ${f.name}')
         .join(', ');
+    String recordType;
     if (named.isNotEmpty) {
       if (positional.isNotEmpty) {
-        return '($positional, {$named})';
+        recordType = '($positional, {$named})';
       } else {
-        return '({$named})';
+        recordType = '({$named})';
       }
     } else {
       if (ty.positionalFields.length == 1) {
-        return '($positional,)';
+        recordType = '($positional,)';
       } else {
-        return '($positional)';
+        recordType = '($positional)';
       }
     }
+    return '$recordType${_nullabilitySuffix(ty, stripTopLevelNullability: stripTopLevelNullability)}';
   } else if (ty is ParameterizedType && ty.typeArguments.isNotEmpty) {
     final base = qualifyType(ty, imports);
-    final args = ty.typeArguments.map(
-      (tyArg) => computeTypeRepr(tyArg, imports),
-    );
-    return '$base<${args.join(', ')}>';
+    final args = ty.typeArguments.map((tyArg) => computeTypeRepr(tyArg, imports));
+    final suffix = _nullabilitySuffix(ty, stripTopLevelNullability: stripTopLevelNullability);
+    return '$base<${args.join(', ')}>$suffix';
   } else {
-    return qualifyType(ty, imports);
+    final base = qualifyType(ty, imports);
+    final suffix = _nullabilitySuffix(ty, stripTopLevelNullability: stripTopLevelNullability);
+    return '$base$suffix';
   }
 }
 

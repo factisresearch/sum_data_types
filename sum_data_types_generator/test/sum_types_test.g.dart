@@ -396,3 +396,106 @@ class _CustomEq extends _CustomEqBase with CustomEq {
     return 'CustomEq.${x$}';
   }
 }
+
+/// This data class has been generated from WithFutureOrNullable
+abstract class WithFutureOrNullableFactory {
+  static WithFutureOrNullable futureOrValue(FutureOr<String> x$) =>
+      _WithFutureOrNullable(futureOrValue: x$);
+  static WithFutureOrNullable string(String x$) =>
+      _WithFutureOrNullable(string: x$);
+}
+
+abstract class _WithFutureOrNullableBase {
+  const _WithFutureOrNullableBase();
+  quiv.Optional<FutureOr<String>> get futureOrValue;
+  quiv.Optional<String> get string;
+  __T$ iswitch<__T$>({
+    required __T$ Function(FutureOr<String>) futureOrValue,
+    required __T$ Function(String) string,
+  });
+  __T$ iswitcho<__T$>({
+    __T$ Function(FutureOr<String>)? futureOrValue,
+    __T$ Function(String)? string,
+    required __T$ Function() otherwise,
+  });
+}
+
+@immutable
+class _WithFutureOrNullable extends _WithFutureOrNullableBase
+    with WithFutureOrNullable {
+  @override
+  final FutureOr<String>? _futureOrValue;
+  @override
+  final String? _string;
+
+  @override
+  quiv.Optional<FutureOr<String>> get futureOrValue =>
+      quiv.Optional<FutureOr<String>>.fromNullable(this._futureOrValue);
+  @override
+  quiv.Optional<String> get string =>
+      quiv.Optional<String>.fromNullable(this._string);
+
+  const _WithFutureOrNullable({FutureOr<String>? futureOrValue, String? string})
+    : assert(
+        (futureOrValue != null && string == null) ||
+            (futureOrValue == null && string != null),
+      ),
+      this._futureOrValue = futureOrValue,
+      this._string = string;
+
+  @override
+  __T$ iswitch<__T$>({
+    required __T$ Function(FutureOr<String>) futureOrValue,
+    required __T$ Function(String) string,
+  }) {
+    final futureOrValue$ = this._futureOrValue;
+    final string$ = this._string;
+    if (futureOrValue$ != null) {
+      return futureOrValue(futureOrValue$);
+    } else if (string$ != null) {
+      return string(string$);
+    } else {
+      throw StateError(
+        'an instance of WithFutureOrNullable has no case selected',
+      );
+    }
+  }
+
+  @override
+  __T$ iswitcho<__T$>({
+    __T$ Function(FutureOr<String>)? futureOrValue,
+    __T$ Function(String)? string,
+    required __T$ Function() otherwise,
+  }) {
+    return iswitch(
+      futureOrValue: futureOrValue ?? (FutureOr<String> _) => otherwise(),
+      string: string ?? (String _) => otherwise(),
+    );
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (this.runtimeType != other.runtimeType) return false;
+    return other is _WithFutureOrNullable &&
+        this._futureOrValue == other._futureOrValue &&
+        this._string == other._string;
+  }
+
+  @override
+  int get hashCode {
+    var result = 17;
+    result = 37 * result + this._futureOrValue.hashCode;
+    result = 37 * result + this._string.hashCode;
+    return result;
+  }
+
+  @override
+  String toString() {
+    final x$ = iswitch(
+      futureOrValue: (FutureOr<String> x$) => 'futureOrValue(${x$})',
+      string: (String x$) => 'string(${x$})',
+    );
+    return 'WithFutureOrNullable.${x$}';
+  }
+}

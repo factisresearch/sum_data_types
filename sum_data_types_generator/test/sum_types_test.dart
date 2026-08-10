@@ -1,3 +1,5 @@
+import 'dart:async';
+
 // ignore_for_file: library_private_types_in_public_api, unused_element
 
 import 'package:kt_dart/collection.dart';
@@ -92,6 +94,11 @@ void main() {
     expect(c == c, equals(false));
     expect(c.hashCode, equals(42));
   });
+
+  test('sum type with nullable FutureOr fallback compiles and works', () {
+    final x = WithFutureOrNullableFactory.futureOrValue('ok');
+    expect(x.toString(), equals('WithFutureOrNullable.futureOrValue(ok)'));
+  });
 }
 
 @SumType()
@@ -133,4 +140,10 @@ mixin CustomEq on _CustomEqBase {
   int get hashCode {
     return 42;
   }
+}
+
+@SumType()
+mixin WithFutureOrNullable on _WithFutureOrNullableBase {
+  FutureOr<String>? get _futureOrValue;
+  String? get _string;
 }

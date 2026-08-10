@@ -49,12 +49,14 @@ bool isQuiverOptional(DartType ty, ImportModel imports) {
 String qualifyType(DartType ty, ImportModel imports) {
   final element = ty.element;
   if (element == null) {
-    return ty.getDisplayString();
+    // ignore: deprecated_member_use
+    return ty.getDisplayString(withNullability: false);
   }
 
   final name = element.name;
   if (name == null) {
-    return ty.getDisplayString();
+    // ignore: deprecated_member_use
+    return ty.getDisplayString(withNullability: false);
   }
 
   final prefixOrNull = imports._fullNameToPrefix[fullName(element)];

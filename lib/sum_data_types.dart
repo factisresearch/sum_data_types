@@ -6,8 +6,8 @@ class DataClass {
   final bool genEqHashCode;
 
   const DataClass({bool? toString, bool? eqHashCode})
-      : genToString = toString ?? true,
-        genEqHashCode = eqHashCode ?? true;
+    : genToString = toString ?? true,
+      genEqHashCode = eqHashCode ?? true;
 }
 
 /// Annotation to use to generate a sum-type
@@ -16,8 +16,8 @@ class SumType {
   final bool genEqHashCode;
 
   const SumType({bool? toString, bool? eqHashCode})
-      : genToString = toString ?? true,
-        genEqHashCode = eqHashCode ?? true;
+    : genToString = toString ?? true,
+      genEqHashCode = eqHashCode ?? true;
 }
 
 /// Used for alternatives in sum-types that don't take a parameter.

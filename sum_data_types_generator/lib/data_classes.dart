@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:analyzer/dart/element/element.dart';
+import 'package:analyzer/dart/element/nullability_suffix.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:build/build.dart';
 import 'package:source_gen/source_gen.dart';
@@ -9,9 +10,9 @@ import 'package:sum_data_types/sum_data_types.dart';
 import './common.dart';
 
 Builder generateDataClass(BuilderOptions options) => SharedPartBuilder(
-      [DataClassGenerator()],
-      'sum_data_types',
-    );
+  [DataClassGenerator()],
+  'sum_data_types',
+);
 
 class TypeModel {
   final String typeRepr;
@@ -31,6 +32,11 @@ class TypeModel {
     DartType ty,
     ImportModel imports,
   ) {
+    if (ty.nullabilitySuffix != NullabilitySuffix.none && ty is! DynamicType) {
+      throw CodegenException(
+        'nullable fields are not supported for DataClass. Use Optional<T> instead.',
+      );
+    }
     final typeRepr = computeTypeRepr(ty, imports);
     String? optionalType;
     var typeReprForFactory = typeRepr;
@@ -57,10 +63,10 @@ class FieldModel {
     ImportModel imports,
     this.cfg,
   ) : this._commonModel = CommonFieldModel(
-          fld,
-          (DartType ty) => TypeModel(ty, imports),
-          FieldNameConfig.public,
-        );
+        fld,
+        (DartType ty) => TypeModel(ty, imports),
+        FieldNameConfig.public,
+      );
 
   String get declaration {
     return '@override\nfinal ${this.type.typeRepr} ${this.name};';
@@ -134,10 +140,10 @@ class ClassModel {
     MixinElement clazz,
     ConstantReader reader,
   ) : this._commonModel = CommonClassModel(
-          clazz,
-          (FieldElement fld, ImportModel imports, cfg) => FieldModel(fld, imports, cfg),
-          reader,
-        );
+        clazz,
+        (FieldElement fld, ImportModel imports, cfg) => FieldModel(fld, imports, cfg),
+        reader,
+      );
 
   String get copyWithSignature {
     final params = (this.fields.isNotEmpty)
@@ -195,13 +201,15 @@ class DataClassGenerator extends GeneratorForAnnotation<DataClass> {
     }
     try {
       final clazz = ClassModel(element, annotation);
-      final toStringMethod = '''
+      final toStringMethod =
+          '''
         @override
         String toString() {
           return '${clazz.mixinName}(${clazz.toStringFields})';
         }
       ''';
-      final code = '''
+      final code =
+          '''
         /// This data class has been generated from ${clazz.mixinName}
         abstract class ${clazz.factoryName} {
           static ${clazz.mixinType} make${clazz.typeArgsWithParens}(

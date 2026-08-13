@@ -16,9 +16,10 @@ abstract class _WithUnknownBase {
   const _WithUnknownBase();
   quiv.Optional<String> get known;
   quiv.Optional<dynamic> get unknown;
-  __T$ iswitch<__T$>(
-      {required __T$ Function(String) known,
-      required __T$ Function(dynamic) unknown});
+  __T$ iswitch<__T$>({
+    required __T$ Function(String) known,
+    required __T$ Function(dynamic) unknown,
+  });
   __T$ iswitcho<__T$>({
     __T$ Function(String)? known,
     __T$ Function(dynamic)? unknown,
@@ -40,13 +41,13 @@ class _WithUnknown extends _WithUnknownBase with WithUnknown {
   quiv.Optional<dynamic> get unknown =>
       quiv.Optional<dynamic>.fromNullable(this._unknown);
 
-  const _WithUnknown({
-    String? known,
-    dynamic unknown,
-  })  : assert((known != null && unknown == null) ||
-            (known == null && unknown != null)),
-        this._known = known,
-        this._unknown = unknown;
+  const _WithUnknown({String? known, dynamic unknown})
+    : assert(
+        (known != null && unknown == null) ||
+            (known == null && unknown != null),
+      ),
+      this._known = known,
+      this._unknown = unknown;
 
   @override
   __T$ iswitch<__T$>({
@@ -121,12 +122,13 @@ abstract class _SomethingBase<T> {
   quiv.Optional<quiv.Optional<ty.Address>> get address;
   quiv.Optional<Something<T>> get something;
   quiv.Optional<T> get param;
-  __T$ iswitch<__T$>(
-      {required __T$ Function() nothing,
-      required __T$ Function(User) user,
-      required __T$ Function(quiv.Optional<ty.Address>) address,
-      required __T$ Function(Something<T>) something,
-      required __T$ Function(T) param});
+  __T$ iswitch<__T$>({
+    required __T$ Function() nothing,
+    required __T$ Function(User) user,
+    required __T$ Function(quiv.Optional<ty.Address>) address,
+    required __T$ Function(Something<T>) something,
+    required __T$ Function(T) param,
+  });
   __T$ iswitcho<__T$>({
     __T$ Function()? nothing,
     __T$ Function(User)? user,
@@ -170,36 +172,38 @@ class _Something<T> extends _SomethingBase<T> with Something<T> {
     quiv.Optional<ty.Address>? address,
     Something<T>? something,
     T? param,
-  })  : assert((nothing != null &&
-                user == null &&
-                address == null &&
-                something == null &&
-                param == null) ||
-            (nothing == null &&
-                user != null &&
-                address == null &&
-                something == null &&
-                param == null) ||
-            (nothing == null &&
-                user == null &&
-                address != null &&
-                something == null &&
-                param == null) ||
-            (nothing == null &&
-                user == null &&
-                address == null &&
-                something != null &&
-                param == null) ||
-            (nothing == null &&
-                user == null &&
-                address == null &&
-                something == null &&
-                param != null)),
-        this._nothing = nothing,
-        this._user = user,
-        this._address = address,
-        this._something = something,
-        this._param = param;
+  }) : assert(
+         (nothing != null &&
+                 user == null &&
+                 address == null &&
+                 something == null &&
+                 param == null) ||
+             (nothing == null &&
+                 user != null &&
+                 address == null &&
+                 something == null &&
+                 param == null) ||
+             (nothing == null &&
+                 user == null &&
+                 address != null &&
+                 something == null &&
+                 param == null) ||
+             (nothing == null &&
+                 user == null &&
+                 address == null &&
+                 something != null &&
+                 param == null) ||
+             (nothing == null &&
+                 user == null &&
+                 address == null &&
+                 something == null &&
+                 param != null),
+       ),
+       this._nothing = nothing,
+       this._user = user,
+       this._address = address,
+       this._something = something,
+       this._param = param;
 
   @override
   __T$ iswitch<__T$>({
@@ -307,15 +311,10 @@ class _CustomToString extends _CustomToStringBase with CustomToString {
   quiv.Optional<String> get foo =>
       quiv.Optional<String>.fromNullable(this._foo);
 
-  const _CustomToString({
-    String? foo,
-  })  : assert((foo != null)),
-        this._foo = foo;
+  const _CustomToString({String? foo}) : assert((foo != null)), this._foo = foo;
 
   @override
-  __T$ iswitch<__T$>({
-    required __T$ Function(String) foo,
-  }) {
+  __T$ iswitch<__T$>({required __T$ Function(String) foo}) {
     final foo$ = this._foo;
     if (foo$ != null) {
       return foo(foo$);
@@ -329,9 +328,7 @@ class _CustomToString extends _CustomToStringBase with CustomToString {
     __T$ Function(String)? foo,
     required __T$ Function() otherwise,
   }) {
-    return iswitch(
-      foo: foo ?? (String _) => otherwise(),
-    );
+    return iswitch(foo: foo ?? (String _) => otherwise());
   }
 
   @override
@@ -373,15 +370,10 @@ class _CustomEq extends _CustomEqBase with CustomEq {
   quiv.Optional<String> get foo =>
       quiv.Optional<String>.fromNullable(this._foo);
 
-  const _CustomEq({
-    String? foo,
-  })  : assert((foo != null)),
-        this._foo = foo;
+  const _CustomEq({String? foo}) : assert((foo != null)), this._foo = foo;
 
   @override
-  __T$ iswitch<__T$>({
-    required __T$ Function(String) foo,
-  }) {
+  __T$ iswitch<__T$>({required __T$ Function(String) foo}) {
     final foo$ = this._foo;
     if (foo$ != null) {
       return foo(foo$);
@@ -395,16 +387,115 @@ class _CustomEq extends _CustomEqBase with CustomEq {
     __T$ Function(String)? foo,
     required __T$ Function() otherwise,
   }) {
+    return iswitch(foo: foo ?? (String _) => otherwise());
+  }
+
+  @override
+  String toString() {
+    final x$ = iswitch(foo: (String x$) => 'foo(${x$})');
+    return 'CustomEq.${x$}';
+  }
+}
+
+/// This data class has been generated from WithFutureOrNullable
+abstract class WithFutureOrNullableFactory {
+  static WithFutureOrNullable futureOrValue(FutureOr<String> x$) =>
+      _WithFutureOrNullable(futureOrValue: x$);
+  static WithFutureOrNullable string(String x$) =>
+      _WithFutureOrNullable(string: x$);
+}
+
+abstract class _WithFutureOrNullableBase {
+  const _WithFutureOrNullableBase();
+  quiv.Optional<FutureOr<String>> get futureOrValue;
+  quiv.Optional<String> get string;
+  __T$ iswitch<__T$>({
+    required __T$ Function(FutureOr<String>) futureOrValue,
+    required __T$ Function(String) string,
+  });
+  __T$ iswitcho<__T$>({
+    __T$ Function(FutureOr<String>)? futureOrValue,
+    __T$ Function(String)? string,
+    required __T$ Function() otherwise,
+  });
+}
+
+@immutable
+class _WithFutureOrNullable extends _WithFutureOrNullableBase
+    with WithFutureOrNullable {
+  @override
+  final FutureOr<String>? _futureOrValue;
+  @override
+  final String? _string;
+
+  @override
+  quiv.Optional<FutureOr<String>> get futureOrValue =>
+      quiv.Optional<FutureOr<String>>.fromNullable(this._futureOrValue);
+  @override
+  quiv.Optional<String> get string =>
+      quiv.Optional<String>.fromNullable(this._string);
+
+  const _WithFutureOrNullable({FutureOr<String>? futureOrValue, String? string})
+    : assert(
+        (futureOrValue != null && string == null) ||
+            (futureOrValue == null && string != null),
+      ),
+      this._futureOrValue = futureOrValue,
+      this._string = string;
+
+  @override
+  __T$ iswitch<__T$>({
+    required __T$ Function(FutureOr<String>) futureOrValue,
+    required __T$ Function(String) string,
+  }) {
+    final futureOrValue$ = this._futureOrValue;
+    final string$ = this._string;
+    if (futureOrValue$ != null) {
+      return futureOrValue(futureOrValue$);
+    } else if (string$ != null) {
+      return string(string$);
+    } else {
+      throw StateError(
+        'an instance of WithFutureOrNullable has no case selected',
+      );
+    }
+  }
+
+  @override
+  __T$ iswitcho<__T$>({
+    __T$ Function(FutureOr<String>)? futureOrValue,
+    __T$ Function(String)? string,
+    required __T$ Function() otherwise,
+  }) {
     return iswitch(
-      foo: foo ?? (String _) => otherwise(),
+      futureOrValue: futureOrValue ?? (FutureOr<String> _) => otherwise(),
+      string: string ?? (String _) => otherwise(),
     );
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (this.runtimeType != other.runtimeType) return false;
+    return other is _WithFutureOrNullable &&
+        this._futureOrValue == other._futureOrValue &&
+        this._string == other._string;
+  }
+
+  @override
+  int get hashCode {
+    var result = 17;
+    result = 37 * result + this._futureOrValue.hashCode;
+    result = 37 * result + this._string.hashCode;
+    return result;
   }
 
   @override
   String toString() {
     final x$ = iswitch(
-      foo: (String x$) => 'foo(${x$})',
+      futureOrValue: (FutureOr<String> x$) => 'futureOrValue(${x$})',
+      string: (String x$) => 'string(${x$})',
     );
-    return 'CustomEq.${x$}';
+    return 'WithFutureOrNullable.${x$}';
   }
 }

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 // ignore_for_file: library_private_types_in_public_api, unused_element
 
 import 'package:kt_dart/collection.dart';
@@ -51,9 +53,11 @@ void main() {
     );
     expect(
       user.toString(),
-      equals('Something.user(User(name: Paul, age: Optional { absent }, friends: [], '
-          'address: SomeAddress, workAddress: Optional { absent }, friendsAddresses: [], '
-          'foo: Either.right(42)))'),
+      equals(
+        'Something.user(User(name: Paul, age: Optional { absent }, friends: [], '
+        'address: SomeAddress, workAddress: Optional { absent }, friendsAddresses: [], '
+        'foo: Either.right(42)))',
+      ),
     );
     expect(
       address.toString(),
@@ -89,6 +93,11 @@ void main() {
     final c = CustomEqFactory.foo('1');
     expect(c == c, equals(false));
     expect(c.hashCode, equals(42));
+  });
+
+  test('sum type with nullable FutureOr fallback compiles and works', () {
+    final x = WithFutureOrNullableFactory.futureOrValue('ok');
+    expect(x.toString(), equals('WithFutureOrNullable.futureOrValue(ok)'));
   });
 }
 
@@ -131,4 +140,10 @@ mixin CustomEq on _CustomEqBase {
   int get hashCode {
     return 42;
   }
+}
+
+@SumType()
+mixin WithFutureOrNullable on _WithFutureOrNullableBase {
+  FutureOr<String>? get _futureOrValue;
+  String? get _string;
 }

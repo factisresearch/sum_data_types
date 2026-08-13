@@ -164,24 +164,15 @@ class _NullaryType extends _NullaryTypeBase with NullaryType {
 
 /// This data class has been generated from CustomToString
 abstract class CustomToStringFactory {
-  static CustomToString make({
-    required String foo,
-    required String bar,
-  }) {
-    return _CustomToString.make(
-      foo: foo,
-      bar: bar,
-    );
+  static CustomToString make({required String foo, required String bar}) {
+    return _CustomToString.make(foo: foo, bar: bar);
   }
 }
 
 abstract class _CustomToStringBase {
   const _CustomToStringBase();
 
-  CustomToString copyWith({
-    String? foo,
-    String? bar,
-  });
+  CustomToString copyWith({String? foo, String? bar});
 }
 
 @immutable
@@ -191,20 +182,11 @@ class _CustomToString extends _CustomToStringBase with CustomToString {
   @override
   final String bar;
 
-  const _CustomToString.make({
-    required this.foo,
-    required this.bar,
-  });
+  const _CustomToString.make({required this.foo, required this.bar});
 
   @override
-  CustomToString copyWith({
-    String? foo,
-    String? bar,
-  }) {
-    return _CustomToString.make(
-      foo: foo ?? this.foo,
-      bar: bar ?? this.bar,
-    );
+  CustomToString copyWith({String? foo, String? bar}) {
+    return _CustomToString.make(foo: foo ?? this.foo, bar: bar ?? this.bar);
   }
 
   @override
@@ -227,24 +209,15 @@ class _CustomToString extends _CustomToStringBase with CustomToString {
 
 /// This data class has been generated from CustomEq
 abstract class CustomEqFactory {
-  static CustomEq make({
-    required String foo,
-    required String bar,
-  }) {
-    return _CustomEq.make(
-      foo: foo,
-      bar: bar,
-    );
+  static CustomEq make({required String foo, required String bar}) {
+    return _CustomEq.make(foo: foo, bar: bar);
   }
 }
 
 abstract class _CustomEqBase {
   const _CustomEqBase();
 
-  CustomEq copyWith({
-    String? foo,
-    String? bar,
-  });
+  CustomEq copyWith({String? foo, String? bar});
 }
 
 @immutable
@@ -254,24 +227,153 @@ class _CustomEq extends _CustomEqBase with CustomEq {
   @override
   final String bar;
 
-  const _CustomEq.make({
-    required this.foo,
-    required this.bar,
-  });
+  const _CustomEq.make({required this.foo, required this.bar});
 
   @override
-  CustomEq copyWith({
-    String? foo,
-    String? bar,
-  }) {
-    return _CustomEq.make(
-      foo: foo ?? this.foo,
-      bar: bar ?? this.bar,
-    );
+  CustomEq copyWith({String? foo, String? bar}) {
+    return _CustomEq.make(foo: foo ?? this.foo, bar: bar ?? this.bar);
   }
 
   @override
   String toString() {
     return 'CustomEq(foo: ${this.foo}, bar: ${this.bar})';
+  }
+}
+
+/// This data class has been generated from ClassWithExtensionType
+abstract class ClassWithExtensionTypeFactory {
+  static ClassWithExtensionType make({required MyExtensionType value}) {
+    return _ClassWithExtensionType.make(value: value);
+  }
+}
+
+abstract class _ClassWithExtensionTypeBase {
+  const _ClassWithExtensionTypeBase();
+
+  ClassWithExtensionType copyWith({MyExtensionType? value});
+}
+
+@immutable
+class _ClassWithExtensionType extends _ClassWithExtensionTypeBase
+    with ClassWithExtensionType {
+  @override
+  final MyExtensionType value;
+
+  const _ClassWithExtensionType.make({required this.value});
+
+  @override
+  ClassWithExtensionType copyWith({MyExtensionType? value}) {
+    return _ClassWithExtensionType.make(value: value ?? this.value);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (this.runtimeType != other.runtimeType) return false;
+    return other is _ClassWithExtensionType && this.value == other.value;
+  }
+
+  @override
+  int get hashCode {
+    var result = 17;
+    result = 37 * result + this.value.hashCode;
+    return result;
+  }
+
+  @override
+  String toString() {
+    return 'ClassWithExtensionType(value: ${this.value})';
+  }
+}
+
+/// This data class has been generated from ClassWithRecordType
+abstract class ClassWithRecordTypeFactory {
+  static ClassWithRecordType make({required (String, int) record}) {
+    return _ClassWithRecordType.make(record: record);
+  }
+}
+
+abstract class _ClassWithRecordTypeBase {
+  const _ClassWithRecordTypeBase();
+
+  ClassWithRecordType copyWith({(String, int)? record});
+}
+
+@immutable
+class _ClassWithRecordType extends _ClassWithRecordTypeBase
+    with ClassWithRecordType {
+  @override
+  final (String, int) record;
+
+  const _ClassWithRecordType.make({required this.record});
+
+  @override
+  ClassWithRecordType copyWith({(String, int)? record}) {
+    return _ClassWithRecordType.make(record: record ?? this.record);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (this.runtimeType != other.runtimeType) return false;
+    return other is _ClassWithRecordType && this.record == other.record;
+  }
+
+  @override
+  int get hashCode {
+    var result = 17;
+    result = 37 * result + this.record.hashCode;
+    return result;
+  }
+
+  @override
+  String toString() {
+    return 'ClassWithRecordType(record: ${this.record})';
+  }
+}
+
+/// This data class has been generated from ClassWithNullableRecordType
+abstract class ClassWithNullableRecordTypeFactory {
+  static ClassWithNullableRecordType make({required (String?, int) record}) {
+    return _ClassWithNullableRecordType.make(record: record);
+  }
+}
+
+abstract class _ClassWithNullableRecordTypeBase {
+  const _ClassWithNullableRecordTypeBase();
+
+  ClassWithNullableRecordType copyWith({(String?, int)? record});
+}
+
+@immutable
+class _ClassWithNullableRecordType extends _ClassWithNullableRecordTypeBase
+    with ClassWithNullableRecordType {
+  @override
+  final (String?, int) record;
+
+  const _ClassWithNullableRecordType.make({required this.record});
+
+  @override
+  ClassWithNullableRecordType copyWith({(String?, int)? record}) {
+    return _ClassWithNullableRecordType.make(record: record ?? this.record);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (this.runtimeType != other.runtimeType) return false;
+    return other is _ClassWithNullableRecordType && this.record == other.record;
+  }
+
+  @override
+  int get hashCode {
+    var result = 17;
+    result = 37 * result + this.record.hashCode;
+    return result;
+  }
+
+  @override
+  String toString() {
+    return 'ClassWithNullableRecordType(record: ${this.record})';
   }
 }

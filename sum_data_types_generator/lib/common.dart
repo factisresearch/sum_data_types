@@ -1,5 +1,6 @@
 import 'package:analyzer/dart/analysis/features.dart';
 import 'package:analyzer/dart/element/element.dart';
+import 'package:analyzer/dart/element/nullability_suffix.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:meta/meta.dart';
 import 'package:source_gen/source_gen.dart';
@@ -29,8 +30,13 @@ class CodegenException implements Exception {
 }
 
 bool isType(DartType ty, String name, String packageUri, ImportModel imports) {
-  final tyLib = ty.element!.librarySource?.uri;
-  return ty.element!.name == name && tyLib.toString() == packageUri;
+  final element = ty.element;
+  if (element == null) {
+    return false;
+  }
+
+  final tyLib = element.library?.uri;
+  return element.name == name && tyLib.toString() == packageUri;
 }
 
 const quiverPackageUris = ['package:quiver/src/core/optional.dart', 'package:quiver/core.dart'];
@@ -41,38 +47,88 @@ bool isQuiverOptional(DartType ty, ImportModel imports) {
 
 // Returns a potential qualified access string for the type, without type arguments
 String qualifyType(DartType ty, ImportModel imports) {
-  final prefixOrNull = imports._fullNameToPrefix[fullName(ty.element!)];
+  final element = ty.element;
+  if (element == null) {
+    // ignore: deprecated_member_use
+    return ty.getDisplayString(withNullability: false);
+  }
+
+  final name = element.name;
+  if (name == null) {
+    // ignore: deprecated_member_use
+    return ty.getDisplayString(withNullability: false);
+  }
+
+  final prefixOrNull = imports._fullNameToPrefix[fullName(element)];
   final prefix = (prefixOrNull != null) ? ('${prefixOrNull.element.name}.') : '';
-  return '$prefix${ty.element!.name}';
+  return '$prefix$name';
+}
+
+String _nullabilitySuffix(DartType ty, {required bool stripTopLevelNullability}) {
+  if (stripTopLevelNullability) {
+    return '';
+  }
+  switch (ty.nullabilitySuffix) {
+    case NullabilitySuffix.none:
+      return '';
+    case NullabilitySuffix.question:
+      return '?';
+    case NullabilitySuffix.star:
+      return '*';
+  }
 }
 
 // Returns a textual representation of the given type, including generic types
 // and import prefixes.
-String computeTypeRepr(DartType ty, ImportModel imports) {
+String computeTypeRepr(DartType ty, ImportModel imports, {bool stripTopLevelNullability = false}) {
   if (ty is FunctionType) {
     throw CodegenException('function types are not supported');
   } else if (ty is DynamicType) {
     return 'dynamic';
+  } else if (ty is RecordType) {
+    final positional = ty.positionalFields.map((f) => computeTypeRepr(f.type, imports)).join(', ');
+    final named = ty.namedFields
+        .map((f) => '${computeTypeRepr(f.type, imports)} ${f.name}')
+        .join(', ');
+    String recordType;
+    if (named.isNotEmpty) {
+      if (positional.isNotEmpty) {
+        recordType = '($positional, {$named})';
+      } else {
+        recordType = '({$named})';
+      }
+    } else {
+      if (ty.positionalFields.length == 1) {
+        recordType = '($positional,)';
+      } else {
+        recordType = '($positional)';
+      }
+    }
+    return '$recordType${_nullabilitySuffix(ty, stripTopLevelNullability: stripTopLevelNullability)}';
   } else if (ty is ParameterizedType && ty.typeArguments.isNotEmpty) {
     final base = qualifyType(ty, imports);
     final args = ty.typeArguments.map((tyArg) => computeTypeRepr(tyArg, imports));
-    return '$base<${args.join(', ')}>';
+    final suffix = _nullabilitySuffix(ty, stripTopLevelNullability: stripTopLevelNullability);
+    return '$base<${args.join(', ')}>$suffix';
   } else {
-    return qualifyType(ty, imports);
+    final base = qualifyType(ty, imports);
+    final suffix = _nullabilitySuffix(ty, stripTopLevelNullability: stripTopLevelNullability);
+    return '$base$suffix';
   }
 }
 
 String fullName(Element element) {
-  return "${element.librarySource!.uri}:$element";
+  final uri = element.library?.uri;
+  return "$uri:$element";
 }
 
 class ImportModel {
-  final Map<String, ImportElementPrefix> _moduleIdToPrefix = {};
-  final Map<String, ImportElementPrefix> _fullNameToPrefix = {};
+  final Map<String, PrefixFragment> _moduleIdToPrefix = {};
+  final Map<String, PrefixFragment> _fullNameToPrefix = {};
   final Map<String, String> _moduleIdToUri = {};
   final Map<String, String> _uriToModuleId = {};
 
-  void addImportElement(LibraryImportElement imp) {
+  void addImportElement(LibraryImport imp) {
     final uri = imp.uri;
     if (uri is! DirectiveUriWithLibrary) {
       return;
@@ -85,9 +141,9 @@ class ImportModel {
     final prefix = imp.prefix;
     if (prefix != null) {
       this._moduleIdToPrefix[moduleId] = prefix;
-      imp.namespace.definedNames.forEach((key, value) {
-        this._fullNameToPrefix[fullName(value)] = prefix;
-      });
+      for (final entry in imp.namespace.definedNames2.entries) {
+        this._fullNameToPrefix[fullName(entry.value)] = prefix;
+      }
     }
   }
 
@@ -132,24 +188,29 @@ class CommonFieldModel<TypeModel> {
   factory CommonFieldModel(FieldElement field, MkType<TypeModel> mkType, FieldNameConfig fieldCfg) {
     try {
       final ty = mkType(field.type);
+      final fieldName = field.name;
+      if (fieldName == null) {
+        throw CodegenException('fieldname must not be null');
+      }
+
       String name, internalName;
       switch (fieldCfg) {
         case FieldNameConfig.public:
           {
-            if (field.name.startsWith('_')) {
+            if (fieldName.startsWith('_')) {
               throw CodegenException('fieldname must not start with an underscore');
             }
-            name = field.name;
+            name = fieldName;
             internalName = '_$name';
             break;
           }
         case FieldNameConfig.private:
           {
-            if (!field.name.startsWith('_')) {
+            if (!fieldName.startsWith('_')) {
               throw CodegenException('fieldname must start with an underscore');
             }
-            name = field.name.substring(1);
-            internalName = field.name;
+            name = fieldName.substring(1);
+            internalName = fieldName;
             break;
           }
       }
@@ -175,8 +236,8 @@ class CodgenConfig {
   final bool nnbd;
 
   const CodgenConfig({bool? toString, bool? eqHashCode, required this.nnbd})
-      : genToString = toString ?? true,
-        genEqHashCode = eqHashCode ?? true;
+    : genToString = toString ?? true,
+      genEqHashCode = eqHashCode ?? true;
 }
 
 class CommonClassModel<FieldModel> {
@@ -205,7 +266,7 @@ class CommonClassModel<FieldModel> {
       // build a map of the qualified imports, mapping module identifiers to import prefixes
       final lib = clazz.library;
       final imports = ImportModel();
-      for (final imp in lib.definingCompilationUnit.libraryImports) {
+      for (final imp in lib.firstFragment.libraryImports) {
         imports.addImportElement(imp);
       }
 
@@ -219,14 +280,23 @@ class CommonClassModel<FieldModel> {
       );
 
       final mixinName = clazz.name;
-      final List<String> typeArgs = clazz.typeParameters.map((param) => param.name).toList();
+      if (mixinName == null) {
+        throw CodegenException('mixin name must not be null');
+      }
+
+      final List<String> typeArgs = clazz.typeParameters.map((param) => param.name!).toList();
       final className = '_$mixinName';
       final baseName = '${className}Base';
       final fields = <FieldModel>[];
 
       for (var field in clazz.fields) {
-        if (field.name != 'hashCode' && !field.isStatic) {
-          final msgPrefix = "Invalid getter '${field.name}' for data class '$mixinName'";
+        final fieldName = field.name;
+        if (fieldName == null) {
+          continue;
+        }
+
+        if (fieldName != 'hashCode' && !field.isStatic) {
+          final msgPrefix = "Invalid getter '$fieldName' for data class '$mixinName'";
           if (field.getter == null) {
             throw Exception('$msgPrefix: field must have a getter');
           } else if (field.setter != null) {
@@ -287,8 +357,9 @@ String hashCodeImpl(List<String> fieldNames) {
     ''';
   }
   const result = 'result';
-  final updates =
-      fieldNames.map((name) => '$result = 37 * $result + this.$name.hashCode;').join('\n');
+  final updates = fieldNames
+      .map((name) => '$result = 37 * $result + this.$name.hashCode;')
+      .join('\n');
   return '''@override
     int get hashCode {
       var $result = 17;

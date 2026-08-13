@@ -49,12 +49,15 @@ void main() {
   test('toString', () {
     expect(userSarah.toString(), equals(userSarah2.toString()));
     expect(
-        userSarah.toString(),
-        equals('User(name: Sarah, age: Optional { absent }, friends: '
-            '[User(name: Bob, age: Optional { value: 31 }, friends: [], address: SomeAddress, '
-            'workAddress: Optional { absent }, friendsAddresses: [], foo: Either.left(foo))], '
-            'address: SomeAddress, workAddress: Optional { absent }, friendsAddresses: [], '
-            'foo: Either.right(42))'));
+      userSarah.toString(),
+      equals(
+        'User(name: Sarah, age: Optional { absent }, friends: '
+        '[User(name: Bob, age: Optional { value: 31 }, friends: [], address: SomeAddress, '
+        'workAddress: Optional { absent }, friendsAddresses: [], foo: Either.left(foo))], '
+        'address: SomeAddress, workAddress: Optional { absent }, friendsAddresses: [], '
+        'foo: Either.right(42))',
+      ),
+    );
   });
 
   test('extra getters', () {
@@ -76,6 +79,29 @@ void main() {
     expect(c == c, equals(false));
     expect(c.hashCode, equals(42));
   });
+
+  test('extension type support', () {
+    final val1 = MyExtensionType('foo');
+    final val2 = MyExtensionType('foo');
+    final obj1 = ClassWithExtensionTypeFactory.make(value: val1);
+    final obj2 = ClassWithExtensionTypeFactory.make(value: val2);
+    expect(obj1 == obj2, isTrue);
+    expect(obj1.toString(), equals('ClassWithExtensionType(value: foo)'));
+  });
+
+  test('record type support', () {
+    final obj1 = ClassWithRecordTypeFactory.make(record: ('hello', 123));
+    final obj2 = ClassWithRecordTypeFactory.make(record: ('hello', 123));
+    expect(obj1 == obj2, isTrue);
+    expect(obj1.toString(), equals('ClassWithRecordType(record: (hello, 123))'));
+  });
+
+  test('record type with nullable member support', () {
+    final obj1 = ClassWithNullableRecordTypeFactory.make(record: (null, 123));
+    final obj2 = ClassWithNullableRecordTypeFactory.make(record: (null, 123));
+    expect(obj1 == obj2, isTrue);
+    expect(obj1.toString(), equals('ClassWithNullableRecordType(record: (null, 123))'));
+  });
 }
 
 @DataClass()
@@ -93,9 +119,9 @@ mixin User on _UserBase {
   }
 
   String get fooDisplay => foo.iswitch(
-        left: (x) => x,
-        right: (x) => x.toString(),
-      );
+    left: (x) => x,
+    right: (x) => x.toString(),
+  );
 }
 
 @DataClass()
@@ -126,4 +152,21 @@ mixin CustomEq on _CustomEqBase {
   int get hashCode {
     return 42;
   }
+}
+
+extension type MyExtensionType(String value) {}
+
+@DataClass()
+mixin ClassWithExtensionType on _ClassWithExtensionTypeBase {
+  MyExtensionType get value;
+}
+
+@DataClass()
+mixin ClassWithRecordType on _ClassWithRecordTypeBase {
+  (String, int) get record;
+}
+
+@DataClass()
+mixin ClassWithNullableRecordType on _ClassWithNullableRecordTypeBase {
+  (String?, int) get record;
 }
